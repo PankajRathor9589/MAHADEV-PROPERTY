@@ -11,7 +11,7 @@ const PropertyGallery = ({ title, images = [] }) => {
   return (
     <div className="space-y-3">
       <button type="button" className="block w-full" onClick={() => setFull(active)}>
-        <img src={active} alt={title} className="h-80 w-full rounded-2xl object-cover" />
+        <img src={active} alt={title} className="h-56 w-full rounded-2xl object-cover sm:h-72 lg:h-80" />
       </button>
       <div className="grid gap-3 sm:grid-cols-4">
         {images.map((img, idx) => (

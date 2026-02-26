@@ -4,7 +4,7 @@ const DealerCard = ({ dealer }) => {
   const whatsappLink = `https://wa.me/${dealer.whatsapp}`;
 
   return (
-    <aside className="card sticky top-24 space-y-3">
+    <aside className="card space-y-3 lg:sticky lg:top-24">
       <div className="flex items-center gap-3">
         <img src={dealer.photo || "https://placehold.co/200x200?text=Dealer"} alt={dealer.name} className="h-16 w-16 rounded-full object-cover" />
         <div>
@@ -20,6 +20,7 @@ const DealerCard = ({ dealer }) => {
         <a href={whatsappLink} target="_blank" rel="noreferrer" className="btn-outline"><FaWhatsapp /> WhatsApp</a>
       </div>
       <p className="text-xs text-slate-500">Office: {dealer.officeAddress}</p>
+      <p className="text-xs text-slate-500">Availability: 9 AM - 9 PM</p>
     </aside>
   );
 };

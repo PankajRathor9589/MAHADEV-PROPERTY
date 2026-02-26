@@ -1,7 +1,7 @@
 import { FaWhatsapp } from "react-icons/fa";
 
 const FloatingWhatsApp = () => {
-  const phone = import.meta.env.VITE_DEFAULT_WHATSAPP || "919876543210";
+  const phone = import.meta.env.VITE_DEFAULT_WHATSAPP || "917692016188";
   return (
     <a
       href={`https://wa.me/${phone}`}

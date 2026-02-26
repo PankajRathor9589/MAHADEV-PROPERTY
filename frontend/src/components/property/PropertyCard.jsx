@@ -17,15 +17,15 @@ const PropertyCard = ({ item, onFavorite, onCompare, compact = false }) => (
       <h3 className="line-clamp-2 text-base font-semibold text-slate-900">{item.title}</h3>
       <p className="text-xl font-bold text-slate-900">{formatPrice(item.price, item.listingType)}</p>
       <p className="text-sm text-slate-600">{item.location?.locality}, {item.location?.city}</p>
-      <div className="flex gap-2 text-xs text-slate-700">
+      <div className="flex flex-wrap gap-2 text-xs text-slate-700">
         <span>{item.areaSqft} sqft</span>
-        <span>{item.bedrooms} BHK</span>
+        {item.bedrooms > 0 && <span>{item.bedrooms} BHK</span>}
         <span>{item.bathrooms} Bath</span>
       </div>
-      <div className="flex flex-wrap gap-2">
-        <Link to={`/properties/${item.slug}`} className="btn-primary">View Details</Link>
-        {onFavorite && <button onClick={() => onFavorite(item._id)} className="btn-outline">Save</button>}
-        {onCompare && <button onClick={() => onCompare(item._id)} className="btn-outline">Compare</button>}
+      <div className="grid gap-2 sm:flex sm:flex-wrap">
+        <Link to={`/properties/${item.slug}`} className="btn-primary w-full sm:w-auto">View Details</Link>
+        {onFavorite && <button onClick={() => onFavorite(item._id)} className="btn-outline w-full sm:w-auto">Save</button>}
+        {onCompare && <button onClick={() => onCompare(item._id)} className="btn-outline w-full sm:w-auto">Compare</button>}
       </div>
     </div>
   </article>
