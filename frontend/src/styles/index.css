@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.soft-gradient {
+  background: radial-gradient(circle at top right, rgba(15, 118, 110, 0.18), transparent 45%),
+    radial-gradient(circle at top left, rgba(245, 158, 11, 0.16), transparent 42%), #f8fafc;
+}
+
+.section-title {
+  @apply text-2xl font-bold text-slate-900 md:text-3xl;
+}
+
+.input {
+  @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none ring-brand-500 transition focus:ring-2;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition;
+}
+
+.btn-primary {
+  @apply btn bg-brand-500 text-white hover:bg-brand-600;
+}
+
+.btn-outline {
+  @apply btn border border-brand-500 text-brand-600 hover:bg-brand-50;
+}
+
+.card {
+  @apply rounded-xl bg-white p-4 shadow-card;
+}
