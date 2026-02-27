@@ -1,13 +1,23 @@
 import { Property } from "../models/Property.js";
 import { calcPagination } from "../utils/pagination.js";
 
+const regexFilter = (value) => (value ? new RegExp(value, "i") : undefined);
+const sqftFromUnit = (value, unit = "sqft") => (
+  unit === "acre" ? Number(value) * 43560 : Number(value)
+);
+
 const buildFilters = (query) => {
   const filters = {};
 
-  if (query.city) filters["location.city"] = new RegExp(query.city, "i");
-  if (query.locality) filters["location.locality"] = new RegExp(query.locality, "i");
+  if (query.city) filters["location.city"] = regexFilter(query.city);
+  if (query.locality) filters["location.locality"] = regexFilter(query.locality);
+  if (query.district) filters["location.district"] = regexFilter(query.district);
+  if (query.tehsil) filters["location.tehsil"] = regexFilter(query.tehsil);
+  if (query.village) filters["location.village"] = regexFilter(query.village);
   if (query.propertyType) filters.propertyType = query.propertyType;
   if (query.availabilityStatus) filters.availabilityStatus = query.availabilityStatus;
+  if (query.landStatus) filters.landStatus = query.landStatus;
+  if (query.recentlySold) filters.recentlySold = query.recentlySold === "true";
   if (query.bhk) filters.bedrooms = Number(query.bhk);
 
   if (query.minPrice || query.maxPrice) {
@@ -22,7 +32,24 @@ const buildFilters = (query) => {
     if (query.maxArea) filters.areaSqft.$lte = Number(query.maxArea);
   }
 
+  if (query.minSize || query.maxSize) {
+    const sizeUnit = query.sizeUnit || "sqft";
+    filters.areaSqft = filters.areaSqft || {};
+    if (query.minSize) filters.areaSqft.$gte = sqftFromUnit(query.minSize, sizeUnit);
+    if (query.maxSize) filters.areaSqft.$lte = sqftFromUnit(query.maxSize, sizeUnit);
+  }
+
   if (query.nearby) filters.nearbyPlaces = { $in: [new RegExp(query.nearby, "i")] };
+
+  if (query.location) {
+    const locationRegex = regexFilter(query.location);
+    filters.$or = [
+      { "location.city": locationRegex },
+      { "location.locality": locationRegex },
+      { "location.tehsil": locationRegex },
+      { "location.village": locationRegex }
+    ];
+  }
 
   return filters;
 };
@@ -54,6 +81,43 @@ export const getFeaturedProperties = async (req, res) => {
 
 export const getTrendingProperties = async (req, res) => {
   const items = await Property.find({ isTrending: true }).sort({ views: -1 }).limit(8);
+  return res.json({ items });
+};
+
+export const getLocationTree = async (req, res) => {
+  const rows = await Property.aggregate([
+    {
+      $group: {
+        _id: {
+          district: "$location.district",
+          tehsil: "$location.tehsil"
+        },
+        villages: { $addToSet: "$location.village" }
+      }
+    },
+    { $sort: { "_id.district": 1, "_id.tehsil": 1 } }
+  ]);
+
+  const grouped = new Map();
+
+  rows.forEach((row) => {
+    const district = row._id.district || "Unknown";
+    const tehsil = row._id.tehsil || "Unknown";
+    const villages = (row.villages || []).filter(Boolean).sort((a, b) => a.localeCompare(b));
+
+    if (!grouped.has(district)) grouped.set(district, []);
+
+    grouped.get(district).push({
+      name: tehsil,
+      villages
+    });
+  });
+
+  const items = [...grouped.entries()].map(([district, tehsils]) => ({
+    district,
+    tehsils: tehsils.sort((a, b) => a.name.localeCompare(b.name))
+  }));
+
   return res.json({ items });
 };
 

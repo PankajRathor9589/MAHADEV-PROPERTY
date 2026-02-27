@@ -3,6 +3,7 @@ import {
   createProperty,
   deleteProperty,
   getFeaturedProperties,
+  getLocationTree,
   getPropertyById,
   getPropertyBySlug,
   getTrendingProperties,
@@ -17,6 +18,7 @@ const router = express.Router();
 router.get("/", listProperties);
 router.get("/featured/list", getFeaturedProperties);
 router.get("/trending/list", getTrendingProperties);
+router.get("/location-tree", getLocationTree);
 router.get("/:id/similar", similarProperties);
 router.get("/slug/:slug", getPropertyBySlug);
 router.get("/id/:id", getPropertyById);

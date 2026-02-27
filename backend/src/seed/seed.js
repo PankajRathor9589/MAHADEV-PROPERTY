@@ -7,342 +7,369 @@ import { User } from "../models/User.js";
 dotenv.config();
 await connectDB();
 
+const dealerInfo = {
+  name: "Prashant Rathore",
+  photo: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300",
+  agencyName: "Mahadev Property",
+  phone: "917692016188",
+  whatsapp: "917692016188",
+  officeAddress: "Jaisinagar Tehsil, District Sagar, Madhya Pradesh, India",
+  experienceYears: 12,
+  rating: 4.9,
+  isVerified: true
+};
+
+const listing = ({
+  title,
+  price,
+  propertyType,
+  areaValue,
+  areaUnit,
+  landStatus,
+  bedrooms = 0,
+  bathrooms = 0,
+  tehsil,
+  village,
+  locality,
+  pincode,
+  address,
+  lat,
+  lng,
+  highlights,
+  nearbyPlaces,
+  images,
+  isFeatured = false,
+  isTrending = false,
+  recentlySold = false,
+  availabilityStatus = "Available",
+  views = 120
+}) => ({
+  title,
+  price,
+  listingType: "Sale",
+  propertyType,
+  areaValue,
+  areaUnit,
+  landStatus,
+  bedrooms,
+  bathrooms,
+  availabilityStatus,
+  description:
+    "Verified local property managed by Mahadev Property with complete location support, transparent pricing, and on-site visit assistance.",
+  highlights,
+  nearbyPlaces,
+  images,
+  youtubeUrl: "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
+  location: {
+    district: "Sagar",
+    tehsil,
+    village,
+    city: "Sagar",
+    locality,
+    pincode,
+    address,
+    coordinates: { lat, lng }
+  },
+  dealer: dealerInfo,
+  isFeatured,
+  isTrending,
+  recentlySold,
+  views
+});
+
+const properties = [
+  listing({
+    title: "Residential Plot in Sagar City Near Makronia",
+    price: 3200000,
+    propertyType: "Plot",
+    areaValue: 1800,
+    areaUnit: "sqft",
+    landStatus: "Open Land",
+    tehsil: "Sagar",
+    village: "Makronia",
+    locality: "Sagar City",
+    pincode: "470004",
+    address: "Makronia Extension, Sagar City, Madhya Pradesh",
+    lat: 23.8209,
+    lng: 78.7394,
+    highlights: ["Corner plot", "30 ft road", "Registry ready", "Electricity nearby"],
+    nearbyPlaces: ["Makronia Market", "Schools", "Bus stand"],
+    images: [
+      "https://images.unsplash.com/photo-1592595896551-12b371d546d5?w=1400",
+      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1400"
+    ],
+    isFeatured: true,
+    isTrending: true,
+    views: 420
+  }),
+  listing({
+    title: "Ready House in Jaisinagar Main Road",
+    price: 4800000,
+    propertyType: "House",
+    areaValue: 1500,
+    areaUnit: "sqft",
+    landStatus: "Ready to Move",
+    bedrooms: 3,
+    bathrooms: 2,
+    tehsil: "Jaisinagar",
+    village: "Jaisinagar",
+    locality: "Jaisinagar Bazar",
+    pincode: "470125",
+    address: "Near Tehsil Office, Jaisinagar, Sagar",
+    lat: 23.8351,
+    lng: 78.7608,
+    highlights: ["Water connection", "Parking space", "Family locality"],
+    nearbyPlaces: ["Tehsil Office", "Temple", "Local market"],
+    images: [
+      "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1400",
+      "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1400"
+    ],
+    isFeatured: true,
+    isTrending: true,
+    views: 390
+  }),
+  listing({
+    title: "Farm Land in Rahatgarh Near Highway",
+    price: 7600000,
+    propertyType: "Farm Land",
+    areaValue: 2.2,
+    areaUnit: "acre",
+    landStatus: "Open Land",
+    tehsil: "Rahatgarh",
+    village: "Dhakrai",
+    locality: "Rahatgarh",
+    pincode: "470119",
+    address: "State Highway belt, Rahatgarh, Sagar",
+    lat: 23.7884,
+    lng: 78.4062,
+    highlights: ["Borewell", "Road touch", "Fertile soil"],
+    nearbyPlaces: ["Rahatgarh Fort", "Highway", "Warehouses"],
+    images: [
+      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1400",
+      "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=1400"
+    ],
+    isTrending: true,
+    views: 318
+  }),
+  listing({
+    title: "Commercial Plot in Khurai Industrial Side",
+    price: 9100000,
+    propertyType: "Commercial",
+    areaValue: 2800,
+    areaUnit: "sqft",
+    landStatus: "Open Land",
+    tehsil: "Khurai",
+    village: "Khurai",
+    locality: "Khurai City",
+    pincode: "470117",
+    address: "Near Industrial Road, Khurai, Sagar",
+    lat: 24.0433,
+    lng: 78.3308,
+    highlights: ["Main road frontage", "Retail potential", "Legal title clear"],
+    nearbyPlaces: ["Railway station", "Industrial zone", "Banks"],
+    images: [
+      "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=1400",
+      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1400"
+    ],
+    isFeatured: true,
+    views: 355
+  }),
+  listing({
+    title: "Affordable Plot in Bina Township",
+    price: 2350000,
+    propertyType: "Plot",
+    areaValue: 1320,
+    areaUnit: "sqft",
+    landStatus: "Open Land",
+    tehsil: "Bina",
+    village: "Bina",
+    locality: "Bina Railway Colony",
+    pincode: "470113",
+    address: "Near Bina junction township, Bina",
+    lat: 24.1898,
+    lng: 78.1944,
+    highlights: ["Budget range", "Water line available", "Growing area"],
+    nearbyPlaces: ["Bina Junction", "Schools", "Hospital"],
+    images: [
+      "https://images.unsplash.com/photo-1625571479765-77796f5f5020?w=1400",
+      "https://images.unsplash.com/photo-1591382386627-349b692688ff?w=1400"
+    ],
+    isTrending: true,
+    views: 287
+  }),
+  listing({
+    title: "3BHK House in Deori Prime Locality",
+    price: 4200000,
+    propertyType: "House",
+    areaValue: 1380,
+    areaUnit: "sqft",
+    landStatus: "Ready to Move",
+    bedrooms: 3,
+    bathrooms: 2,
+    tehsil: "Deori",
+    village: "Deori",
+    locality: "Deori Nagar",
+    pincode: "470226",
+    address: "Ward 7, Deori, Sagar district",
+    lat: 23.3892,
+    lng: 79.0167,
+    highlights: ["Renovated interior", "Nearby school", "Covered parking"],
+    nearbyPlaces: ["Bus stand", "Market", "Hospital"],
+    images: [
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1400",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=1400"
+    ],
+    views: 260
+  }),
+  listing({
+    title: "Farm Land in Banda Tehsil with Water Source",
+    price: 6800000,
+    propertyType: "Farm Land",
+    areaValue: 1.8,
+    areaUnit: "acre",
+    landStatus: "Open Land",
+    tehsil: "Banda",
+    village: "Banda",
+    locality: "Banda Rural",
+    pincode: "470335",
+    address: "Agricultural belt, Banda, Sagar",
+    lat: 24.0329,
+    lng: 78.9645,
+    highlights: ["Tube well", "Black soil", "Road approach"],
+    nearbyPlaces: ["Mandi", "Village market", "Temple"],
+    images: [
+      "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1400",
+      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1400"
+    ],
+    views: 244
+  }),
+  listing({
+    title: "Commercial Space in Shahgarh Market",
+    price: 5600000,
+    propertyType: "Commercial",
+    areaValue: 1100,
+    areaUnit: "sqft",
+    landStatus: "Ready to Move",
+    tehsil: "Shahgarh",
+    village: "Shahgarh",
+    locality: "Main Chowk",
+    pincode: "470339",
+    address: "Main market road, Shahgarh, Sagar district",
+    lat: 24.3138,
+    lng: 79.1189,
+    highlights: ["Ground floor", "Busy market", "Shutter frontage"],
+    nearbyPlaces: ["Main chowk", "Bank", "Bus stop"],
+    images: [
+      "https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=1400",
+      "https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=1400"
+    ],
+    views: 231
+  }),
+  listing({
+    title: "Open Plot in Malthone Expansion Area",
+    price: 1980000,
+    propertyType: "Plot",
+    areaValue: 1200,
+    areaUnit: "sqft",
+    landStatus: "Open Land",
+    tehsil: "Malthone",
+    village: "Malthone",
+    locality: "Malthone",
+    pincode: "470441",
+    address: "Near local panchayat road, Malthone",
+    lat: 24.2449,
+    lng: 78.8621,
+    highlights: ["Affordable", "Road side", "Title verified"],
+    nearbyPlaces: ["Village center", "Shops", "School"],
+    images: [
+      "https://images.unsplash.com/photo-1600585152915-d208bec867a1?w=1400",
+      "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1400"
+    ],
+    views: 205
+  }),
+  listing({
+    title: "Family House in Rehli with Wide Frontage",
+    price: 3950000,
+    propertyType: "House",
+    areaValue: 1460,
+    areaUnit: "sqft",
+    landStatus: "Ready to Move",
+    bedrooms: 3,
+    bathrooms: 2,
+    tehsil: "Rehli",
+    village: "Rehli",
+    locality: "Rehli Nagar",
+    pincode: "470227",
+    address: "Near block office, Rehli, Sagar",
+    lat: 23.6368,
+    lng: 79.0734,
+    highlights: ["Ready registry", "Wide road", "Public transport nearby"],
+    nearbyPlaces: ["Block office", "Hospital", "School"],
+    images: [
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1400",
+      "https://images.unsplash.com/photo-1494526585095-c41746248156?w=1400"
+    ],
+    views: 242
+  }),
+  listing({
+    title: "Fertile Farm Land in Garhakota Region",
+    price: 7350000,
+    propertyType: "Farm Land",
+    areaValue: 2.5,
+    areaUnit: "acre",
+    landStatus: "Open Land",
+    tehsil: "Garhakota",
+    village: "Garhakota",
+    locality: "Garhakota Outskirts",
+    pincode: "470229",
+    address: "Near Sonar river side, Garhakota, Sagar",
+    lat: 23.7814,
+    lng: 79.1431,
+    highlights: ["Canal water access", "Boundary demarcated", "Good approach road"],
+    nearbyPlaces: ["River belt", "Village mandi", "Highway connector"],
+    images: [
+      "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1400",
+      "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=1400"
+    ],
+    isTrending: true,
+    views: 301
+  }),
+  listing({
+    title: "Recently Sold Plot in Kesli Main Area",
+    price: 1750000,
+    propertyType: "Plot",
+    areaValue: 1050,
+    areaUnit: "sqft",
+    landStatus: "Open Land",
+    tehsil: "Kesli",
+    village: "Kesli",
+    locality: "Kesli",
+    pincode: "470235",
+    address: "Near market square, Kesli, Sagar",
+    lat: 23.4098,
+    lng: 78.8195,
+    highlights: ["Good investment zone", "Town access", "Clear records"],
+    nearbyPlaces: ["Bus stop", "Weekly market", "School"],
+    images: [
+      "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=1400",
+      "https://images.unsplash.com/photo-1575517111839-3a3843ee7f5d?w=1400"
+    ],
+    availabilityStatus: "Sold",
+    recentlySold: true,
+    views: 188
+  })
+];
+
 const run = async () => {
   await Promise.all([Property.deleteMany({}), User.deleteMany({})]);
 
-  const admin = await User.create({
+  await User.create({
     name: "Admin User",
     email: "admin@mahadevproperty.com",
     password: "Admin@123",
     role: "admin",
-    phone: "9999999999"
+    phone: "917692016188"
   });
-
-  const dealerInfo = {
-    name: "Prashant Rathor",
-    photo: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300",
-    agencyName: "Mahadev Property",
-    phone: "917692016188",
-    whatsapp: "917692016188",
-    officeAddress: "Vijay Nagar, Indore, Madhya Pradesh",
-    experienceYears: 11,
-    rating: 4.9,
-    isVerified: true
-  };
-
-  const properties = [
-    {
-      title: "Spacious 3BHK Independent House in Vijay Nagar",
-      price: 12500000,
-      listingType: "Sale",
-      propertyType: "Independent House",
-      areaSqft: 2100,
-      bedrooms: 3,
-      bathrooms: 3,
-      availabilityStatus: "Available",
-      description:
-        "Well-maintained family home in Scheme 54 with fast access to schools, shopping zones, and business districts.",
-      highlights: ["Corner plot", "Modular kitchen", "24x7 water supply", "Two-level layout", "Wide internal road"],
-      nearbyPlaces: ["Meghdoot Garden", "C21 Mall", "Bombay Hospital", "Brilliant Convention Center"],
-      images: [
-        "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1400",
-        "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1400",
-        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1400",
-        "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1400"
-      ],
-      floorPlanImage: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800",
-      location: {
-        city: "Indore",
-        locality: "Vijay Nagar",
-        pincode: "452010",
-        address: "Scheme No. 54, Near Meghdoot Garden, Vijay Nagar, Indore",
-        coordinates: { lat: 22.7533, lng: 75.8937 }
-      },
-      dealer: dealerInfo,
-      isFeatured: true,
-      isTrending: true,
-      views: 342
-    },
-    {
-      title: "Premium 5BHK Luxury Villa on Super Corridor",
-      price: 28500000,
-      listingType: "Sale",
-      propertyType: "Luxury Villa",
-      areaSqft: 4200,
-      bedrooms: 5,
-      bathrooms: 5,
-      availabilityStatus: "Available",
-      description:
-        "Premium villa with refined interiors, private landscaped zone, and excellent airport plus IT corridor connectivity.",
-      highlights: ["Private lawn", "Home automation ready", "Italian marble", "Clubhouse access", "Gated township"],
-      nearbyPlaces: ["TCS Campus", "Airport Road", "Prestige University", "Malls and cafes"],
-      images: [
-        "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=1400",
-        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1400",
-        "https://images.unsplash.com/photo-1600566753151-384129cf4e3e?w=1400",
-        "https://images.unsplash.com/photo-1600607687644-c7171b42498f?w=1400"
-      ],
-      location: {
-        city: "Indore",
-        locality: "Super Corridor",
-        pincode: "452005",
-        address: "Near Brilliant Convention Center, Super Corridor, Indore",
-        coordinates: { lat: 22.8106, lng: 75.9025 }
-      },
-      dealer: dealerInfo,
-      isFeatured: true,
-      isTrending: true,
-      views: 410
-    },
-    {
-      title: "Modern 2BHK Apartment near C21 Mall",
-      price: 5200000,
-      listingType: "Sale",
-      propertyType: "Apartment",
-      areaSqft: 1120,
-      bedrooms: 2,
-      bathrooms: 2,
-      availabilityStatus: "Available",
-      description:
-        "Ideal 2BHK for professionals and small families looking for comfortable living in a prime urban extension.",
-      highlights: ["Open-view balcony", "Lift and power backup", "Children play zone", "Gym access"],
-      nearbyPlaces: ["C21 Mall", "Apollo Hospital", "Vijay Nagar Square", "Restaurants and banks"],
-      images: [
-        "https://images.unsplash.com/photo-1494526585095-c41746248156?w=1400",
-        "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1400",
-        "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1400",
-        "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1400"
-      ],
-      location: {
-        city: "Indore",
-        locality: "Vijay Nagar Extension",
-        pincode: "452010",
-        address: "Apollo DB City, Nipania, Vijay Nagar Extension, Indore",
-        coordinates: { lat: 22.7699, lng: 75.9108 }
-      },
-      dealer: dealerInfo,
-      isFeatured: false,
-      isTrending: true,
-      views: 298
-    },
-    {
-      title: "Ready-to-Move 3BHK Apartment at Bengali Square",
-      price: 7800000,
-      listingType: "Sale",
-      propertyType: "Apartment",
-      areaSqft: 1560,
-      bedrooms: 3,
-      bathrooms: 3,
-      availabilityStatus: "Available",
-      description:
-        "Spacious apartment with practical layout, ideal for families looking for daily convenience and strong connectivity.",
-      highlights: ["Vaastu friendly", "Large living area", "24x7 security", "Rooftop amenities"],
-      nearbyPlaces: ["Bengali Square Junction", "Kanadia Road Market", "Schools", "Hospitals"],
-      images: [
-        "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?w=1400",
-        "https://images.unsplash.com/photo-1493666438817-866a91353ca9?w=1400",
-        "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=1400",
-        "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=1400"
-      ],
-      location: {
-        city: "Indore",
-        locality: "Bengali Square",
-        pincode: "452016",
-        address: "Kanadia Road, Near Bengali Square Junction, Indore",
-        coordinates: { lat: 22.7048, lng: 75.9134 }
-      },
-      dealer: dealerInfo,
-      isFeatured: true,
-      isTrending: true,
-      views: 320
-    },
-    {
-      title: "High-Footfall Commercial Shop on AB Bypass Road",
-      price: 6900000,
-      listingType: "Sale",
-      propertyType: "Commercial Shop",
-      areaSqft: 640,
-      bedrooms: 0,
-      bathrooms: 1,
-      availabilityStatus: "Available",
-      description:
-        "Ground-floor commercial unit with strong visibility and steady residential catchment suitable for retail operations.",
-      highlights: ["Main road frontage", "Signage visibility", "High footfall zone", "Ground floor access"],
-      nearbyPlaces: ["AB Bypass", "Residential townships", "Fuel station", "Bus connectivity"],
-      images: [
-        "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1400",
-        "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=1400",
-        "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1400",
-        "https://images.unsplash.com/photo-1555529771-35a4e5d977f8?w=1400"
-      ],
-      location: {
-        city: "Indore",
-        locality: "AB Bypass Road",
-        pincode: "452012",
-        address: "Ground Floor Retail Arcade, AB Bypass Road, Indore",
-        coordinates: { lat: 22.7365, lng: 75.8798 }
-      },
-      dealer: dealerInfo,
-      isFeatured: false,
-      isTrending: true,
-      views: 268
-    },
-    {
-      title: "Serene 4BHK Farmhouse near Rau",
-      price: 18500000,
-      listingType: "Sale",
-      propertyType: "Farmhouse",
-      areaSqft: 7800,
-      bedrooms: 4,
-      bathrooms: 4,
-      availabilityStatus: "Available",
-      description:
-        "Peaceful farmhouse with open greens and private outdoor zones, suitable for weekend stays and family events.",
-      highlights: ["Large private garden", "Borewell water", "Caretaker room", "Boundary wall"],
-      nearbyPlaces: ["Rau Circle", "Khandwa Road", "Educational institutes", "Resorts"],
-      images: [
-        "https://images.unsplash.com/photo-1505692952047-1a78307da8f2?w=1400",
-        "https://images.unsplash.com/photo-1464146072230-91cabc968266?w=1400",
-        "https://images.unsplash.com/photo-1472224371017-08207f84aaae?w=1400",
-        "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1400"
-      ],
-      location: {
-        city: "Indore",
-        locality: "Rau",
-        pincode: "453331",
-        address: "Khandwa Road Stretch, Near Rau Circle, Indore",
-        coordinates: { lat: 22.6239, lng: 75.8091 }
-      },
-      dealer: dealerInfo,
-      isFeatured: false,
-      isTrending: true,
-      views: 226
-    },
-    {
-      title: "Affordable 2BHK Budget Home in Rau",
-      price: 3450000,
-      listingType: "Sale",
-      propertyType: "Budget Home",
-      areaSqft: 890,
-      bedrooms: 2,
-      bathrooms: 2,
-      availabilityStatus: "Available",
-      description:
-        "Value-for-money budget home for first-time buyers looking for reliable connectivity and low maintenance.",
-      highlights: ["Gated campus", "Public transport nearby", "Low maintenance", "Family-friendly block"],
-      nearbyPlaces: ["Rau-Pithampur Road", "Local schools", "Daily market", "ATM and clinics"],
-      images: [
-        "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1400",
-        "https://images.unsplash.com/photo-1575517111478-7f6afd0973db?w=1400",
-        "https://images.unsplash.com/photo-1513584684374-8bab748fbf90?w=1400",
-        "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1400"
-      ],
-      location: {
-        city: "Indore",
-        locality: "Rau",
-        pincode: "453331",
-        address: "Silver Spring Township, Rau-Pithampur Road, Indore",
-        coordinates: { lat: 22.6408, lng: 75.8054 }
-      },
-      dealer: dealerInfo,
-      isFeatured: true,
-      isTrending: false,
-      views: 214
-    },
-    {
-      title: "Elegant 3BHK Independent House at MR-10 Bypass",
-      price: 9800000,
-      listingType: "Sale",
-      propertyType: "Independent House",
-      areaSqft: 1850,
-      bedrooms: 3,
-      bathrooms: 3,
-      availabilityStatus: "Available",
-      description:
-        "Contemporary independent house in a preferred township with quick reach to major roads and business belts.",
-      highlights: ["Renovated interiors", "Wooden wardrobes", "Wide frontage", "Good rental demand"],
-      nearbyPlaces: ["MR-10 Corridor", "Bypass access", "Parks", "Schools and hospitals"],
-      images: [
-        "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=1400",
-        "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=1400",
-        "https://images.unsplash.com/photo-1600607687644-aac4c3eac7f4?w=1400",
-        "https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1400"
-      ],
-      location: {
-        city: "Indore",
-        locality: "Bypass Road",
-        pincode: "452016",
-        address: "Shalimar Township, Near MR-10 Bypass, Indore",
-        coordinates: { lat: 22.7444, lng: 75.9221 }
-      },
-      dealer: dealerInfo,
-      isFeatured: false,
-      isTrending: false,
-      views: 190
-    },
-    {
-      title: "Premium 3BHK Apartment on Super Corridor",
-      price: 8650000,
-      listingType: "Sale",
-      propertyType: "Apartment",
-      areaSqft: 1685,
-      bedrooms: 3,
-      bathrooms: 3,
-      availabilityStatus: "Available",
-      description:
-        "Move-in ready premium apartment for modern families seeking upgraded amenities near IT and airport corridor.",
-      highlights: ["Smart lock", "Air-conditioned bedrooms", "Pool and clubhouse", "High-speed elevators"],
-      nearbyPlaces: ["TCS Campus", "Airport", "Schools", "Retail stores"],
-      images: [
-        "https://images.unsplash.com/photo-1494526585095-c41746248156?w=1400",
-        "https://images.unsplash.com/photo-1502672023488-70e25813eb80?w=1400",
-        "https://images.unsplash.com/photo-1507089947368-19c1da9775ae?w=1400",
-        "https://images.unsplash.com/photo-1493666438817-866a91353ca9?w=1400"
-      ],
-      location: {
-        city: "Indore",
-        locality: "Super Corridor",
-        pincode: "452005",
-        address: "Near TCS Campus, Super Corridor, Indore",
-        coordinates: { lat: 22.7984, lng: 75.8969 }
-      },
-      dealer: dealerInfo,
-      isFeatured: true,
-      isTrending: true,
-      views: 357
-    },
-    {
-      title: "Designer 4BHK Luxury Villa near Bengali Square",
-      price: 23200000,
-      listingType: "Sale",
-      propertyType: "Luxury Villa",
-      areaSqft: 3600,
-      bedrooms: 4,
-      bathrooms: 4,
-      availabilityStatus: "Available",
-      description:
-        "Designer villa with premium finishes, private deck spaces, and easy access to top schools and lifestyle hotspots.",
-      highlights: ["Double-height lobby", "Private terrace deck", "Servant room", "Premium gated enclave"],
-      nearbyPlaces: ["Saket Club", "Bengali Square", "Hospitals", "Education hubs"],
-      images: [
-        "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=1400",
-        "https://images.unsplash.com/photo-1600573472550-8090b5e0745e?w=1400",
-        "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=1400",
-        "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1400"
-      ],
-      location: {
-        city: "Indore",
-        locality: "Bengali Square",
-        pincode: "452016",
-        address: "Saket Club Road Extension, Bengali Square, Indore",
-        coordinates: { lat: 22.7006, lng: 75.9092 }
-      },
-      dealer: dealerInfo,
-      isFeatured: true,
-      isTrending: true,
-      views: 388
-    }
-  ];
 
   await Property.insertMany(properties);
 

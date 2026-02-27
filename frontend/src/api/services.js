@@ -10,6 +10,7 @@ export const propertyApi = {
   list: (params) => api.get("/properties", { params }),
   featured: () => api.get("/properties/featured/list"),
   trending: () => api.get("/properties/trending/list"),
+  locationTree: () => api.get("/properties/location-tree"),
   bySlug: (slug) => api.get(`/properties/slug/${slug}`),
   similar: (id) => api.get(`/properties/${id}/similar`),
   create: (payload) => api.post("/properties", payload),
@@ -48,11 +49,24 @@ export const adminApi = {
   health: () => api.get("/admin/health")
 };
 
+export const alertApi = {
+  create: (payload) => api.post("/alerts", payload),
+  list: () => api.get("/alerts"),
+  updateStatus: (id, status) => api.patch(`/alerts/${id}/status`, { status })
+};
+
 export const uploadApi = {
   images: (files) => {
     const formData = new FormData();
     files.forEach((file) => formData.append("images", file));
     return api.post("/upload/images", formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+  },
+  media: (files) => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+    return api.post("/upload/media", formData, {
       headers: { "Content-Type": "multipart/form-data" }
     });
   }

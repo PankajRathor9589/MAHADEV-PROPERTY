@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { FaPhoneAlt, FaWhatsapp } from "react-icons/fa";
 import { inquiryApi } from "../../api/services";
+import { OWNER_PROFILE } from "../../config/site";
 
 const InquiryForms = ({ propertyId }) => {
   const [form, setForm] = useState({ name: "", phone: "", email: "", message: "", preferredDate: "" });
@@ -20,6 +22,10 @@ const InquiryForms = ({ propertyId }) => {
   return (
     <div className="card">
       <h3 className="text-lg font-bold">Contact Dealer</h3>
+      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        <a href={`tel:${OWNER_PROFILE.phoneRaw}`} className="btn-primary"><FaPhoneAlt /> One-click Call</a>
+        <a href={`https://wa.me/${OWNER_PROFILE.whatsappRaw}`} target="_blank" rel="noreferrer" className="btn-outline"><FaWhatsapp /> WhatsApp Inquiry</a>
+      </div>
       <form className="mt-3 grid gap-3" onSubmit={submit}>
         <select className="input" value={type} onChange={(e) => setType(e.target.value)}>
           <option value="inquiry">Property Inquiry</option>

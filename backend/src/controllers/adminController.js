@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { Alert } from "../models/Alert.js";
 import { Inquiry } from "../models/Inquiry.js";
 import { Property } from "../models/Property.js";
 import { Report } from "../models/Report.js";
@@ -10,6 +11,7 @@ export const getDashboardStats = async (req, res) => {
     totalProperties,
     availableProperties,
     totalLeads,
+    totalAlerts,
     openReports,
     totalUsers,
     totalReviews,
@@ -18,6 +20,7 @@ export const getDashboardStats = async (req, res) => {
     Property.countDocuments(),
     Property.countDocuments({ availabilityStatus: "Available" }),
     Inquiry.countDocuments(),
+    Alert.countDocuments({ status: "active" }),
     Report.countDocuments({ status: "open" }),
     User.countDocuments(),
     Review.countDocuments(),
@@ -38,6 +41,7 @@ export const getDashboardStats = async (req, res) => {
       totalProperties,
       availableProperties,
       totalLeads,
+      totalAlerts,
       openReports,
       totalUsers,
       totalReviews

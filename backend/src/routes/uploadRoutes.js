@@ -1,10 +1,11 @@
 import express from "express";
-import { uploadImages } from "../controllers/uploadController.js";
+import { uploadImages, uploadMediaFiles } from "../controllers/uploadController.js";
 import { adminOnly, protect } from "../middleware/auth.js";
-import { upload } from "../middleware/upload.js";
+import { uploadImagesOnly, uploadMedia } from "../middleware/upload.js";
 
 const router = express.Router();
 
-router.post("/images", protect, adminOnly, upload.array("images", 10), uploadImages);
+router.post("/images", protect, adminOnly, uploadImagesOnly.array("images", 10), uploadImages);
+router.post("/media", protect, adminOnly, uploadMedia.array("files", 12), uploadMediaFiles);
 
 export default router;

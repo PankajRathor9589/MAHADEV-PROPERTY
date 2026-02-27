@@ -1,6 +1,6 @@
 export const translations = {
   en: {
-    brand: "Mahadev Property",
+    brand: "Mahadev Property | Sagar",
     explore: "Explore Properties",
     contact: "Contact",
     login: "Login",
