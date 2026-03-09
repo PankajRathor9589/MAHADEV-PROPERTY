@@ -1,30 +1,76 @@
-import { Link, NavLink } from 'react-router-dom';
-import { Languages, PhoneCall } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { Building2, LayoutDashboard, LogOut, UserCircle2 } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
+
+const navClass = ({ isActive }) =>
+  `rounded-full px-4 py-2 text-sm font-medium transition ${
+    isActive ? "bg-brand-600 text-white" : "text-slate-700 hover:bg-slate-200"
+  }`;
 
 const Navbar = () => {
-  const { lang, setLang } = useApp();
+  const { isAuthenticated, isAdmin, isSeller, user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
+  const dashboardPath = isAdmin ? "/admin/dashboard" : isSeller ? "/seller/dashboard" : "/";
 
   return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200">
-      <nav className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold text-brand-500">Mahadev Property</Link>
-        <div className="hidden md:flex items-center gap-5 text-sm font-medium">
-          {['/', '/properties', '/compare', '/admin'].map((path, idx) => (
-            <NavLink key={path} to={path} className="hover:text-brand-500">
-              {['Home', 'Properties', 'Compare', 'Admin'][idx]}
+    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+        <NavLink to="/" className="flex items-center gap-2">
+          <span className="rounded-xl bg-brand-600 p-2 text-white">
+            <Building2 size={20} />
+          </span>
+          <span className="text-lg font-bold text-slate-900">Mahadev Property</span>
+        </NavLink>
+
+        <nav className="hidden items-center gap-2 md:flex">
+          <NavLink className={navClass} to="/">
+            Home
+          </NavLink>
+          <NavLink className={navClass} to="/properties">
+            Listings
+          </NavLink>
+          {isAuthenticated && (isAdmin || isSeller) && (
+            <NavLink className={navClass} to={dashboardPath}>
+              Dashboard
             </NavLink>
-          ))}
-        </div>
+          )}
+        </nav>
+
         <div className="flex items-center gap-2">
-          <button onClick={() => setLang(lang === 'en' ? 'hi' : 'en')} className="touch-btn bg-slate-100 text-slate-700 text-xs">
-            <Languages className="inline w-4 h-4 mr-1" /> {lang === 'en' ? 'हिन्दी' : 'English'}
-          </button>
-          <a href="tel:+919999999999" className="touch-btn bg-brand-500 text-white text-xs">
-            <PhoneCall className="inline w-4 h-4 mr-1" /> Call
-          </a>
+          {!isAuthenticated ? (
+            <>
+              <NavLink to="/login" className="btn-secondary">
+                Login
+              </NavLink>
+              <NavLink to="/register" className="btn-primary hidden sm:inline-flex">
+                Register
+              </NavLink>
+            </>
+          ) : (
+            <>
+              <span className="hidden items-center gap-1 rounded-full bg-slate-100 px-3 py-2 text-xs font-medium text-slate-700 sm:inline-flex">
+                <UserCircle2 size={14} /> {user?.name}
+              </span>
+              {(isAdmin || isSeller) && (
+                <NavLink to={dashboardPath} className="btn-secondary">
+                  <LayoutDashboard size={16} />
+                  <span className="hidden sm:inline">Dashboard</span>
+                </NavLink>
+              )}
+              <button onClick={handleLogout} className="btn-danger">
+                <LogOut size={16} />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+            </>
+          )}
         </div>
-      </nav>
+      </div>
     </header>
   );
 };

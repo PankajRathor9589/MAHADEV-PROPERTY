@@ -1,17 +1,63 @@
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
-export const protect = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ message: 'Unauthorized' });
+const getTokenFromRequest = (req) => {
+  const header = req.headers.authorization || "";
+  if (!header.startsWith("Bearer ")) {
+    return null;
+  }
+
+  return header.slice(7);
+};
+
+export const optionalAuth = async (req, res, next) => {
   try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
-    next();
-  } catch {
-    res.status(401).json({ message: 'Invalid token' });
+    const token = getTokenFromRequest(req);
+
+    if (!token) {
+      req.user = null;
+      return next();
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select("name email phone role isActive");
+
+    req.user = user && user.isActive ? user : null;
+    return next();
+  } catch (error) {
+    req.user = null;
+    return next();
   }
 };
 
-export const adminOnly = (req, res, next) => {
-  if (req.user?.role !== 'admin') return res.status(403).json({ message: 'Admin only' });
-  next();
+export const protect = async (req, res, next) => {
+  try {
+    const token = getTokenFromRequest(req);
+
+    if (!token) {
+      return res.status(401).json({ success: false, message: "Authentication required." });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select("name email phone role isActive");
+
+    if (!user || !user.isActive) {
+      return res.status(401).json({ success: false, message: "Invalid or inactive user." });
+    }
+
+    req.user = user;
+    return next();
+  } catch (error) {
+    return res.status(401).json({ success: false, message: "Invalid token." });
+  }
+};
+
+export const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ success: false, message: "Access denied." });
+    }
+
+    return next();
+  };
 };

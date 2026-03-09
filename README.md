@@ -1,257 +1,269 @@
-<<<<<<< HEAD
-# Mahadev Property - Production-Ready Full Stack App
+# Mahadev Property
 
-Modern responsive property dealer platform for village/city real estate business.
+Mahadev Property is a production-ready real estate platform built with React + Tailwind, Node.js + Express, MongoDB, Multer, and Google Maps integration.
 
-## Tech Stack
-- Frontend: React + Vite + Tailwind CSS
-- Backend: Node.js + Express
-- Database: MongoDB Atlas
-- Maps: Google Maps (embed + directions)
-- Deployment: Frontend on Vercel, Backend on Render
+It supports three user roles:
+- Admin
+- Seller / Dealer
+- Visitor (Buyer)
 
-## Project Structure
+## 1. Complete Folder Structure
+
 ```text
 MAHADEV-PROPERTY/
-  backend/
+  client/
     src/
-      config/db.js
-      controllers/
-      middleware/
-      models/
-      routes/
-      seed/seed.js
-      server.js
-    uploads/
-    package.json
-    .env.example
-  frontend/
-    src/
-      api/
       components/
+        AnalyticsCards.jsx
+        DashboardPropertyTable.jsx
+        ImageGallerySlider.jsx
+        InquiryTable.jsx
+        MapPicker.jsx
+        Navbar.jsx
+        PropertyCard.jsx
+        PropertyForm.jsx
+        ProtectedRoute.jsx
+        SellerManagementTable.jsx
+        WhatsAppFloat.jsx
       context/
+        AuthContext.jsx
       hooks/
-      i18n/
+        useGoogleMapsScript.js
       pages/
-      styles/
+        AdminDashboardPage.jsx
+        HomePage.jsx
+        LoginPage.jsx
+        PropertiesPage.jsx
+        PropertyDetailsPage.jsx
+        RegisterPage.jsx
+        SellerDashboardPage.jsx
+      services/
+        api.js
       App.jsx
+      index.css
       main.jsx
-    package.json
     .env.example
-    vercel.json
-  render.yaml
+    index.html
+    package.json
+    postcss.config.js
+    tailwind.config.js
+    vite.config.js
+
+  server/
+    src/
+      config/
+        db.js
+      controllers/
+        adminController.js
+        authController.js
+        propertyController.js
+        sellerController.js
+      middleware/
+        auth.js
+        errorHandler.js
+        upload.js
+      models/
+        Inquiry.js
+        Property.js
+        User.js
+      routes/
+        adminRoutes.js
+        authRoutes.js
+        propertyRoutes.js
+        sellerRoutes.js
+      index.js
+    .env.example
+    package.json
+
+  uploads/
+    properties/
+      .gitkeep
+
   package.json
+  render.yaml
+  README.md
 ```
 
-## Features Implemented
-- Property listing system with complete fields (title, price, type, area, BHK, status, highlights, nearby, gallery, video, floor-plan)
-- Location details (city, locality, pincode, address, lat/lng, map, directions)
-- Dealer profile card with verified badge, rating, contact actions
-- Contact and lead flows (inquiry, callback, site visit with date)
-- Search and filters (location, type, status, price, area/BHK, nearby)
-- User auth (signup/login/JWT)
-- Favorites, recently viewed, compare properties
-- Reviews with rating/comment/helpful + property report workflow
-- Admin dashboard:
-  - Add/edit/delete/mark sold properties
-  - Upload property images
-  - Manage inquiries and site visits
-  - Manage reports and reviews
-  - View analytics (views/leads/totals)
-- Responsive mobile-first UI with sticky WhatsApp button
-- Hindi toggle support
-- SEO basics with dynamic page metadata
-- Lazy loaded images for low bandwidth users
+## 2. Backend API Code
 
-## Environment Variables
+Base URL: `http://localhost:5000/api`
 
-### Backend (`backend/.env`)
-Use `backend/.env.example` as template:
-```env
-NODE_ENV=development
-PORT=5000
-MONGODB_URI=your_mongodb_atlas_uri
-JWT_SECRET=your_secure_secret
-JWT_EXPIRES_IN=7d
-CLIENT_URL=http://localhost:5173
-GOOGLE_MAPS_API_KEY=your_google_maps_key
-UPLOAD_DIR=uploads
-```
+### Auth
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
 
-### Frontend (`frontend/.env`)
-Use `frontend/.env.example` as template:
-```env
-VITE_API_BASE_URL=http://localhost:5000/api
-VITE_GOOGLE_MAPS_API_KEY=your_google_maps_key
-VITE_DEFAULT_WHATSAPP=919876543210
-```
+### Property APIs (required)
+- `POST /api/properties` - create property with image upload
+- `GET /api/properties` - get all properties (supports advanced filters)
+- `GET /api/properties/:id` - get property details
+- `PUT /api/properties/:id` - update property
+- `DELETE /api/properties/:id` - delete property
 
-## Install Dependencies
-Run from repository root:
-```bash
-npm run install:all
-```
+### Additional property workflow
+- `PATCH /api/properties/:id/sold` - mark property as sold
+- `PATCH /api/properties/:id/approval` - admin approve/reject listing
+- `POST /api/properties/:id/inquiries` - buyer sends inquiry
 
-Alternative manual install:
-```bash
-cd backend && npm install
-cd ../frontend && npm install
-```
+### Seller Dashboard APIs
+- `GET /api/seller/analytics`
+- `GET /api/seller/inquiries`
+- `PATCH /api/seller/inquiries/:id/status`
 
-## Run Locally
-Open two terminals:
-```bash
-npm run dev:backend
-npm run dev:frontend
-```
+### Admin Dashboard APIs
+- `GET /api/admin/analytics`
+- `GET /api/admin/sellers`
+- `PATCH /api/admin/sellers/:id/status`
+- `GET /api/admin/inquiries`
 
-Frontend: `http://localhost:5173`
-Backend: `http://localhost:5000`
+## 3. MongoDB Schemas
 
-## Seed Sample Data
-```bash
-npm run seed
-```
-Seed creates:
-- Admin user: `admin@mahadevproperty.com`
-- Password: `Admin@123`
-- Multiple sample properties
+### User (`server/src/models/User.js`)
+- `name`, `email`, `phone`
+- `password` (hashed)
+- `role` (`admin | seller | visitor`)
+- `isActive`
 
-## API Summary
-- Auth: `/api/auth/signup`, `/api/auth/login`, `/api/auth/me`
-- Properties: `/api/properties`
-- Reviews: `/api/reviews/:propertyId`
-- Inquiries: `/api/inquiries`
-- Reports: `/api/reports`
-- User collections: `/api/users/collections`
-- Admin stats: `/api/admin/stats`
-- Upload images: `/api/upload/images`
+### Property (`server/src/models/Property.js`)
+- Basic: `title`, `propertyType`, `price`, `areaSqFt`
+- Location: `state`, `city`, `locality`, `address`, `pincode`, `latitude`, `longitude`, `mapPinUrl`, `coordinates`
+- Features: `bedrooms`, `bathrooms`, `parking`, `waterSupply`, `electricity`, `roadAccess`
+- Media: `images[]`
+- Description: `description`, `nearbyPlaces[]`
+- Workflow: `listingStatus`, `rejectedReason`, `isSold`, `views`
+- Ownership: `seller`, `approvedBy`, `approvedAt`
 
-## Deploy to Render (Backend)
-1. Push repository to GitHub.
-2. In Render, create new Blueprint using `render.yaml` OR create Web Service manually:
-   - Root directory: `backend`
-   - Build: `npm install`
-   - Start: `npm start`
-3. Set env vars from `backend/.env.example`.
-4. Update `CLIENT_URL` to deployed Vercel domain.
+### Inquiry (`server/src/models/Inquiry.js`)
+- `property`, `seller`
+- `buyerName`, `buyerPhone`, `buyerEmail`, `message`
+- `status` (`new | contacted | closed`)
 
-## Deploy to Vercel (Frontend)
-1. Import repo in Vercel.
-2. Configure project root directory as `frontend`.
-3. Build command: `npm run build`
-4. Output directory: `dist`
-5. Add env vars from `frontend/.env.example`
-   - Set `VITE_API_BASE_URL` to your Render backend URL (`https://your-api.onrender.com/api`)
-6. Deploy.
+## 4. Multer Image Upload Setup
 
-## Production Notes
-- Store secrets in Render/Vercel env settings only.
-- Use MongoDB Atlas IP/network access for Render.
-- Keep upload size limits controlled (current: 5MB/image).
-- Configure CDN/image optimization in production as needed.
-=======
-# Mahadev Property - Production Ready Real Estate Platform
+Configured in `server/src/middleware/upload.js`.
 
-A full-stack property dealer web app for village and city real estate business.
+- Storage path: `uploads/properties`
+- Multiple image upload via `uploadPropertyImages.array("images", 12)`
+- File validation: image MIME only
+- Size limit via env: `MAX_FILE_SIZE_MB`
 
-## Tech Stack
-- Frontend: React + Tailwind CSS (Vite)
-- Backend: Node.js + Express
-- Database: MongoDB Atlas (Mongoose)
-- Maps: Google Maps embed/API ready
-- Deploy: Frontend on Vercel, Backend on Render
+Static serving is enabled in `server/src/index.js`:
 
-## Project Structure
-```bash
-.
-├── client
-│   ├── src
-│   │   ├── components
-│   │   ├── context
-│   │   ├── pages
-│   │   └── services
-│   └── .env.example
-├── server
-│   ├── src
-│   │   ├── config
-│   │   ├── controllers
-│   │   ├── middleware
-│   │   ├── models
-│   │   ├── routes
-│   │   └── seeds
-│   └── .env.example
-└── package.json
-```
+- `app.use("/uploads", express.static(...))`
 
-## Features Included
-- Property listing with full details, images, status, floor-plan, nearby places.
-- Filter/search by location, price, type, BHK, status.
-- Property details page with map + directions-ready coordinates.
-- Dealer profile with verified badge, call and WhatsApp.
-- Lead forms: inquiry, callback, site visit date picker.
-- User auth API (signup/login).
-- Favorite-ready and recently viewed behavior (frontend state).
-- Compare properties page.
-- Review/report APIs.
-- Admin dashboard view and protected admin CRUD APIs.
-- SEO tags, responsive mobile-first UI, lazy-loaded listing images.
+## 5. React Frontend Pages
 
-## Install & Run Locally
+### Public Pages
+- Home page with hero search bar, categories, featured and trending properties
+- Property listing page with advanced filters
+- Property details page with image gallery slider, map, contact actions, inquiry form
+
+### Auth Pages
+- Login
+- Register (seller / visitor / admin with registration key)
+
+### Seller Dashboard
+- Add property
+- Upload multiple images
+- Edit property
+- Delete property
+- Mark property as sold
+- View and update inquiry status
+- Seller analytics cards
+
+### Admin Dashboard
+- View all properties
+- Approve / reject listings
+- Delete fake listings
+- Mark as sold
+- Manage sellers (activate/deactivate)
+- View platform analytics
+- View all inquiries
+
+## 6. Search & Filters (Implemented)
+
+Implemented in backend and listing page UI:
+- Location (`city`, `locality`, `state`, keyword search)
+- Price range (`minPrice`, `maxPrice`)
+- Property type
+- Area range (`minArea`, `maxArea`)
+- Bedrooms (`minBedrooms` or exact)
+
+## 7. Run Locally
+
+### Prerequisites
+- Node.js 18+
+- MongoDB local or Atlas
+
+### Setup
+
 1. Install dependencies:
+
 ```bash
-npm run install:all
+npm install
 ```
-2. Create env files:
+
+2. Create environment files:
+
 ```bash
-cp server/.env.example server/.env
-cp client/.env.example client/.env
+Copy-Item server/.env.example server/.env
+Copy-Item client/.env.example client/.env
 ```
-3. Update `server/.env` with MongoDB Atlas URI + JWT secret.
-4. Seed sample data:
-```bash
-npm run seed
-```
-5. Run full stack in dev:
+
+3. Update `server/.env` values:
+- `MONGODB_URI`
+- `JWT_SECRET`
+- `ADMIN_REGISTRATION_KEY`
+- `CLIENT_URL`
+
+4. (Optional, for map pin picker) add Google key in `client/.env`:
+- `VITE_GOOGLE_MAPS_API_KEY`
+
+5. Start full stack:
+
 ```bash
 npm run dev
 ```
-- Frontend: http://localhost:5173
-- Backend: http://localhost:5000
 
-## API Endpoints (Core)
-- `POST /api/auth/signup`
-- `POST /api/auth/login`
-- `GET /api/properties`
-- `GET /api/properties/:id`
-- `POST /api/properties` (admin)
-- `PATCH /api/properties/:id` (admin)
-- `DELETE /api/properties/:id` (admin)
-- `POST /api/leads/inquiry`
-- `POST /api/leads/callback`
-- `POST /api/leads/site-visit`
-- `GET /api/leads` (admin)
-- `GET /api/reviews/:propertyId`
-- `POST /api/reviews`
-- `PATCH /api/reviews/:id/helpful`
-- `POST /api/reviews/report`
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:5000`
 
-## Production Deployment
-### Frontend (Vercel)
-1. Import `client` directory as project.
-2. Build command: `npm run build`
-3. Output directory: `dist`
-4. Env: `VITE_API_URL=https://<render-backend-url>/api`
+## 8. Deployment Instructions
 
 ### Backend (Render)
-1. Create Web Service from `server` directory.
-2. Build command: `npm install`
-3. Start command: `npm start`
-4. Add env variables from `server/.env.example`.
-5. Allow CORS to frontend domain.
 
-## Low-Internet Optimization Notes
-- Compressed external image URLs and lazy loading on cards.
-- Lightweight single-page navigation.
-- Touch-friendly action buttons and WhatsApp-first conversion flow.
->>>>>>> cd4b46f7c61d4c749443ee52e216c4a57340f7f4
+`render.yaml` is included for backend deployment.
+
+Manual settings:
+- Root directory: `server`
+- Build command: `npm install`
+- Start command: `npm start`
+- Health check: `/api/health`
+
+Required environment variables:
+- `MONGODB_URI`
+- `JWT_SECRET`
+- `ADMIN_REGISTRATION_KEY`
+- `CLIENT_URL`
+- `MAX_FILE_SIZE_MB`
+
+### Frontend (Vercel)
+
+- Root directory: `client`
+- Build command: `npm run build`
+- Output: `dist`
+
+Frontend env vars:
+- `VITE_API_URL=https://<your-backend-domain>/api`
+- `VITE_GOOGLE_MAPS_API_KEY=<google-maps-key>`
+- `VITE_DEFAULT_CONTACT_PHONE=<seller-phone>`
+- `VITE_DEFAULT_WHATSAPP=<whatsapp-number>`
+
+## 9. Production Notes
+
+- Use MongoDB Atlas in production with network/IP security.
+- Move local uploads to cloud object storage (S3/Cloudinary) for true horizontal scaling.
+- Add API rate limiting and request validation hardening.
+- Add monitoring/logging (Render logs + external APM).
+- Use CDN for images and caching headers for static assets.
+
