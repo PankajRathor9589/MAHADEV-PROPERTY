@@ -1,17 +1,12 @@
 import { Router } from "express";
-import {
-  getSellerAnalytics,
-  getSellerInquiries,
-  updateInquiryStatus
-} from "../controllers/sellerController.js";
+import { getAgentAnalytics, getAgentProperties } from "../controllers/sellerController.js";
 import { authorizeRoles, protect } from "../middleware/auth.js";
 
 const router = Router();
 
-router.use(protect, authorizeRoles("seller"));
+router.use(protect, authorizeRoles("agent"));
 
-router.get("/analytics", getSellerAnalytics);
-router.get("/inquiries", getSellerInquiries);
-router.patch("/inquiries/:id/status", updateInquiryStatus);
+router.get("/analytics", getAgentAnalytics);
+router.get("/properties", getAgentProperties);
 
 export default router;

@@ -1,17 +1,54 @@
-node_modules
+# ======================
+# Dependencies
+# ======================
+node_modules/
+**/node_modules/
+
+# ======================
+# Environment variables
+# ======================
 .env
-.DS_Store
-
-client/node_modules
-client/dist
+.env.*
+backend/.env
+frontend/.env
 client/.env
-
-server/node_modules
 server/.env
-uploads/properties/*
-!uploads/properties/.gitkeep
 
-backend/node_modules
-backend/uploads
-frontend/node_modules
-frontend/dist
+# ======================
+# Build folders
+# ======================
+dist/
+build/
+frontend/dist/
+client/dist/
+
+# ======================
+# Upload folders
+# ======================
+uploads/
+backend/uploads/
+
+# ======================
+# Logs
+# ======================
+logs
+*.log
+npm-debug.log*
+
+# ======================
+# OS files
+# ======================
+.DS_Store
+Thumbs.db
+
+# ======================
+# IDE files
+# ======================
+.vscode/
+.idea/
+
+# ======================
+# Misc
+# ======================
+coverage/
+.cache/

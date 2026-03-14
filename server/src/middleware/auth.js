@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import { AppError } from "./errorHandler.js";
 
 const getTokenFromRequest = (req) => {
   const header = req.headers.authorization || "";
@@ -20,7 +21,7 @@ export const optionalAuth = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select("name email phone role isActive");
+    const user = await User.findById(decoded.id).select("name email phone role isActive favorites");
 
     req.user = user && user.isActive ? user : null;
     return next();
@@ -35,27 +36,27 @@ export const protect = async (req, res, next) => {
     const token = getTokenFromRequest(req);
 
     if (!token) {
-      return res.status(401).json({ success: false, message: "Authentication required." });
+      throw new AppError(401, "Authentication required.");
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select("name email phone role isActive");
+    const user = await User.findById(decoded.id).select("name email phone role isActive favorites");
 
     if (!user || !user.isActive) {
-      return res.status(401).json({ success: false, message: "Invalid or inactive user." });
+      throw new AppError(401, "Invalid or inactive user.");
     }
 
     req.user = user;
     return next();
   } catch (error) {
-    return res.status(401).json({ success: false, message: "Invalid token." });
+    return next(error.statusCode ? error : new AppError(401, "Invalid token."));
   }
 };
 
 export const authorizeRoles = (...roles) => {
   return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {
-      return res.status(403).json({ success: false, message: "Access denied." });
+      return next(new AppError(403, "Access denied."));
     }
 
     return next();

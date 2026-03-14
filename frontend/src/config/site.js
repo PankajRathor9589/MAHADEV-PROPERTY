@@ -1,48 +1,80 @@
-export const OWNER_PROFILE = {
-  name: "Prashant Rathore",
+import { DEMO_CATEGORIES, DEMO_CREDENTIALS, DEMO_MEDIA } from "../data/demoData";
+
+export const BRAND = {
+  name: "Mahadev Property",
+  tagline: "Curated homes, investment plots, and premium commercial addresses across fast-moving Indian markets."
+};
+
+export const SITE_URL = import.meta.env.VITE_SITE_URL || "http://localhost:5173";
+export const DEFAULT_MAP_QUERY = "Bhopal, Madhya Pradesh, India";
+
+export const CONTACT = {
+  phone: "+91 76920 16188",
   phoneRaw: "917692016188",
-  phoneDisplay: "+91 7692016188",
   whatsappRaw: "917692016188",
-  address: "Jaisinagar Tehsil, District Sagar, Madhya Pradesh, India",
-  photo: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=500",
-  experienceYears: 12,
-  achievements: [
-    "500+ verified deals across Sagar division",
-    "Trusted local advisor for village and city land buyers",
-    "Transparent paperwork and registry-first process"
-  ]
+  email: "hello@mahadevproperty.com",
+  address: "Jaisinagar Road, Sagar, Madhya Pradesh, India"
 };
 
-export const GOOGLE_MAPS_LINK = "https://maps.google.com/?q=Jaisinagar+Tehsil+District+Sagar+Madhya+Pradesh+India";
-
-export const SERVICE_AREA = {
-  divisionDistricts: ["Sagar", "Damoh", "Chhatarpur", "Panna", "Tikamgarh", "Niwari"],
-  primaryLocations: [
-    "Sagar City",
-    "Jaisinagar",
-    "Rahatgarh",
-    "Khurai",
-    "Bina",
-    "Deori",
-    "Banda",
-    "Shahgarh",
-    "Malthone",
-    "Rehli",
-    "Garhakota",
-    "Kesli"
-  ]
+export const OWNER_PROFILE = {
+  name: "Mahadev Property",
+  phone: CONTACT.phone,
+  phoneRaw: CONTACT.phoneRaw,
+  whatsappRaw: CONTACT.whatsappRaw
 };
+
+export const GOOGLE_MAPS_LINK = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(DEFAULT_MAP_QUERY)}`;
 
 export const PROPERTY_TYPES = [
+  "Apartment",
+  "Villa",
   "Plot",
   "House",
-  "Farm Land",
   "Commercial",
-  "Apartment",
-  "Independent House",
-  "Luxury Villa",
-  "Commercial Shop"
+  "Farmhouse"
 ];
 
-export const LAND_STATUS_OPTIONS = ["Ready to Move", "Open Land"];
-export const AREA_UNITS = ["sqft", "acre"];
+export const PROPERTY_TYPE_OPTIONS = ["All Types", ...PROPERTY_TYPES];
+
+export const HERO_STATS = [
+  { label: "Verified projects", value: "1,240+" },
+  { label: "Buyer leads closed", value: "18.6K" },
+  { label: "Cities and growth corridors", value: "24" }
+];
+
+export const PRICE_RANGES = [
+  { label: "Any Budget", value: "" },
+  { label: "Up to 25 Lakh", maxPrice: "2500000" },
+  { label: "25 - 50 Lakh", minPrice: "2500000", maxPrice: "5000000" },
+  { label: "50 Lakh - 1 Cr", minPrice: "5000000", maxPrice: "10000000" },
+  { label: "1 Cr+", minPrice: "10000000" }
+];
+
+export const CITIES = [
+  "Sagar",
+  "Bhopal",
+  "Indore",
+  "Jabalpur",
+  "Khurai",
+  "Bina",
+  "Rehli",
+  "Rahatgarh"
+];
+
+export const DEFAULT_AMENITIES = [
+  "Natural light",
+  "Parking ready",
+  "Water connection",
+  "Secure access"
+];
+
+export const CATEGORY_CARDS = DEMO_CATEGORIES;
+export const HERO_MEDIA = DEMO_MEDIA;
+export const DEMO_LOGIN_HINTS = DEMO_CREDENTIALS;
+
+export const TRUST_BADGES = [
+  "Agent-assisted buying",
+  "Map-first discovery",
+  "Verified property moderation",
+  "Fast WhatsApp contact"
+];

@@ -8,6 +8,8 @@ import connectDB from "./config/db.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import favoriteRoutes from "./routes/favoriteRoutes.js";
+import inquiryRoutes from "./routes/inquiryRoutes.js";
 import propertyRoutes from "./routes/propertyRoutes.js";
 import sellerRoutes from "./routes/sellerRoutes.js";
 
@@ -16,12 +18,13 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const uploadsDir = path.resolve(__dirname, "../../uploads");
-const allowedOrigins = (process.env.CLIENT_URL || "*")
+const allowedOrigins = (process.env.CLIENT_URL || process.env.FRONTEND_URL || "*")
   .split(",")
   .map((item) => item.trim())
   .filter(Boolean);
 
 const app = express();
+app.disable("x-powered-by");
 
 app.use(
   cors({
@@ -44,7 +47,9 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/properties", propertyRoutes);
-app.use("/api/seller", sellerRoutes);
+app.use("/api/inquiries", inquiryRoutes);
+app.use("/api/favorites", favoriteRoutes);
+app.use("/api/agent", sellerRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.use(notFoundHandler);

@@ -5,16 +5,34 @@ export default {
     extend: {
       colors: {
         brand: {
-          50: "#e7f3ef",
-          100: "#c2e0d3",
-          500: "#0f766e",
-          600: "#0a5a54",
-          700: "#064740"
+          50: "#edf7f4",
+          100: "#d0ebe2",
+          200: "#a1d7c5",
+          300: "#69bfae",
+          400: "#34a391",
+          500: "#0f7a67",
+          600: "#0d6455",
+          700: "#0b4e44",
+          900: "#082a27"
         },
-        accent: "#f59e0b"
+        sand: {
+          50: "#f8f4ea",
+          100: "#efe7d1",
+          200: "#dfd0a5"
+        },
+        ink: "#102033",
+        ember: "#d97706"
       },
       boxShadow: {
-        card: "0 10px 30px -15px rgba(15, 23, 42, 0.35)"
+        card: "0 24px 64px -28px rgba(16, 32, 51, 0.28)",
+        soft: "0 16px 40px -24px rgba(12, 24, 38, 0.22)"
+      },
+      borderRadius: {
+        "4xl": "2rem"
+      },
+      backgroundImage: {
+        "mesh-surface":
+          "radial-gradient(circle at top left, rgba(15, 122, 103, 0.12), transparent 34%), radial-gradient(circle at top right, rgba(217, 119, 6, 0.18), transparent 30%), linear-gradient(180deg, rgba(255,255,255,0.96), rgba(247,243,234,0.92))"
       }
     }
   },

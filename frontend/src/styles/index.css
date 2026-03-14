@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,66 +6,106 @@
 
 :root {
   color-scheme: light;
+  --app-bg: #f4efe5;
+  --app-ink: #102033;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
-  font-family: "Manrope", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: #f7f5ef;
-  color: #0f172a;
-}
-
-.soft-gradient {
+  min-width: 320px;
+  font-family: "Sora", "Segoe UI", sans-serif;
+  color: var(--app-ink);
   background:
-    radial-gradient(circle at 15% 5%, rgba(11, 107, 85, 0.18), transparent 38%),
-    radial-gradient(circle at 95% 10%, rgba(240, 165, 0, 0.2), transparent 42%),
-    linear-gradient(180deg, #f8f6f0 0%, #f7faf7 100%);
+    radial-gradient(circle at top left, rgba(15, 122, 103, 0.16), transparent 28%),
+    radial-gradient(circle at top right, rgba(217, 119, 6, 0.12), transparent 26%),
+    linear-gradient(180deg, #f7f1e7 0%, #fbf9f4 45%, #f2efe9 100%);
 }
 
-.section-title {
-  font-family: "Fraunces", Georgia, serif;
-  @apply text-2xl font-bold text-slate-900 md:text-3xl;
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-.input {
-  @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none ring-brand-500 transition focus:ring-2;
+#root {
+  min-height: 100vh;
+}
+
+.bg-app {
+  background:
+    radial-gradient(circle at top left, rgba(15, 122, 103, 0.15), transparent 26%),
+    radial-gradient(circle at 90% 0%, rgba(217, 119, 6, 0.12), transparent 24%),
+    linear-gradient(180deg, #f5efe6 0%, #fcfbf8 42%, #f4efe5 100%);
+}
+
+.hero-heading,
+.section-heading {
+  font-family: "DM Serif Display", Georgia, serif;
+}
+
+.panel-card {
+  @apply rounded-3xl border border-white/70 bg-white/80 shadow-card backdrop-blur;
+}
+
+.glass-card {
+  @apply rounded-3xl border border-white/30 bg-white/15 shadow-soft backdrop-blur;
 }
 
 .btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-center text-sm font-semibold transition;
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition duration-200;
 }
 
 .btn-primary {
-  @apply btn bg-brand-500 text-white hover:bg-brand-600;
+  @apply btn bg-brand-500 text-white shadow-soft hover:-translate-y-0.5 hover:bg-brand-600;
 }
 
-.btn-outline {
-  @apply btn border border-brand-500 text-brand-700 hover:bg-brand-50;
+.btn-secondary {
+  @apply btn border border-brand-200 bg-white text-brand-700 hover:-translate-y-0.5 hover:border-brand-500 hover:bg-brand-50;
 }
 
-.card {
-  @apply rounded-2xl bg-white p-4 shadow-card;
+.btn-ghost {
+  @apply btn border border-white/50 bg-white/70 text-ink hover:bg-white;
 }
 
-.chip {
-  @apply inline-flex items-center rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700;
+.field {
+  @apply w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100;
 }
 
-.hero-title {
-  font-family: "Fraunces", Georgia, serif;
-  @apply text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl;
+.surface-label {
+  @apply text-xs font-semibold uppercase tracking-[0.24em] text-brand-700;
 }
 
-.hero-panel {
-  background:
-    linear-gradient(115deg, rgba(7, 26, 45, 0.88) 0%, rgba(15, 118, 110, 0.72) 55%, rgba(15, 118, 110, 0.36) 100%),
-    url("https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=2200&q=80") center/cover no-repeat;
+.stat-chip {
+  @apply inline-flex items-center rounded-full border border-white/40 bg-white/70 px-3 py-1 text-xs font-semibold text-slate-700;
 }
 
-.floating-stack {
-  @apply fixed bottom-5 right-4 z-50 flex flex-col gap-3;
+.table-grid {
+  @apply overflow-hidden rounded-3xl border border-white/70 bg-white/85 shadow-card;
 }
 
-.floating-action {
-  @apply inline-flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-card ring-1 ring-slate-200 transition hover:-translate-y-0.5;
+.table-row {
+  @apply grid items-center gap-3 border-t border-slate-100 px-4 py-4 text-sm text-slate-700 md:px-6;
+}
+
+.status-badge {
+  @apply inline-flex rounded-full px-3 py-1 text-xs font-semibold capitalize;
+}
+
+.status-approved {
+  @apply bg-emerald-100 text-emerald-700;
+}
+
+.status-pending {
+  @apply bg-amber-100 text-amber-700;
+}
+
+.status-rejected {
+  @apply bg-rose-100 text-rose-700;
 }

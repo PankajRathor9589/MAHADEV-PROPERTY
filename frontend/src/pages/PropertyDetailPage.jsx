@@ -1,135 +1,305 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { FaHeart, FaMapMarkedAlt, FaWhatsapp } from "react-icons/fa";
 import { useParams } from "react-router-dom";
-import { FaMapMarkerAlt, FaPhoneAlt, FaShareAlt, FaWhatsapp } from "react-icons/fa";
-import { propertyApi, reviewApi, userApi } from "../api/services";
-import { OWNER_PROFILE } from "../config/site";
-import DealerCard from "../components/property/DealerCard";
-import InquiryForms from "../components/property/InquiryForms";
+import { favoriteApi, propertyApi } from "../api/services";
+import ContactAgentForm from "../components/property/ContactAgentForm";
 import PropertyCard from "../components/property/PropertyCard";
 import PropertyGallery from "../components/property/PropertyGallery";
-import PropertySpecs from "../components/property/PropertySpecs";
-import ReviewsSection from "../components/property/ReviewsSection";
 import Seo from "../components/ui/Seo";
+import { GallerySkeleton } from "../components/ui/Skeletons";
+import { DEFAULT_AMENITIES, SITE_URL } from "../config/site";
+import { useAuth } from "../context/AuthContext";
 import { formatArea, formatPrice } from "../utils/format";
 
+const buildStructuredData = (property) => ({
+  "@context": "https://schema.org",
+  "@type": "RealEstateListing",
+  name: property.title,
+  description: property.description,
+  url: `${SITE_URL}/properties/${property.id}`,
+  image: property.images.map((image) => image.url),
+  offers: {
+    "@type": "Offer",
+    priceCurrency: "INR",
+    price: property.price,
+    availability: property.status === "approved" ? "https://schema.org/InStock" : "https://schema.org/PreOrder"
+  },
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: property.location,
+    addressLocality: property.city,
+    addressCountry: "IN"
+  },
+  seller: {
+    "@type": "RealEstateAgent",
+    name: property.agent?.name,
+    telephone: property.agent?.phone,
+    email: property.agent?.email
+  }
+});
+
 const PropertyDetailPage = () => {
-  const { slug } = useParams();
+  const { id } = useParams();
+  const { user } = useAuth();
   const [property, setProperty] = useState(null);
   const [similar, setSimilar] = useState([]);
-  const [reviews, setReviews] = useState([]);
-
-  const fetchReviews = async (propertyId) => {
-    const { data } = await reviewApi.list(propertyId);
-    setReviews(data.items || []);
-  };
+  const [favoriteIds, setFavoriteIds] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await propertyApi.bySlug(slug);
-      const current = data.item;
-      setProperty(current);
-      await Promise.all([
-        propertyApi.similar(current._id).then((res) => setSimilar(res.data.items || [])),
-        fetchReviews(current._id),
-        userApi.addRecent(current._id).catch(() => null)
-      ]);
+      setLoading(true);
+
+      try {
+        const [item, response, savedProperties] = await Promise.all([
+          propertyApi.byId(id),
+          propertyApi.list({ limit: 12 }),
+          user ? favoriteApi.list() : Promise.resolve([])
+        ]);
+
+        setProperty(item);
+        setFavoriteIds(savedProperties.map((entry) => entry.id));
+
+        const scored = response.items
+          .filter((entry) => entry.id !== item.id)
+          .map((entry) => {
+            let score = 0;
+            if (entry.city === item.city) score += 4;
+            if (entry.propertyType === item.propertyType) score += 3;
+            if (Math.abs((entry.bedrooms || 0) - (item.bedrooms || 0)) <= 1) score += 1;
+            if (entry.location.toLowerCase().includes(item.city.toLowerCase())) score += 1;
+
+            return { entry, score };
+          })
+          .sort((left, right) => right.score - left.score)
+          .slice(0, 3)
+          .map((entry) => entry.entry);
+
+        setSimilar(scored);
+      } finally {
+        setLoading(false);
+      }
     };
 
     load();
-  }, [slug]);
+  }, [id, user]);
 
-  if (!property) return <div className="p-8 text-center">Loading...</div>;
+  const structuredData = useMemo(() => (property ? buildStructuredData(property) : null), [property]);
 
-  const lat = property.location?.coordinates?.lat;
-  const lng = property.location?.coordinates?.lng;
-  const mapSrc = `https://www.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
-  const phone = property.dealer?.phone || OWNER_PROFILE.phoneRaw;
-  const whatsapp = property.dealer?.whatsapp || OWNER_PROFILE.whatsappRaw;
-  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
-  const shareText = encodeURIComponent(`Property: ${property.title}\nPrice: ${formatPrice(property.price, property.listingType)}\n${shareUrl}`);
+  const handleFavoriteToggle = async (propertyId, isFavorite) => {
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+
+    if (isFavorite) {
+      await favoriteApi.remove(propertyId);
+      setFavoriteIds((current) => current.filter((entry) => entry !== propertyId));
+      return;
+    }
+
+    await favoriteApi.add(propertyId);
+    setFavoriteIds((current) => [...new Set([...current, propertyId])]);
+  };
+
+  if (loading) {
+    return (
+      <div className="grid gap-8 lg:grid-cols-[1.35fr_0.65fr]">
+        <section className="space-y-6">
+          <GallerySkeleton />
+          <div className="panel-card h-72 animate-pulse bg-white/70" />
+          <div className="grid gap-6 xl:grid-cols-[1fr_0.9fr]">
+            <div className="panel-card h-56 animate-pulse bg-white/70" />
+            <div className="panel-card h-56 animate-pulse bg-white/70" />
+          </div>
+        </section>
+        <aside className="space-y-6">
+          <div className="panel-card h-48 animate-pulse bg-white/70" />
+          <div className="panel-card h-80 animate-pulse bg-white/70" />
+        </aside>
+      </div>
+    );
+  }
+
+  if (!property) {
+    return <div className="panel-card grid min-h-[50vh] place-items-center p-8 text-slate-600">Property not found.</div>;
+  }
+
+  const amenities = property.amenities.length > 0 ? property.amenities : DEFAULT_AMENITIES;
+  const whatsapp = property.agent?.whatsapp || "917692016188";
+  const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(property.mapQuery)}&z=15&output=embed`;
+  const canonical = `${SITE_URL}/properties/${property.id}`;
 
   return (
     <>
-      <Seo title={property.title} description={property.description} />
-      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-        <div className="space-y-5">
-          <PropertyGallery
-            title={property.title}
-            images={property.images?.length ? property.images : ["https://placehold.co/1200x700?text=Property"]}
-            videos={property.videos || []}
-            youtubeUrl={property.youtubeUrl || property.videoTourUrl}
-            media={property.media || []}
-          />
-          <div>
-            <p className="text-sm font-semibold text-brand-600">{property.propertyType} - {property.listingType}</p>
-            <h1 className="text-3xl font-bold text-slate-900">{property.title}</h1>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{formatPrice(property.price, property.listingType)}</p>
-            <p className="mt-2 text-sm text-slate-700">
-              {property.location.village ? `${property.location.village}, ` : ""}
-              {property.location.tehsil}, {property.location.district} | {formatArea(property.areaValue || property.areaSqft, property.areaUnit || "sqft")} | {property.landStatus}
-            </p>
-            <p className="mt-2 text-slate-700">{property.description}</p>
+      <Seo
+        title={property.title}
+        description={property.description}
+        canonical={canonical}
+        image={property.images?.[0]?.url}
+        type="article"
+        keywords={`${property.propertyType}, ${property.city}, property detail, ${property.title}`}
+        structuredData={structuredData}
+      />
 
-            <div className="mt-3 flex flex-wrap gap-2">
-              <a href={`tel:${phone}`} className="btn-primary"><FaPhoneAlt /> Call Now</a>
-              <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer" className="btn-outline"><FaWhatsapp /> WhatsApp Inquiry</a>
-              <a href={`https://wa.me/${whatsapp}?text=${shareText}`} target="_blank" rel="noreferrer" className="btn-outline"><FaShareAlt /> Share</a>
+      <div className="grid gap-8 lg:grid-cols-[1.35fr_0.65fr]">
+        <section className="space-y-6">
+          <PropertyGallery title={property.title} images={property.images} />
+
+          <div className="panel-card p-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="max-w-3xl">
+                <p className="surface-label">
+                  {property.propertyType} · {property.city}
+                </p>
+                <h1 className="mt-2 text-4xl font-semibold text-ink sm:text-5xl">{property.title}</h1>
+                <p className="mt-3 text-sm text-slate-600">{property.location}</p>
+              </div>
+
+              <div className="rounded-[28px] bg-slate-50 px-5 py-4 text-right">
+                <p className="text-3xl font-semibold text-ink">{formatPrice(property.price)}</p>
+                <div className="mt-3 flex items-center justify-end gap-2">
+                  <span
+                    className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                      property.status === "approved"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : property.status === "rejected"
+                          ? "bg-rose-100 text-rose-700"
+                          : "bg-amber-100 text-amber-700"
+                    }`}
+                  >
+                    {property.status}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleFavoriteToggle(property.id, favoriteIds.includes(property.id))}
+                    className={`grid h-10 w-10 place-items-center rounded-full transition ${
+                      favoriteIds.includes(property.id) ? "bg-rose-500 text-white" : "bg-white text-brand-700 shadow-soft"
+                    }`}
+                    aria-label="Toggle favorite"
+                  >
+                    <FaHeart />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-3 rounded-[28px] bg-slate-50 p-4 text-sm text-slate-700 sm:grid-cols-3">
+              <div>
+                <p className="surface-label">Bedrooms</p>
+                <p className="mt-2 text-xl font-semibold text-ink">{property.bedrooms || 0}</p>
+              </div>
+              <div>
+                <p className="surface-label">Bathrooms</p>
+                <p className="mt-2 text-xl font-semibold text-ink">{property.bathrooms || 0}</p>
+              </div>
+              <div>
+                <p className="surface-label">Area</p>
+                <p className="mt-2 text-xl font-semibold text-ink">{formatArea(property.area)}</p>
+              </div>
             </div>
           </div>
 
-          <PropertySpecs property={property} />
-
-          <section className="card">
-            <h2 className="text-xl font-bold">Highlights</h2>
-            <ul className="mt-2 grid list-disc gap-1 pl-5 text-sm text-slate-700 md:grid-cols-2">
-              {property.highlights?.map((h) => <li key={h}>{h}</li>)}
-            </ul>
-          </section>
-
-          <section className="card">
-            <h2 className="text-xl font-bold">Nearby Places</h2>
-            <ul className="mt-2 grid list-disc gap-1 pl-5 text-sm text-slate-700 md:grid-cols-2">
-              {property.nearbyPlaces?.map((p) => <li key={p}>{p}</li>)}
-            </ul>
-          </section>
-
-          {property.floorPlanImage && (
-            <section className="card">
-              <h2 className="text-xl font-bold">Floor Plan</h2>
-              <img src={property.floorPlanImage} alt="Floor plan" className="mt-3 h-72 w-full rounded-xl object-cover" loading="lazy" />
+          <div className="grid gap-6 xl:grid-cols-[1fr_0.9fr]">
+            <section className="panel-card p-6">
+              <p className="surface-label">Overview</p>
+              <h2 className="mt-2 text-2xl font-semibold text-ink">Property description</h2>
+              <p className="mt-4 text-sm leading-7 text-slate-600">{property.description}</p>
+              {property.rejectedReason && (
+                <div className="mt-5 rounded-[24px] bg-rose-50 px-4 py-4 text-sm text-rose-700">
+                  <p className="font-semibold">Moderation note</p>
+                  <p className="mt-1">{property.rejectedReason}</p>
+                </div>
+              )}
             </section>
-          )}
 
-          {property.videoTourUrl && (
-            <section className="card">
-              <h2 className="text-xl font-bold">Video Tour</h2>
-              <a href={property.videoTourUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-brand-600">Open video tour</a>
+            <section className="panel-card p-6">
+              <p className="surface-label">Amenities</p>
+              <h2 className="mt-2 text-2xl font-semibold text-ink">Comfort and convenience highlights</h2>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {amenities.map((item) => (
+                  <div key={item} className="rounded-[22px] border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
+                    {item}
+                  </div>
+                ))}
+              </div>
             </section>
-          )}
+          </div>
 
-          <section className="card space-y-3">
-            <h2 className="text-xl font-bold">Location</h2>
-            <p className="text-sm text-slate-700">
-              {property.location.address}, {property.location.locality}, {property.location.city} - {property.location.pincode}
-            </p>
-            <p className="text-xs text-slate-600">
-              District: {property.location.district} | Tehsil: {property.location.tehsil} | Village: {property.location.village || "-"}
-            </p>
-            <iframe title="Google Map" src={mapSrc} className="h-72 w-full rounded-xl border-0" loading="lazy" />
-            <a className="btn-outline" target="_blank" rel="noreferrer" href={`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`}><FaMapMarkerAlt /> Get Directions</a>
+          <section className="panel-card p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="surface-label">Location</p>
+                <h2 className="mt-2 text-2xl font-semibold text-ink">Google map section</h2>
+                <p className="mt-2 text-sm text-slate-600">{property.mapQuery}</p>
+              </div>
+              <a
+                href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(`Please share the exact location for ${property.title}`)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="btn-secondary"
+              >
+                <FaWhatsapp />
+                Ask on WhatsApp
+              </a>
+            </div>
+            <iframe title="Property location" src={mapSrc} className="mt-5 h-[320px] w-full rounded-[28px] border-0" loading="lazy" />
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.mapQuery)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-secondary mt-4"
+            >
+              <FaMapMarkedAlt />
+              Open in Google Maps
+            </a>
           </section>
-
-          <InquiryForms propertyId={property._id} />
-          <ReviewsSection propertyId={property._id} reviews={reviews} refresh={() => fetchReviews(property._id)} />
 
           <section>
-            <h2 className="section-title">Similar Properties</h2>
-            <div className="mt-3 grid gap-4 md:grid-cols-2">
-              {similar.map((item) => <PropertyCard key={item._id} item={item} compact />)}
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="surface-label">Similar properties</p>
+                <h2 className="section-heading mt-2 text-4xl">Homes related by location or property type</h2>
+              </div>
+            </div>
+            <div className="mt-6 grid gap-5 xl:grid-cols-3">
+              {similar.length === 0 ? (
+                <div className="panel-card col-span-full p-8 text-center text-sm text-slate-600">
+                  Similar properties will appear here when we have enough related listings in the same area or property type.
+                </div>
+              ) : (
+                similar.map((item) => (
+                  <PropertyCard
+                    key={item.id}
+                    property={item}
+                    onSave={handleFavoriteToggle}
+                    favoriteActive={favoriteIds.includes(item.id)}
+                  />
+                ))
+              )}
             </div>
           </section>
-        </div>
-        <DealerCard dealer={property.dealer} />
+        </section>
+
+        <aside className="space-y-6">
+          <div className="panel-card p-6">
+            <p className="surface-label">Agent details</p>
+            <h2 className="mt-2 text-2xl font-semibold text-ink">{property.agent?.name}</h2>
+            <p className="mt-2 text-sm text-slate-600">{property.agent?.agencyName || "Mahadev Property"}</p>
+            <div className="mt-5 grid gap-3 rounded-[24px] bg-slate-50 p-4 text-sm text-slate-700">
+              <div>
+                <p className="surface-label">Phone</p>
+                <p className="mt-1 font-medium">{property.agent?.phone}</p>
+              </div>
+              <div>
+                <p className="surface-label">Email</p>
+                <p className="mt-1 font-medium">{property.agent?.email}</p>
+              </div>
+            </div>
+          </div>
+
+          <ContactAgentForm property={property} />
+        </aside>
       </div>
     </>
   );

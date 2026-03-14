@@ -1,6 +1,7 @@
 import Inquiry from "../models/Inquiry.js";
 import Property from "../models/Property.js";
 import User from "../models/User.js";
+import { AppError } from "../middleware/errorHandler.js";
 
 export const getAdminAnalytics = async (req, res, next) => {
   try {
@@ -9,22 +10,25 @@ export const getAdminAnalytics = async (req, res, next) => {
       approvedProperties,
       pendingProperties,
       rejectedProperties,
-      soldProperties,
-      totalSellers,
+      totalAgents,
+      totalBuyers,
       totalUsers,
       totalInquiries,
       recentProperties,
       monthlyListings
     ] = await Promise.all([
       Property.countDocuments(),
-      Property.countDocuments({ listingStatus: "approved" }),
-      Property.countDocuments({ listingStatus: "pending" }),
-      Property.countDocuments({ listingStatus: "rejected" }),
-      Property.countDocuments({ isSold: true }),
-      User.countDocuments({ role: "seller" }),
+      Property.countDocuments({ status: "approved" }),
+      Property.countDocuments({ status: "pending" }),
+      Property.countDocuments({ status: "rejected" }),
+      User.countDocuments({ role: "agent" }),
+      User.countDocuments({ role: "buyer" }),
       User.countDocuments(),
       Inquiry.countDocuments(),
-      Property.find().populate("seller", "name email phone").sort({ createdAt: -1 }).limit(6),
+      Property.find()
+        .populate("agent", "name email phone role")
+        .sort({ createdAt: -1 })
+        .limit(6),
       Property.aggregate([
         {
           $group: {
@@ -67,8 +71,8 @@ export const getAdminAnalytics = async (req, res, next) => {
           approvedProperties,
           pendingProperties,
           rejectedProperties,
-          soldProperties,
-          totalSellers,
+          totalAgents,
+          totalBuyers,
           totalUsers,
           totalInquiries
         },
@@ -81,15 +85,15 @@ export const getAdminAnalytics = async (req, res, next) => {
   }
 };
 
-export const getSellers = async (req, res, next) => {
+export const getAgents = async (req, res, next) => {
   try {
-    const sellers = await User.aggregate([
-      { $match: { role: "seller" } },
+    const agents = await User.aggregate([
+      { $match: { role: "agent" } },
       {
         $lookup: {
           from: "properties",
           localField: "_id",
-          foreignField: "seller",
+          foreignField: "agent",
           as: "properties"
         }
       },
@@ -97,7 +101,7 @@ export const getSellers = async (req, res, next) => {
         $lookup: {
           from: "inquiries",
           localField: "_id",
-          foreignField: "seller",
+          foreignField: "agent",
           as: "inquiries"
         }
       },
@@ -110,17 +114,12 @@ export const getSellers = async (req, res, next) => {
           isActive: 1,
           createdAt: 1,
           totalProperties: { $size: "$properties" },
-          activeListings: {
+          approvedProperties: {
             $size: {
               $filter: {
                 input: "$properties",
                 as: "property",
-                cond: {
-                  $and: [
-                    { $eq: ["$$property.listingStatus", "approved"] },
-                    { $eq: ["$$property.isSold", false] }
-                  ]
-                }
+                cond: { $eq: ["$$property.status", "approved"] }
               }
             }
           },
@@ -130,49 +129,83 @@ export const getSellers = async (req, res, next) => {
       { $sort: { createdAt: -1 } }
     ]);
 
-    return res.json({ success: true, data: sellers });
+    return res.json({ success: true, data: agents });
   } catch (error) {
     return next(error);
   }
 };
 
-export const updateSellerStatus = async (req, res, next) => {
+export const updateAgentStatus = async (req, res, next) => {
   try {
     const { isActive } = req.body;
 
     if (typeof isActive !== "boolean") {
-      return res.status(400).json({ success: false, message: "isActive boolean is required." });
+      throw new AppError(400, "isActive boolean is required.");
     }
 
-    const seller = await User.findOneAndUpdate(
-      { _id: req.params.id, role: "seller" },
+    const agent = await User.findOneAndUpdate(
+      { _id: req.params.id, role: "agent" },
       { isActive },
       { new: true }
     ).select("name email phone role isActive createdAt");
 
-    if (!seller) {
-      return res.status(404).json({ success: false, message: "Seller not found." });
+    if (!agent) {
+      throw new AppError(404, "Agent not found.");
     }
 
-    return res.json({ success: true, message: "Seller status updated.", data: seller });
+    return res.json({ success: true, message: "Agent status updated.", data: agent });
   } catch (error) {
     return next(error);
   }
 };
 
-export const getAllInquiries = async (req, res, next) => {
+export const moderateProperty = async (req, res, next) => {
+  try {
+    const { status, rejectedReason = "" } = req.body;
+
+    if (!["approved", "rejected"].includes(status)) {
+      throw new AppError(400, "Status must be approved or rejected.");
+    }
+
+    const property = await Property.findById(req.params.id);
+    if (!property) {
+      throw new AppError(404, "Property not found.");
+    }
+
+    property.status = status;
+    property.approvedBy = status === "approved" ? req.user._id : null;
+    property.approvedAt = status === "approved" ? new Date() : null;
+    property.rejectedReason = status === "rejected" ? String(rejectedReason || "").trim() : "";
+
+    await property.save();
+
+    const populated = await Property.findById(property._id)
+      .populate("agent", "name email phone role")
+      .populate("approvedBy", "name email role");
+
+    return res.json({
+      success: true,
+      message: `Property ${status} successfully.`,
+      data: populated
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getModerationQueue = async (req, res, next) => {
   try {
     const filters = {};
     if (req.query.status) {
       filters.status = req.query.status;
     }
 
-    const inquiries = await Inquiry.find(filters)
-      .populate("seller", "name email phone")
-      .populate("property", "title location.city location.locality price")
+    const properties = await Property.find(filters)
+      .populate("agent", "name email phone role")
+      .populate("approvedBy", "name email role")
       .sort({ createdAt: -1 });
 
-    return res.json({ success: true, data: inquiries });
+    return res.json({ success: true, data: properties });
   } catch (error) {
     return next(error);
   }

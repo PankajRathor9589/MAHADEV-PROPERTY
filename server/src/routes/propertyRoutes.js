@@ -1,14 +1,12 @@
 import { Router } from "express";
 import {
   createProperty,
-  createPropertyInquiry,
   deleteProperty,
   getAllProperties,
   getPropertyById,
-  markPropertySold,
-  updateProperty,
-  updatePropertyApproval
+  updateProperty
 } from "../controllers/propertyController.js";
+import { createInquiry } from "../controllers/inquiryController.js";
 import { authorizeRoles, optionalAuth, protect } from "../middleware/auth.js";
 import { uploadPropertyImages } from "../middleware/upload.js";
 
@@ -20,20 +18,18 @@ router.get("/:id", optionalAuth, getPropertyById);
 router.post(
   "/",
   protect,
-  authorizeRoles("seller", "admin"),
+  authorizeRoles("agent", "admin"),
   uploadPropertyImages.array("images", 12),
   createProperty
 );
 router.put(
   "/:id",
   protect,
-  authorizeRoles("seller", "admin"),
+  authorizeRoles("agent", "admin"),
   uploadPropertyImages.array("images", 12),
   updateProperty
 );
-router.delete("/:id", protect, authorizeRoles("seller", "admin"), deleteProperty);
-router.patch("/:id/sold", protect, authorizeRoles("seller", "admin"), markPropertySold);
-router.patch("/:id/approval", protect, authorizeRoles("admin"), updatePropertyApproval);
-router.post("/:id/inquiries", createPropertyInquiry);
+router.delete("/:id", protect, authorizeRoles("agent", "admin"), deleteProperty);
+router.post("/:id/inquiries", optionalAuth, createInquiry);
 
 export default router;

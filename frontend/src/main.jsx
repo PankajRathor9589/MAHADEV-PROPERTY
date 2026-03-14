@@ -11,11 +11,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <HelmetProvider>
       <BrowserRouter>
-        <AuthProvider>
-          <AppProvider>
+        <AppProvider>
+          <AuthProvider>
             <App />
-          </AppProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </AppProvider>
       </BrowserRouter>
     </HelmetProvider>
   </React.StrictMode>

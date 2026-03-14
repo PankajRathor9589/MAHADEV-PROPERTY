@@ -14,8 +14,10 @@ const storage = multer.diskStorage({
     cb(null, propertyUploadDir);
   },
   filename: (req, file, cb) => {
-    const extension = path.extname(file.originalname);
-    const baseName = path.basename(file.originalname, extension).replace(/[^a-zA-Z0-9_-]/g, "-");
+    const extension = path.extname(file.originalname || "").toLowerCase();
+    const baseName = path
+      .basename(file.originalname || "property-image", extension)
+      .replace(/[^a-zA-Z0-9_-]/g, "-");
     cb(null, `${Date.now()}-${baseName}${extension}`);
   }
 });
