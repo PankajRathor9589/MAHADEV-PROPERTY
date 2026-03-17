@@ -1,21 +1,18 @@
 import { Router } from "express";
 import {
   getAdminAnalytics,
-  getAgents,
-  getModerationQueue,
-  moderateProperty,
-  updateAgentStatus
+  getAdminProperties,
+  getUsers,
+  updateUser
 } from "../controllers/adminController.js";
 import { authorizeRoles, protect } from "../middleware/auth.js";
 
 const router = Router();
 
 router.use(protect, authorizeRoles("admin"));
-
 router.get("/analytics", getAdminAnalytics);
-router.get("/agents", getAgents);
-router.patch("/agents/:id/status", updateAgentStatus);
-router.get("/properties", getModerationQueue);
-router.patch("/properties/:id/moderate", moderateProperty);
+router.get("/properties", getAdminProperties);
+router.get("/users", getUsers);
+router.patch("/users/:id", updateUser);
 
 export default router;

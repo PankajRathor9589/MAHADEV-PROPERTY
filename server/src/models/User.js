@@ -3,7 +3,11 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, trim: true },
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
     email: {
       type: String,
       required: true,
@@ -12,14 +16,26 @@ const userSchema = new mongoose.Schema(
       trim: true,
       match: [/^\S+@\S+\.\S+$/, "Please provide a valid email address."]
     },
-    phone: { type: String, trim: true, default: "" },
-    password: { type: String, required: true, minlength: 6, select: false },
+    phone: {
+      type: String,
+      trim: true,
+      default: ""
+    },
+    password: {
+      type: String,
+      required: true,
+      minlength: 6,
+      select: false
+    },
     role: {
       type: String,
-      enum: ["buyer", "agent", "admin"],
-      default: "buyer"
+      enum: ["user", "admin"],
+      default: "user"
     },
-    isActive: { type: Boolean, default: true },
+    isActive: {
+      type: Boolean,
+      default: true
+    },
     favorites: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -31,10 +47,8 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
     toJSON: {
       transform: (doc, ret) => {
-        ret.id = ret._id.toString();
-        delete ret._id;
-        delete ret.__v;
         delete ret.password;
+        delete ret.__v;
         return ret;
       }
     }
@@ -54,7 +68,7 @@ userSchema.methods.matchPassword = function matchPassword(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-userSchema.index({ role: 1, isActive: 1 });
+userSchema.index({ role: 1, isActive: 1, createdAt: -1 });
 
 const User = mongoose.model("User", userSchema);
 

@@ -7,7 +7,7 @@ const inquirySchema = new mongoose.Schema(
       ref: "Property",
       required: true
     },
-    agent: {
+    owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true
@@ -18,8 +18,8 @@ const inquirySchema = new mongoose.Schema(
       default: null
     },
     name: { type: String, required: true, trim: true },
-    phone: { type: String, required: true, trim: true },
     email: { type: String, trim: true, lowercase: true, default: "" },
+    phone: { type: String, required: true, trim: true },
     message: { type: String, trim: true, default: "" },
     status: {
       type: String,
@@ -27,10 +27,18 @@ const inquirySchema = new mongoose.Schema(
       default: "new"
     }
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: {
+      transform: (doc, ret) => {
+        delete ret.__v;
+        return ret;
+      }
+    }
+  }
 );
 
-inquirySchema.index({ agent: 1, status: 1, createdAt: -1 });
+inquirySchema.index({ owner: 1, status: 1, createdAt: -1 });
 inquirySchema.index({ buyer: 1, createdAt: -1 });
 inquirySchema.index({ property: 1, createdAt: -1 });
 

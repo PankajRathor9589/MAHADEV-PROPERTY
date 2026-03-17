@@ -1,269 +1,362 @@
 # Mahadev Property
 
-Mahadev Property is a production-ready real estate platform built with React + Tailwind, Node.js + Express, MongoDB, Multer, and Google Maps integration.
+Mahadev Property is a full-stack MERN real estate platform inspired by products like 99acres and MagicBricks.
 
-It supports three user roles:
-- Admin
-- Seller / Dealer
-- Visitor (Buyer)
+It includes:
 
-## 1. Complete Folder Structure
+- JWT authentication with hashed passwords
+- `admin` and `user` roles
+- Property create, edit, delete, approve, reject, and feature flows
+- Image upload with Multer
+- Public property browsing with search, filters, and pagination
+- Property detail pages with gallery and Google Maps embed
+- Favorites / saved properties
+- Inquiry system between buyer and property owner
+- Responsive Tailwind CSS UI
+- Admin panel for user management and listing moderation
+
+Extra features included:
+
+- Google Maps integration on property detail pages
+- Featured property system for premium / paid listings
+
+## Project Structure
 
 ```text
 MAHADEV-PROPERTY/
   client/
-    src/
+    app/
       components/
-        AnalyticsCards.jsx
-        DashboardPropertyTable.jsx
-        ImageGallerySlider.jsx
-        InquiryTable.jsx
-        MapPicker.jsx
-        Navbar.jsx
-        PropertyCard.jsx
-        PropertyForm.jsx
-        ProtectedRoute.jsx
-        SellerManagementTable.jsx
-        WhatsAppFloat.jsx
       context/
-        AuthContext.jsx
-      hooks/
-        useGoogleMapsScript.js
       pages/
-        AdminDashboardPage.jsx
-        HomePage.jsx
-        LoginPage.jsx
-        PropertiesPage.jsx
-        PropertyDetailsPage.jsx
-        RegisterPage.jsx
-        SellerDashboardPage.jsx
       services/
-        api.js
+      utils/
       App.jsx
-      index.css
       main.jsx
+      index.css
     .env.example
     index.html
+    vercel.json
     package.json
-    postcss.config.js
     tailwind.config.js
     vite.config.js
 
   server/
     src/
       config/
-        db.js
       controllers/
-        adminController.js
-        authController.js
-        propertyController.js
-        sellerController.js
       middleware/
-        auth.js
-        errorHandler.js
-        upload.js
       models/
-        Inquiry.js
-        Property.js
-        User.js
       routes/
-        adminRoutes.js
-        authRoutes.js
-        propertyRoutes.js
-        sellerRoutes.js
       index.js
     .env.example
     package.json
 
   uploads/
     properties/
-      .gitkeep
 
   package.json
   render.yaml
   README.md
 ```
 
-## 2. Backend API Code
+## Tech Stack
 
-Base URL: `http://localhost:5000/api`
+- Frontend: React, React Router, Tailwind CSS, Axios, Lucide React
+- Backend: Node.js, Express, MongoDB, Mongoose, JWT, Multer, bcryptjs
+- Deployment: Vercel (frontend) + Render (backend) + MongoDB Atlas
 
-### Auth
+## Main Features
+
+### Authentication
+
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `GET /api/auth/me`
 
-### Property APIs (required)
-- `POST /api/properties` - create property with image upload
-- `GET /api/properties` - get all properties (supports advanced filters)
-- `GET /api/properties/:id` - get property details
-- `PUT /api/properties/:id` - update property
-- `DELETE /api/properties/:id` - delete property
+Passwords are hashed with `bcryptjs` and sessions are handled with JWT tokens.
 
-### Additional property workflow
-- `PATCH /api/properties/:id/sold` - mark property as sold
-- `PATCH /api/properties/:id/approval` - admin approve/reject listing
-- `POST /api/properties/:id/inquiries` - buyer sends inquiry
+### Property Listings
 
-### Seller Dashboard APIs
-- `GET /api/seller/analytics`
-- `GET /api/seller/inquiries`
-- `PATCH /api/seller/inquiries/:id/status`
+Users can:
 
-### Admin Dashboard APIs
-- `GET /api/admin/analytics`
-- `GET /api/admin/sellers`
-- `PATCH /api/admin/sellers/:id/status`
-- `GET /api/admin/inquiries`
+- create listings
+- upload multiple images
+- edit their own listings
+- view approval status (`pending`, `approved`, `rejected`)
 
-## 3. MongoDB Schemas
+Admins can:
 
-### User (`server/src/models/User.js`)
-- `name`, `email`, `phone`
-- `password` (hashed)
-- `role` (`admin | seller | visitor`)
+- approve or reject listings
+- delete any property
+- mark properties as featured
+
+### Browse and Search
+
+The listing page supports:
+
+- keyword search
+- city filter
+- state filter
+- sale / rent filter
+- category filter
+- min / max price
+- bedroom count
+- sorting by latest, price, or popularity
+
+### Favorites
+
+Authenticated users can save approved properties and manage them from a dedicated Favorites page.
+
+### Admin Panel
+
+Admins can:
+
+- view platform analytics
+- review all properties
+- approve / reject listings
+- enable or disable users
+- change user role between `user` and `admin`
+- inspect all inquiries
+
+## MongoDB Schemas
+
+### User
+
+File: `server/src/models/User.js`
+
+Fields:
+
+- `name`
+- `email`
+- `phone`
+- `password`
+- `role`
 - `isActive`
+- `favorites`
 
-### Property (`server/src/models/Property.js`)
-- Basic: `title`, `propertyType`, `price`, `areaSqFt`
-- Location: `state`, `city`, `locality`, `address`, `pincode`, `latitude`, `longitude`, `mapPinUrl`, `coordinates`
-- Features: `bedrooms`, `bathrooms`, `parking`, `waterSupply`, `electricity`, `roadAccess`
-- Media: `images[]`
-- Description: `description`, `nearbyPlaces[]`
-- Workflow: `listingStatus`, `rejectedReason`, `isSold`, `views`
-- Ownership: `seller`, `approvedBy`, `approvedAt`
+### Property
 
-### Inquiry (`server/src/models/Inquiry.js`)
-- `property`, `seller`
-- `buyerName`, `buyerPhone`, `buyerEmail`, `message`
-- `status` (`new | contacted | closed`)
+File: `server/src/models/Property.js`
 
-## 4. Multer Image Upload Setup
+Fields:
 
-Configured in `server/src/middleware/upload.js`.
+- `title`
+- `description`
+- `listingType`
+- `category`
+- `price`
+- `bedrooms`
+- `bathrooms`
+- `area`
+- `amenities`
+- `location.city`
+- `location.state`
+- `location.address`
+- `location.landmark`
+- `location.pincode`
+- `location.coordinates.lat`
+- `location.coordinates.lng`
+- `images`
+- `contactName`
+- `contactEmail`
+- `contactPhone`
+- `postedBy`
+- `approvalStatus`
+- `rejectionReason`
+- `isFeatured`
+- `featuredUntil`
+- `views`
 
-- Storage path: `uploads/properties`
-- Multiple image upload via `uploadPropertyImages.array("images", 12)`
-- File validation: image MIME only
-- Size limit via env: `MAX_FILE_SIZE_MB`
+### Inquiry
 
-Static serving is enabled in `server/src/index.js`:
+File: `server/src/models/Inquiry.js`
 
-- `app.use("/uploads", express.static(...))`
+Fields:
 
-## 5. React Frontend Pages
+- `property`
+- `owner`
+- `buyer`
+- `name`
+- `email`
+- `phone`
+- `message`
+- `status`
 
-### Public Pages
-- Home page with hero search bar, categories, featured and trending properties
-- Property listing page with advanced filters
-- Property details page with image gallery slider, map, contact actions, inquiry form
+## Backend API Overview
 
-### Auth Pages
-- Login
-- Register (seller / visitor / admin with registration key)
+### Auth
 
-### Seller Dashboard
-- Add property
-- Upload multiple images
-- Edit property
-- Delete property
-- Mark property as sold
-- View and update inquiry status
-- Seller analytics cards
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
 
-### Admin Dashboard
-- View all properties
-- Approve / reject listings
-- Delete fake listings
-- Mark as sold
-- Manage sellers (activate/deactivate)
-- View platform analytics
-- View all inquiries
+### Properties
 
-## 6. Search & Filters (Implemented)
+- `GET /api/properties`
+- `GET /api/properties/mine`
+- `GET /api/properties/:id`
+- `POST /api/properties`
+- `PUT /api/properties/:id`
+- `DELETE /api/properties/:id`
+- `PATCH /api/properties/:id/approval`
+- `PATCH /api/properties/:id/featured`
+- `POST /api/properties/:id/inquiries`
 
-Implemented in backend and listing page UI:
-- Location (`city`, `locality`, `state`, keyword search)
-- Price range (`minPrice`, `maxPrice`)
-- Property type
-- Area range (`minArea`, `maxArea`)
-- Bedrooms (`minBedrooms` or exact)
+### Favorites
 
-## 7. Run Locally
+- `GET /api/favorites`
+- `POST /api/favorites/:propertyId`
+- `DELETE /api/favorites/:propertyId`
 
-### Prerequisites
+### Inquiries
+
+- `GET /api/inquiries`
+- `PATCH /api/inquiries/:id/status`
+
+### Admin
+
+- `GET /api/admin/analytics`
+- `GET /api/admin/properties`
+- `GET /api/admin/users`
+- `PATCH /api/admin/users/:id`
+
+## Local Setup
+
+### 1. Prerequisites
+
 - Node.js 18+
-- MongoDB local or Atlas
+- MongoDB local instance or MongoDB Atlas
 
-### Setup
-
-1. Install dependencies:
+### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-2. Create environment files:
+### 3. Create environment files
 
 ```bash
 Copy-Item server/.env.example server/.env
 Copy-Item client/.env.example client/.env
 ```
 
-3. Update `server/.env` values:
-- `MONGODB_URI`
-- `JWT_SECRET`
-- `ADMIN_REGISTRATION_KEY`
-- `CLIENT_URL`
+### 4. Configure backend environment
 
-4. (Optional, for map pin picker) add Google key in `client/.env`:
-- `VITE_GOOGLE_MAPS_API_KEY`
+Open `server/.env` and update:
 
-5. Start full stack:
+```env
+PORT=5000
+MONGODB_URI=mongodb://127.0.0.1:27017/mahadev_property
+CLIENT_URL=http://localhost:5173
+JWT_SECRET=change_this_secret
+JWT_EXPIRES_IN=7d
+ADMIN_REGISTRATION_KEY=change_admin_key
+MAX_FILE_SIZE_MB=5
+```
+
+### 5. Configure frontend environment
+
+Open `client/.env` and update:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+### 6. Start the app
 
 ```bash
 npm run dev
 ```
 
+URLs:
+
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:5000`
+- Health check: `http://localhost:5000/api/health`
 
-## 8. Deployment Instructions
+## Beginner-Friendly Run Order
 
-### Backend (Render)
+1. Start MongoDB.
+2. Run `npm install`.
+3. Copy both `.env.example` files.
+4. Add your MongoDB URI and JWT secret.
+5. Run `npm run dev`.
+6. Register a normal user account.
+7. Register an admin account using `ADMIN_REGISTRATION_KEY`.
+8. Log in as user to create properties.
+9. Log in as admin to approve and feature those properties.
 
-`render.yaml` is included for backend deployment.
+## Deployment
 
-Manual settings:
+### Backend on Render
+
+`render.yaml` is already included.
+
+Recommended settings:
+
 - Root directory: `server`
 - Build command: `npm install`
 - Start command: `npm start`
-- Health check: `/api/health`
+- Health check path: `/api/health`
 
 Required environment variables:
+
+- `NODE_ENV=production`
+- `PORT=10000`
 - `MONGODB_URI`
 - `JWT_SECRET`
+- `JWT_EXPIRES_IN=7d`
 - `ADMIN_REGISTRATION_KEY`
-- `CLIENT_URL`
-- `MAX_FILE_SIZE_MB`
+- `CLIENT_URL=https://your-frontend-domain.vercel.app`
+- `MAX_FILE_SIZE_MB=5`
 
-### Frontend (Vercel)
+### Backend or Full Stack on Railway
+
+Railway also works well for this project.
+
+Recommended approach:
+
+1. Create a new Railway project.
+2. Deploy the repo.
+3. Set the service root to `server`.
+4. Add environment variables:
+   - `PORT`
+   - `MONGODB_URI`
+   - `JWT_SECRET`
+   - `JWT_EXPIRES_IN`
+   - `ADMIN_REGISTRATION_KEY`
+   - `CLIENT_URL`
+   - `MAX_FILE_SIZE_MB`
+5. Deploy the backend service.
+6. Deploy the frontend separately from `client` on Vercel or Railway static hosting.
+7. Set `VITE_API_URL` in the frontend to your Railway backend URL plus `/api`.
+
+### Frontend on Vercel
+
+The file `client/vercel.json` handles React Router rewrites.
+
+Recommended settings:
 
 - Root directory: `client`
 - Build command: `npm run build`
-- Output: `dist`
+- Output directory: `dist`
 
-Frontend env vars:
-- `VITE_API_URL=https://<your-backend-domain>/api`
-- `VITE_GOOGLE_MAPS_API_KEY=<google-maps-key>`
-- `VITE_DEFAULT_CONTACT_PHONE=<seller-phone>`
-- `VITE_DEFAULT_WHATSAPP=<whatsapp-number>`
+Required environment variables:
 
-## 9. Production Notes
+- `VITE_API_URL=https://your-render-backend-domain/api`
 
-- Use MongoDB Atlas in production with network/IP security.
-- Move local uploads to cloud object storage (S3/Cloudinary) for true horizontal scaling.
-- Add API rate limiting and request validation hardening.
-- Add monitoring/logging (Render logs + external APM).
-- Use CDN for images and caching headers for static assets.
+## Production Notes
 
+- Store uploads in Cloudinary or S3 for real production scale
+- Use MongoDB Atlas instead of a local database in production
+- Add rate limiting, validation, and logging if you extend this further
+- Put Render backend URL into Vercel frontend env vars
+- Allow the Vercel domain inside backend `CLIENT_URL`
+
+## Verification
+
+Verified locally in this workspace:
+
+- Backend JavaScript syntax check passed
+- Frontend production build passed with `npm run build -w client`

@@ -4,9 +4,8 @@ import { AppError } from "../middleware/errorHandler.js";
 
 const favoritePopulate = {
   path: "favorites",
-  select: "title description price location city bedrooms bathrooms area images status views createdAt",
   populate: {
-    path: "agent",
+    path: "postedBy",
     select: "name email phone role"
   }
 };
@@ -26,7 +25,11 @@ export const getFavorites = async (req, res, next) => {
 
 export const addFavorite = async (req, res, next) => {
   try {
-    const property = await Property.findOne({ _id: req.params.propertyId, status: "approved" });
+    const property = await Property.findOne({
+      _id: req.params.propertyId,
+      approvalStatus: "approved"
+    });
+
     if (!property) {
       throw new AppError(404, "Property not found.");
     }
@@ -36,7 +39,11 @@ export const addFavorite = async (req, res, next) => {
       throw new AppError(404, "User not found.");
     }
 
-    if (!user.favorites.some((item) => item.toString() === property._id.toString())) {
+    const alreadySaved = user.favorites.some(
+      (favoriteId) => favoriteId.toString() === property._id.toString()
+    );
+
+    if (!alreadySaved) {
       user.favorites.push(property._id);
       await user.save();
     }
@@ -45,7 +52,7 @@ export const addFavorite = async (req, res, next) => {
 
     return res.status(201).json({
       success: true,
-      message: "Property added to favorites.",
+      message: "Property saved to favorites.",
       data: user.favorites
     });
   } catch (error) {
@@ -61,7 +68,7 @@ export const removeFavorite = async (req, res, next) => {
     }
 
     user.favorites = user.favorites.filter(
-      (item) => item.toString() !== req.params.propertyId.toString()
+      (favoriteId) => favoriteId.toString() !== req.params.propertyId
     );
     await user.save();
     await user.populate(favoritePopulate);

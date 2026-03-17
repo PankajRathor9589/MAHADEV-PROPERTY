@@ -1,35 +1,28 @@
 import { Router } from "express";
+import { createInquiry } from "../controllers/inquiryController.js";
 import {
   createProperty,
   deleteProperty,
   getAllProperties,
+  getMyProperties,
   getPropertyById,
-  updateProperty
+  updateProperty,
+  updatePropertyApproval,
+  updatePropertyFeatured
 } from "../controllers/propertyController.js";
-import { createInquiry } from "../controllers/inquiryController.js";
 import { authorizeRoles, optionalAuth, protect } from "../middleware/auth.js";
 import { uploadPropertyImages } from "../middleware/upload.js";
 
 const router = Router();
 
 router.get("/", optionalAuth, getAllProperties);
+router.get("/mine", protect, getMyProperties);
 router.get("/:id", optionalAuth, getPropertyById);
-
-router.post(
-  "/",
-  protect,
-  authorizeRoles("agent", "admin"),
-  uploadPropertyImages.array("images", 12),
-  createProperty
-);
-router.put(
-  "/:id",
-  protect,
-  authorizeRoles("agent", "admin"),
-  uploadPropertyImages.array("images", 12),
-  updateProperty
-);
-router.delete("/:id", protect, authorizeRoles("agent", "admin"), deleteProperty);
 router.post("/:id/inquiries", optionalAuth, createInquiry);
+router.post("/", protect, uploadPropertyImages.array("images", 10), createProperty);
+router.put("/:id", protect, uploadPropertyImages.array("images", 10), updateProperty);
+router.delete("/:id", protect, deleteProperty);
+router.patch("/:id/approval", protect, authorizeRoles("admin"), updatePropertyApproval);
+router.patch("/:id/featured", protect, authorizeRoles("admin"), updatePropertyFeatured);
 
 export default router;

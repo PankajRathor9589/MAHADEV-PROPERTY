@@ -8,13 +8,22 @@ import { propertyUploadDir } from "../middleware/upload.js";
 
 const hasKey = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
-const toNumber = (value, fallback) => {
+const toNumber = (value, fallback = 0) => {
   if (value === null || value === undefined || value === "") {
     return fallback;
   }
 
-  const converted = Number(value);
-  return Number.isNaN(converted) ? fallback : converted;
+  const parsedValue = Number(value);
+  return Number.isFinite(parsedValue) ? parsedValue : fallback;
+};
+
+const toOptionalNumber = (value, fallback = null) => {
+  if (value === null || value === undefined || value === "") {
+    return fallback;
+  }
+
+  const parsedValue = Number(value);
+  return Number.isFinite(parsedValue) ? parsedValue : fallback;
 };
 
 const parseArrayInput = (value, fallback = []) => {
@@ -28,77 +37,123 @@ const parseArrayInput = (value, fallback = []) => {
 
   if (typeof value === "string") {
     try {
-      const parsed = JSON.parse(value);
-      if (Array.isArray(parsed)) {
-        return parsed.map((item) => String(item).trim()).filter(Boolean);
+      const parsedValue = JSON.parse(value);
+      if (Array.isArray(parsedValue)) {
+        return parsedValue.map((item) => String(item).trim()).filter(Boolean);
       }
     } catch (error) {
-      return value.split(",").map((item) => item.trim()).filter(Boolean);
+      return value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
     }
   }
 
   return fallback;
 };
 
-const normalizeUploadedImages = (files = []) =>
-  files.map((file) => ({
-    url: `/uploads/properties/${file.filename}`,
-    filename: file.filename
-  }));
-
 const parseRetainedImages = (value, fallback = []) => {
   if (value === undefined || value === null || value === "") {
     return fallback;
   }
 
-  let parsed = value;
+  let parsedValue = value;
   if (typeof value === "string") {
     try {
-      parsed = JSON.parse(value);
+      parsedValue = JSON.parse(value);
     } catch (error) {
       return fallback;
     }
   }
 
-  if (!Array.isArray(parsed)) {
+  if (!Array.isArray(parsedValue)) {
     return fallback;
   }
 
-  return parsed
-    .filter((item) => item && typeof item === "object")
-    .filter((item) => item.filename && item.url)
-    .map((item) => ({ filename: item.filename, url: item.url }));
+  return parsedValue
+    .filter((item) => item && typeof item === "object" && item.filename && item.url)
+    .map((item) => ({
+      filename: String(item.filename),
+      url: String(item.url)
+    }));
 };
+
+const normalizeUploadedImages = (files = []) =>
+  files.map((file) => ({
+    filename: file.filename,
+    url: `/uploads/properties/${file.filename}`
+  }));
 
 const removeFiles = async (filenames = []) => {
   await Promise.all(
     filenames.map(async (filename) => {
-      if (!filename) return;
+      if (!filename) {
+        return;
+      }
 
-      const fullPath = path.join(propertyUploadDir, filename);
+      const filePath = path.join(propertyUploadDir, filename);
       try {
-        await fs.unlink(fullPath);
+        await fs.unlink(filePath);
       } catch (error) {
         if (error.code !== "ENOENT") {
-          console.error(`Failed to delete image ${filename}`, error);
+          console.error(`Failed to remove file ${filename}`, error);
         }
       }
     })
   );
 };
 
-const buildPayload = (input, current = {}) => ({
+const getSortOption = (value) => {
+  const sortBy = String(value || "latest");
+
+  if (sortBy === "priceAsc") {
+    return { price: 1, createdAt: -1 };
+  }
+
+  if (sortBy === "priceDesc") {
+    return { price: -1, createdAt: -1 };
+  }
+
+  if (sortBy === "popular") {
+    return { views: -1, createdAt: -1 };
+  }
+
+  return { createdAt: -1 };
+};
+
+const buildLocation = (input, current = {}) => {
+  const currentCoordinates = current.coordinates || {};
+
+  return {
+    city: hasKey(input, "city") ? String(input.city || "").trim() : current.city,
+    state: hasKey(input, "state") ? String(input.state || "").trim() : current.state,
+    address: hasKey(input, "address") ? String(input.address || "").trim() : current.address,
+    landmark: hasKey(input, "landmark") ? String(input.landmark || "").trim() : current.landmark || "",
+    pincode: hasKey(input, "pincode") ? String(input.pincode || "").trim() : current.pincode || "",
+    coordinates: {
+      lat: hasKey(input, "latitude")
+        ? toOptionalNumber(input.latitude, currentCoordinates.lat ?? null)
+        : currentCoordinates.lat ?? null,
+      lng: hasKey(input, "longitude")
+        ? toOptionalNumber(input.longitude, currentCoordinates.lng ?? null)
+        : currentCoordinates.lng ?? null
+    }
+  };
+};
+
+const buildPayload = (input, current = {}, user) => ({
   title: hasKey(input, "title") ? String(input.title || "").trim() : current.title,
   description: hasKey(input, "description")
     ? String(input.description || "").trim()
     : current.description,
-  propertyType: hasKey(input, "propertyType")
-    ? String(input.propertyType || "").trim()
-    : current.propertyType,
+  listingType: hasKey(input, "listingType")
+    ? String(input.listingType || "").trim().toLowerCase()
+    : current.listingType,
+  category: hasKey(input, "category") ? String(input.category || "").trim() : current.category,
   price: hasKey(input, "price") ? toNumber(input.price, current.price) : current.price,
-  location: hasKey(input, "location") ? String(input.location || "").trim() : current.location,
-  city: hasKey(input, "city") ? String(input.city || "").trim() : current.city,
-  bedrooms: hasKey(input, "bedrooms") ? toNumber(input.bedrooms, current.bedrooms || 0) : current.bedrooms || 0,
+  bedrooms: hasKey(input, "bedrooms")
+    ? toNumber(input.bedrooms, current.bedrooms || 0)
+    : current.bedrooms || 0,
   bathrooms: hasKey(input, "bathrooms")
     ? toNumber(input.bathrooms, current.bathrooms || 0)
     : current.bathrooms || 0,
@@ -106,53 +161,92 @@ const buildPayload = (input, current = {}) => ({
   amenities: hasKey(input, "amenities")
     ? parseArrayInput(input.amenities, current.amenities || [])
     : current.amenities || [],
-  status: hasKey(input, "status") ? input.status : current.status,
-  rejectedReason: hasKey(input, "rejectedReason")
-    ? String(input.rejectedReason || "").trim()
-    : current.rejectedReason || ""
+  location: buildLocation(input, current.location || {}),
+  contactName: hasKey(input, "contactName")
+    ? String(input.contactName || "").trim()
+    : current.contactName || user?.name || "",
+  contactEmail: hasKey(input, "contactEmail")
+    ? String(input.contactEmail || "")
+        .trim()
+        .toLowerCase()
+    : current.contactEmail || user?.email || "",
+  contactPhone: hasKey(input, "contactPhone")
+    ? String(input.contactPhone || "").trim()
+    : current.contactPhone || user?.phone || "",
+  approvalStatus: hasKey(input, "approvalStatus")
+    ? String(input.approvalStatus || "").trim().toLowerCase()
+    : current.approvalStatus,
+  rejectionReason: hasKey(input, "rejectionReason")
+    ? String(input.rejectionReason || "").trim()
+    : current.rejectionReason || ""
 });
 
 const canManageProperty = (property, user) => {
-  if (!user) return false;
-  if (user.role === "admin") return true;
-  return property.agent.toString() === user._id.toString();
+  if (!user) {
+    return false;
+  }
+
+  return user.role === "admin" || property.postedBy.toString() === user._id.toString();
 };
 
 const canViewProperty = (property, user) => {
-  if (property.status === "approved") return true;
-  if (!user) return false;
-  if (user.role === "admin") return true;
-  return user.role === "agent" && property.agent.toString() === user._id.toString();
+  if (property.approvalStatus === "approved") {
+    return true;
+  }
+
+  if (!user) {
+    return false;
+  }
+
+  return user.role === "admin" || property.postedBy.toString() === user._id.toString();
+};
+
+const populatePropertyQuery = (query) =>
+  query.populate("postedBy", "name email phone role isActive createdAt");
+
+export const getMyProperties = async (req, res, next) => {
+  req.query.mine = "true";
+  return getAllProperties(req, res, next);
 };
 
 export const createProperty = async (req, res, next) => {
   try {
-    const payload = buildPayload(req.body, {});
+    const payload = buildPayload(req.body, {}, req.user);
     payload.images = normalizeUploadedImages(req.files);
-    payload.agent = req.user.role === "admin" && req.body.agentId ? req.body.agentId : req.user._id;
+    payload.postedBy = req.user._id;
+
+    if (!payload.contactName) {
+      payload.contactName = req.user.name;
+    }
+
+    if (!payload.contactEmail) {
+      payload.contactEmail = req.user.email;
+    }
+
+    if (!payload.contactPhone) {
+      payload.contactPhone = req.user.phone || "";
+    }
 
     if (req.user.role === "admin") {
-      const moderationStatus = req.body.status || "approved";
-      payload.status = moderationStatus === "rejected" ? "pending" : moderationStatus;
-      if (payload.status === "approved") {
-        payload.approvedBy = req.user._id;
-        payload.approvedAt = new Date();
-      }
+      payload.approvalStatus = ["approved", "rejected"].includes(payload.approvalStatus)
+        ? payload.approvalStatus
+        : "approved";
+      payload.rejectionReason = payload.approvalStatus === "rejected" ? payload.rejectionReason : "";
     } else {
-      payload.status = "pending";
-      payload.approvedBy = null;
-      payload.approvedAt = null;
+      payload.approvalStatus = "pending";
+      payload.rejectionReason = "";
     }
 
     const property = await Property.create(payload);
-    const populated = await Property.findById(property._id).populate("agent", "name phone email role");
+    const populatedProperty = await populatePropertyQuery(Property.findById(property._id));
 
     return res.status(201).json({
       success: true,
       message: "Property created successfully.",
-      data: populated
+      data: populatedProperty
     });
   } catch (error) {
+    await removeFiles((req.files || []).map((file) => file.filename));
     return next(error);
   }
 };
@@ -162,86 +256,95 @@ export const getAllProperties = async (req, res, next) => {
     const {
       search,
       city,
+      state,
+      listingType,
+      category,
       minPrice,
       maxPrice,
-      propertyType,
-      minArea,
-      maxArea,
       bedrooms,
-      minBedrooms,
-      status,
+      featured,
+      sort = "latest",
       mine,
       page = 1,
       limit = 12
     } = req.query;
 
+    const currentPage = Math.max(1, Number(page) || 1);
+    const pageSize = Math.min(50, Math.max(1, Number(limit) || 12));
     const filters = {};
-    const authUser = req.user;
-    const isAdmin = authUser?.role === "admin";
-    const isAgent = authUser?.role === "agent";
-    const requestingOwn = mine === "true";
+    const andFilters = [];
+    const requestingMine = mine === "true" && req.user;
 
-    if (!isAdmin && !(isAgent && requestingOwn)) {
-      filters.status = "approved";
-    }
-
-    if (isAgent && requestingOwn) {
-      filters.agent = authUser._id;
-    }
-
-    if (isAdmin && req.query.agentId) {
-      filters.agent = req.query.agentId;
-    }
-
-    if (status && (isAdmin || (isAgent && requestingOwn))) {
-      filters.status = status;
+    if (requestingMine) {
+      filters.postedBy = req.user._id;
+    } else {
+      filters.approvalStatus = "approved";
     }
 
     if (city) {
-      filters.city = new RegExp(city, "i");
+      filters["location.city"] = new RegExp(String(city).trim(), "i");
     }
 
-    if (propertyType) {
-      filters.propertyType = propertyType;
+    if (state) {
+      filters["location.state"] = new RegExp(String(state).trim(), "i");
     }
 
-    if (search) {
-      filters.$or = [
-        { title: new RegExp(search, "i") },
-        { location: new RegExp(search, "i") },
-        { city: new RegExp(search, "i") },
-        { description: new RegExp(search, "i") }
-      ];
+    if (listingType) {
+      filters.listingType = String(listingType).trim().toLowerCase();
+    }
+
+    if (category) {
+      filters.category = String(category).trim();
     }
 
     if (minPrice || maxPrice) {
       filters.price = {};
-      if (minPrice) filters.price.$gte = Number(minPrice);
-      if (maxPrice) filters.price.$lte = Number(maxPrice);
-    }
-
-    if (minArea || maxArea) {
-      filters.area = {};
-      if (minArea) filters.area.$gte = Number(minArea);
-      if (maxArea) filters.area.$lte = Number(maxArea);
+      if (minPrice) {
+        filters.price.$gte = Number(minPrice);
+      }
+      if (maxPrice) {
+        filters.price.$lte = Number(maxPrice);
+      }
     }
 
     if (bedrooms) {
-      filters.bedrooms = Number(bedrooms);
-    } else if (minBedrooms) {
-      filters.bedrooms = { $gte: Number(minBedrooms) };
+      filters.bedrooms = { $gte: Number(bedrooms) };
     }
 
-    const currentPage = Math.max(1, Number(page) || 1);
-    const pageSize = Math.min(50, Math.max(1, Number(limit) || 12));
+    if (featured === "true") {
+      andFilters.push({
+        isFeatured: true,
+        $or: [{ featuredUntil: null }, { featuredUntil: { $gte: new Date() } }]
+      });
+    }
+
+    if (search) {
+      const searchRegex = new RegExp(String(search).trim(), "i");
+      andFilters.push({
+        $or: [
+          { title: searchRegex },
+          { description: searchRegex },
+          { category: searchRegex },
+          { "location.city": searchRegex },
+          { "location.state": searchRegex },
+          { "location.address": searchRegex },
+          { "location.landmark": searchRegex }
+        ]
+      });
+    }
+
+    if (andFilters.length > 0) {
+      filters.$and = andFilters;
+    }
 
     const [total, properties] = await Promise.all([
       Property.countDocuments(filters),
-      Property.find(filters)
-        .populate("agent", "name phone email role")
-        .sort({ createdAt: -1 })
-        .skip((currentPage - 1) * pageSize)
-        .limit(pageSize)
+      populatePropertyQuery(
+        Property.find(filters)
+          .sort(getSortOption(sort))
+          .skip((currentPage - 1) * pageSize)
+          .limit(pageSize)
+      )
     ]);
 
     return res.json({
@@ -261,9 +364,7 @@ export const getAllProperties = async (req, res, next) => {
 
 export const getPropertyById = async (req, res, next) => {
   try {
-    const property = await Property.findById(req.params.id)
-      .populate("agent", "name phone email role")
-      .populate("approvedBy", "name email role");
+    const property = await populatePropertyQuery(Property.findById(req.params.id));
 
     if (!property) {
       throw new AppError(404, "Property not found.");
@@ -273,12 +374,15 @@ export const getPropertyById = async (req, res, next) => {
       throw new AppError(404, "Property not available.");
     }
 
-    if (property.status === "approved" && (!req.user || !canManageProperty(property, req.user))) {
+    if (property.approvalStatus === "approved" && !canManageProperty(property, req.user)) {
       await Property.updateOne({ _id: property._id }, { $inc: { views: 1 } });
       property.views += 1;
     }
 
-    return res.json({ success: true, data: property });
+    return res.json({
+      success: true,
+      data: property
+    });
   } catch (error) {
     return next(error);
   }
@@ -287,15 +391,16 @@ export const getPropertyById = async (req, res, next) => {
 export const updateProperty = async (req, res, next) => {
   try {
     const property = await Property.findById(req.params.id);
+
     if (!property) {
       throw new AppError(404, "Property not found.");
     }
 
     if (!canManageProperty(property, req.user)) {
-      throw new AppError(403, "Not allowed to update this property.");
+      throw new AppError(403, "You are not allowed to update this property.");
     }
 
-    const payload = buildPayload(req.body, property.toObject());
+    const payload = buildPayload(req.body, property.toObject(), req.user);
     const newImages = normalizeUploadedImages(req.files);
     const retainedImages = hasKey(req.body, "retainedImages")
       ? parseRetainedImages(req.body.retainedImages, property.images)
@@ -303,37 +408,40 @@ export const updateProperty = async (req, res, next) => {
 
     if (hasKey(req.body, "retainedImages")) {
       const removedImages = property.images.filter(
-        (existing) => !retainedImages.some((item) => item.filename === existing.filename)
+        (image) => !retainedImages.some((retained) => retained.filename === image.filename)
       );
       await removeFiles(removedImages.map((image) => image.filename));
     }
 
     payload.images = [...retainedImages, ...newImages];
 
-    if (req.user.role === "agent") {
-      payload.status = "pending";
-      payload.approvedBy = null;
-      payload.approvedAt = null;
-      payload.rejectedReason = "";
+    if (req.user.role !== "admin") {
+      // Any user-side edit should go back through moderation before becoming public again.
+      payload.approvalStatus = "pending";
+      payload.rejectionReason = "";
+      payload.isFeatured = property.isFeatured;
+      payload.featuredUntil = property.featuredUntil;
+    } else if (!["pending", "approved", "rejected"].includes(payload.approvalStatus)) {
+      payload.approvalStatus = property.approvalStatus;
     }
 
-    if (req.user.role === "admin" && payload.status === "approved") {
-      payload.approvedBy = req.user._id;
-      payload.approvedAt = new Date();
-      payload.rejectedReason = "";
-    }
-
-    const updated = await Property.findByIdAndUpdate(req.params.id, payload, {
-      new: true,
-      runValidators: true
-    }).populate("agent", "name phone email role");
+    const updatedProperty = await populatePropertyQuery(
+      Property.findByIdAndUpdate(req.params.id, payload, {
+        new: true,
+        runValidators: true
+      })
+    );
 
     return res.json({
       success: true,
-      message: "Property updated successfully.",
-      data: updated
+      message:
+        req.user.role === "admin"
+          ? "Property updated successfully."
+          : "Property updated and sent for admin review.",
+      data: updatedProperty
     });
   } catch (error) {
+    await removeFiles((req.files || []).map((file) => file.filename));
     return next(error);
   }
 };
@@ -341,12 +449,13 @@ export const updateProperty = async (req, res, next) => {
 export const deleteProperty = async (req, res, next) => {
   try {
     const property = await Property.findById(req.params.id);
+
     if (!property) {
       throw new AppError(404, "Property not found.");
     }
 
-    if (!canManageProperty(property, req.user)) {
-      throw new AppError(403, "Not allowed to delete this property.");
+    if (req.user.role !== "admin") {
+      throw new AppError(403, "Only admins can delete properties.");
     }
 
     await removeFiles(property.images.map((image) => image.filename));
@@ -354,7 +463,70 @@ export const deleteProperty = async (req, res, next) => {
     await User.updateMany({ favorites: property._id }, { $pull: { favorites: property._id } });
     await property.deleteOne();
 
-    return res.json({ success: true, message: "Property deleted successfully." });
+    return res.json({
+      success: true,
+      message: "Property deleted successfully."
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const updatePropertyApproval = async (req, res, next) => {
+  try {
+    const { approvalStatus, rejectionReason = "" } = req.body;
+
+    if (!["approved", "rejected", "pending"].includes(String(approvalStatus))) {
+      throw new AppError(400, "approvalStatus must be approved, rejected, or pending.");
+    }
+
+    const property = await Property.findById(req.params.id);
+    if (!property) {
+      throw new AppError(404, "Property not found.");
+    }
+
+    property.approvalStatus = String(approvalStatus);
+    property.rejectionReason =
+      property.approvalStatus === "rejected" ? String(rejectionReason || "").trim() : "";
+
+    await property.save();
+
+    const populatedProperty = await populatePropertyQuery(Property.findById(property._id));
+
+    return res.json({
+      success: true,
+      message: `Property marked as ${property.approvalStatus}.`,
+      data: populatedProperty
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const updatePropertyFeatured = async (req, res, next) => {
+  try {
+    const property = await Property.findById(req.params.id);
+    if (!property) {
+      throw new AppError(404, "Property not found.");
+    }
+
+    const isFeatured = req.body.isFeatured === true || req.body.isFeatured === "true";
+    const featuredDays = Math.max(1, Number(req.body.featuredDays) || 30);
+
+    property.isFeatured = isFeatured;
+    property.featuredUntil = isFeatured
+      ? new Date(Date.now() + featuredDays * 24 * 60 * 60 * 1000)
+      : null;
+
+    await property.save();
+
+    const populatedProperty = await populatePropertyQuery(Property.findById(property._id));
+
+    return res.json({
+      success: true,
+      message: isFeatured ? "Property marked as featured." : "Featured status removed.",
+      data: populatedProperty
+    });
   } catch (error) {
     return next(error);
   }

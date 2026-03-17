@@ -6,29 +6,40 @@ import { AppError } from "../middleware/errorHandler.js";
 export const getAdminAnalytics = async (req, res, next) => {
   try {
     const [
+      totalUsers,
+      activeUsers,
+      totalAdmins,
       totalProperties,
       approvedProperties,
       pendingProperties,
       rejectedProperties,
-      totalAgents,
-      totalBuyers,
-      totalUsers,
+      featuredProperties,
       totalInquiries,
-      recentProperties,
+      totalFavoritesData,
       monthlyListings
     ] = await Promise.all([
-      Property.countDocuments(),
-      Property.countDocuments({ status: "approved" }),
-      Property.countDocuments({ status: "pending" }),
-      Property.countDocuments({ status: "rejected" }),
-      User.countDocuments({ role: "agent" }),
-      User.countDocuments({ role: "buyer" }),
       User.countDocuments(),
+      User.countDocuments({ isActive: true }),
+      User.countDocuments({ role: "admin" }),
+      Property.countDocuments(),
+      Property.countDocuments({ approvalStatus: "approved" }),
+      Property.countDocuments({ approvalStatus: "pending" }),
+      Property.countDocuments({ approvalStatus: "rejected" }),
+      Property.countDocuments({ isFeatured: true }),
       Inquiry.countDocuments(),
-      Property.find()
-        .populate("agent", "name email phone role")
-        .sort({ createdAt: -1 })
-        .limit(6),
+      User.aggregate([
+        {
+          $project: {
+            favoriteCount: { $size: "$favorites" }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$favoriteCount" }
+          }
+        }
+      ]),
       Property.aggregate([
         {
           $group: {
@@ -67,16 +78,17 @@ export const getAdminAnalytics = async (req, res, next) => {
       success: true,
       data: {
         totals: {
+          totalUsers,
+          activeUsers,
+          totalAdmins,
           totalProperties,
           approvedProperties,
           pendingProperties,
           rejectedProperties,
-          totalAgents,
-          totalBuyers,
-          totalUsers,
-          totalInquiries
+          featuredProperties,
+          totalInquiries,
+          totalFavorites: totalFavoritesData[0]?.total || 0
         },
-        recentProperties,
         monthlyListings: monthlyListings.reverse()
       }
     });
@@ -85,127 +97,136 @@ export const getAdminAnalytics = async (req, res, next) => {
   }
 };
 
-export const getAgents = async (req, res, next) => {
+export const getUsers = async (req, res, next) => {
   try {
-    const agents = await User.aggregate([
-      { $match: { role: "agent" } },
-      {
-        $lookup: {
-          from: "properties",
-          localField: "_id",
-          foreignField: "agent",
-          as: "properties"
-        }
-      },
-      {
-        $lookup: {
-          from: "inquiries",
-          localField: "_id",
-          foreignField: "agent",
-          as: "inquiries"
-        }
-      },
-      {
-        $project: {
-          name: 1,
-          email: 1,
-          phone: 1,
-          role: 1,
-          isActive: 1,
-          createdAt: 1,
-          totalProperties: { $size: "$properties" },
-          approvedProperties: {
-            $size: {
-              $filter: {
-                input: "$properties",
-                as: "property",
-                cond: { $eq: ["$$property.status", "approved"] }
+    const [users, propertyStats, inquiryStats] = await Promise.all([
+      User.find().select("name email phone role isActive favorites createdAt").sort({ createdAt: -1 }).lean(),
+      Property.aggregate([
+        {
+          $group: {
+            _id: "$postedBy",
+            propertyCount: { $sum: 1 },
+            approvedCount: {
+              $sum: {
+                $cond: [{ $eq: ["$approvalStatus", "approved"] }, 1, 0]
               }
             }
-          },
-          totalInquiries: { $size: "$inquiries" }
+          }
         }
-      },
-      { $sort: { createdAt: -1 } }
+      ]),
+      Inquiry.aggregate([
+        {
+          $group: {
+            _id: "$owner",
+            inquiryCount: { $sum: 1 }
+          }
+        }
+      ])
     ]);
 
-    return res.json({ success: true, data: agents });
-  } catch (error) {
-    return next(error);
-  }
-};
+    const propertyMap = new Map(propertyStats.map((item) => [String(item._id), item]));
+    const inquiryMap = new Map(inquiryStats.map((item) => [String(item._id), item]));
 
-export const updateAgentStatus = async (req, res, next) => {
-  try {
-    const { isActive } = req.body;
+    const mergedUsers = users.map((user) => {
+      const propertyData = propertyMap.get(String(user._id));
+      const inquiryData = inquiryMap.get(String(user._id));
 
-    if (typeof isActive !== "boolean") {
-      throw new AppError(400, "isActive boolean is required.");
-    }
-
-    const agent = await User.findOneAndUpdate(
-      { _id: req.params.id, role: "agent" },
-      { isActive },
-      { new: true }
-    ).select("name email phone role isActive createdAt");
-
-    if (!agent) {
-      throw new AppError(404, "Agent not found.");
-    }
-
-    return res.json({ success: true, message: "Agent status updated.", data: agent });
-  } catch (error) {
-    return next(error);
-  }
-};
-
-export const moderateProperty = async (req, res, next) => {
-  try {
-    const { status, rejectedReason = "" } = req.body;
-
-    if (!["approved", "rejected"].includes(status)) {
-      throw new AppError(400, "Status must be approved or rejected.");
-    }
-
-    const property = await Property.findById(req.params.id);
-    if (!property) {
-      throw new AppError(404, "Property not found.");
-    }
-
-    property.status = status;
-    property.approvedBy = status === "approved" ? req.user._id : null;
-    property.approvedAt = status === "approved" ? new Date() : null;
-    property.rejectedReason = status === "rejected" ? String(rejectedReason || "").trim() : "";
-
-    await property.save();
-
-    const populated = await Property.findById(property._id)
-      .populate("agent", "name email phone role")
-      .populate("approvedBy", "name email role");
+      return {
+        ...user,
+        favoriteCount: user.favorites?.length || 0,
+        propertyCount: propertyData?.propertyCount || 0,
+        approvedPropertyCount: propertyData?.approvedCount || 0,
+        inquiryCount: inquiryData?.inquiryCount || 0
+      };
+    });
 
     return res.json({
       success: true,
-      message: `Property ${status} successfully.`,
-      data: populated
+      data: mergedUsers
     });
   } catch (error) {
     return next(error);
   }
 };
 
-export const getModerationQueue = async (req, res, next) => {
+export const updateUser = async (req, res, next) => {
   try {
+    const { isActive, role } = req.body;
+    const updates = {};
+
+    if (typeof isActive === "boolean") {
+      updates.isActive = isActive;
+    }
+
+    if (role !== undefined) {
+      if (!["user", "admin"].includes(String(role))) {
+        throw new AppError(400, "role must be either user or admin.");
+      }
+
+      updates.role = String(role);
+    }
+
+    if (Object.keys(updates).length === 0) {
+      throw new AppError(400, "At least one field is required to update the user.");
+    }
+
+    if (String(req.user._id) === String(req.params.id)) {
+      if (updates.isActive === false) {
+        throw new AppError(400, "You cannot deactivate your own admin account.");
+      }
+
+      if (updates.role === "user") {
+        throw new AppError(400, "You cannot remove your own admin role.");
+      }
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, updates, {
+      new: true,
+      runValidators: true
+    }).select("name email phone role isActive favorites createdAt");
+
+    if (!updatedUser) {
+      throw new AppError(404, "User not found.");
+    }
+
+    return res.json({
+      success: true,
+      message: "User updated successfully.",
+      data: updatedUser
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getAdminProperties = async (req, res, next) => {
+  try {
+    const { approvalStatus, search } = req.query;
     const filters = {};
-    if (req.query.status) {
-      filters.status = req.query.status;
+
+    if (approvalStatus) {
+      filters.approvalStatus = approvalStatus;
+    }
+
+    if (search) {
+      const searchRegex = new RegExp(String(search).trim(), "i");
+      filters.$or = [
+        { title: searchRegex },
+        { description: searchRegex },
+        { "location.city": searchRegex },
+        { "location.state": searchRegex },
+        { "location.address": searchRegex }
+      ];
     }
 
     const properties = await Property.find(filters)
-      .populate("agent", "name email phone role")
-      .populate("approvedBy", "name email role")
+      .populate("postedBy", "name email phone role isActive")
       .sort({ createdAt: -1 });
 
-    return res.json({ success: true, data: properties });
+    return res.json({
+      success: true,
+      data: properties
+    });
   } catch (error) {
     return next(error);
   }
