@@ -3,8 +3,8 @@ import { fetchMe, loginUser, registerUser } from "../services/api.js";
 
 const AuthContext = createContext(null);
 
-const TOKEN_KEY = "mahadev_token";
-const USER_KEY = "mahadev_user";
+const TOKEN_KEY = "sagar_infra_token";
+const USER_KEY = "sagar_infra_user";
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY) || "");

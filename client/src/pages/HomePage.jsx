@@ -56,7 +56,7 @@ const HomePage = () => {
       <section className="card overflow-hidden bg-gradient-to-r from-brand-700 via-brand-600 to-cyan-500 text-white">
         <div className="grid gap-6 md:grid-cols-[1.2fr_0.8fr] md:items-center">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-100">Mahadev Property</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-100">Sagar Infra</p>
             <h1 className="mt-2 text-3xl font-bold md:text-4xl">Find Plots, Houses, Flats and Commercial Spaces</h1>
             <p className="mt-3 max-w-2xl text-sm text-cyan-50">
               A modern platform for buyers, sellers, dealers, and admins. Search listings, connect with sellers,
@@ -85,7 +85,7 @@ const HomePage = () => {
           </div>
 
           <div className="grid gap-3 rounded-2xl bg-white/10 p-4 backdrop-blur">
-            <p className="text-sm font-semibold text-cyan-50">Why choose Mahadev Property?</p>
+            <p className="text-sm font-semibold text-cyan-50">Why choose Sagar Infra?</p>
             <ul className="space-y-2 text-sm text-cyan-100">
               <li>Verified property approval workflow</li>
               <li>Dealer and seller dashboards</li>

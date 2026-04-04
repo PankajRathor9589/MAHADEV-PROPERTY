@@ -25,7 +25,7 @@ const Navbar = () => {
           <span className="rounded-xl bg-brand-600 p-2 text-white">
             <Building2 size={20} />
           </span>
-          <span className="text-lg font-bold text-slate-900">Mahadev Property</span>
+          <span className="text-lg font-bold text-slate-900">Sagar Infra</span>
         </NavLink>
 
         <nav className="hidden items-center gap-2 md:flex">

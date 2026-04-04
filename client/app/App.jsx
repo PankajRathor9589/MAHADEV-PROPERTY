@@ -17,6 +17,7 @@ const App = () => {
 
   return (
     <div className="min-h-screen overflow-x-hidden">
+      <h1 className="sr-only">SAGAR INFRA LIVE</h1>
       <Navbar />
 
       <main className="relative pb-16 pt-3 sm:pt-4">
