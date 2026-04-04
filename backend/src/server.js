@@ -21,12 +21,16 @@ import reviewRoutes from "./routes/reviewRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 
-dotenv.config();
-
-const app = express();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const projectRootEnvPath = path.resolve(__dirname, "..", "..", ".env");
+const backendEnvPath = path.resolve(__dirname, "..", ".env");
+
+// Load root secrets first and allow backend-local overrides for development.
+dotenv.config({ path: projectRootEnvPath });
+dotenv.config({ path: backendEnvPath, override: true });
+
+const app = express();
 
 // ✅ Connect Database
 await connectDB();

@@ -7,7 +7,7 @@ import { GOOGLE_MAPS_LINK, OWNER_PROFILE } from "../../config/site";
 import { useT } from "../../hooks/useTranslation";
 
 const Header = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdminSession } = useAuth();
   const { language, toggleLanguage } = useApp();
   const t = useT();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -46,7 +46,7 @@ const Header = () => {
             <button onClick={toggleLanguage} className="btn-outline px-3 py-1.5">{language === "en" ? "HI" : "EN"}</button>
             {user ? (
               <>
-                {user.role === "admin" && (
+                {isAdminSession && (
                   <Link to="/admin" className="btn-outline px-3 py-1.5">{t.dashboard}</Link>
                 )}
                 <button onClick={logout} className="btn-primary px-3 py-1.5">Logout</button>
@@ -93,7 +93,7 @@ const Header = () => {
               <Link onClick={closeMenu} to="/login" className="btn-outline px-3 py-2">{t.login}</Link>
             )}
           </div>
-          {user?.role === "admin" && (
+          {isAdminSession && (
             <Link onClick={closeMenu} to="/admin" className="btn-outline px-3 py-2">{t.dashboard}</Link>
           )}
           {!user && <Link onClick={closeMenu} to="/signup" className="btn-primary px-3 py-2">{t.signup}</Link>}

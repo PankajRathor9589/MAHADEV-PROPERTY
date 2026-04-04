@@ -9,8 +9,7 @@ const SignupPage = () => {
     email: "",
     phone: "",
     password: "",
-    role: "buyer",
-    adminKey: ""
+    role: "buyer"
   });
   const [error, setError] = useState("");
   const { register } = useAuth();
@@ -22,7 +21,7 @@ const SignupPage = () => {
 
     try {
       const data = await register(form);
-      navigate(data.user.role === "admin" ? "/admin" : data.user.role === "agent" ? "/agent" : "/properties");
+      navigate(data.user.role === "agent" ? "/agent" : "/properties");
     } catch (err) {
       setError(err.response?.data?.message || "Signup failed.");
     }
@@ -30,20 +29,19 @@ const SignupPage = () => {
 
   return (
     <>
-      <Seo title="Create Account" description="Create a buyer, agent, or admin account for the real estate marketplace." />
+      <Seo title="Create Account" description="Create a buyer or agent account for the real estate marketplace." />
 
       <div className="grid min-h-[70vh] items-center gap-8 lg:grid-cols-[0.95fr_1.05fr]">
         <section className="space-y-4">
           <p className="surface-label">Create account</p>
-          <h1 className="section-heading text-5xl leading-tight">Join the platform as a buyer, agent, or administrator.</h1>
+          <h1 className="section-heading text-5xl leading-tight">Join the platform as a buyer or agent.</h1>
           <p className="max-w-xl text-sm leading-7 text-slate-600">
-            Buyers can shortlist and inquire, agents can add and manage listings, and admins can approve inventory and monitor user activity from the dashboard.
+            Buyers can shortlist and inquire, while agents can add and manage listings. Admin access is protected separately through the secure key flow.
           </p>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             {[
               { id: "buyer", title: "Buyer", copy: "Search, compare, and contact agents." },
-              { id: "agent", title: "Agent", copy: "Upload images and manage listings." },
-              { id: "admin", title: "Admin", copy: "Approve properties and manage users." }
+              { id: "agent", title: "Agent", copy: "Upload images and manage listings." }
             ].map((role) => (
               <div key={role.id} className="rounded-[24px] border border-white/70 bg-white/70 px-4 py-4 shadow-soft">
                 <p className="font-semibold text-ink">{role.title}</p>
@@ -89,11 +87,10 @@ const SignupPage = () => {
               required
             />
 
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               {[
                 { id: "buyer", label: "Buyer" },
-                { id: "agent", label: "Agent" },
-                { id: "admin", label: "Admin" }
+                { id: "agent", label: "Agent" }
               ].map((option) => (
                 <button
                   key={option.id}
@@ -109,15 +106,6 @@ const SignupPage = () => {
                 </button>
               ))}
             </div>
-
-            {form.role === "admin" && (
-              <input
-                className="field"
-                placeholder="Admin registration key"
-                value={form.adminKey}
-                onChange={(event) => setForm((prev) => ({ ...prev, adminKey: event.target.value }))}
-              />
-            )}
 
             <button type="submit" className="btn-primary w-full">
               Create account

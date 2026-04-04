@@ -1,8 +1,14 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const ProtectedRoute = ({ children, roles = [] }) => {
-  const { user, loading } = useAuth();
+const ProtectedRoute = ({
+  children,
+  roles = [],
+  redirectTo = "/login",
+  unauthorizedTo = "/",
+  requireAdminSession = false
+}) => {
+  const { user, loading, isAdminSession } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -17,11 +23,15 @@ const ProtectedRoute = ({ children, roles = [] }) => {
   }
 
   if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to={redirectTo} state={{ from: location }} replace />;
+  }
+
+  if (requireAdminSession && !isAdminSession) {
+    return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
   if (roles.length > 0 && !roles.includes(user.role)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={unauthorizedTo} replace />;
   }
 
   return children;

@@ -65,7 +65,9 @@ const propertySchema = new mongoose.Schema(
     views: { type: Number, default: 0 },
     isFeatured: { type: Boolean, default: false },
     isTrending: { type: Boolean, default: false },
-    recentlySold: { type: Boolean, default: false }
+    recentlySold: { type: Boolean, default: false },
+    status: { type: String, enum: ["pending", "approved", "rejected"], default: "approved" },
+    rejectedReason: { type: String, trim: true, default: "" }
   },
   { timestamps: true }
 );

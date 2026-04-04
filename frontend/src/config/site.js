@@ -70,7 +70,7 @@ export const DEFAULT_AMENITIES = [
 
 export const CATEGORY_CARDS = DEMO_CATEGORIES;
 export const HERO_MEDIA = DEMO_MEDIA;
-export const DEMO_LOGIN_HINTS = DEMO_CREDENTIALS;
+export const DEMO_LOGIN_HINTS = DEMO_CREDENTIALS.filter((account) => account.role !== "Admin");
 
 export const TRUST_BADGES = [
   "Agent-assisted buying",

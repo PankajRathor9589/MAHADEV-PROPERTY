@@ -14,10 +14,10 @@ const linkClass = ({ isActive }) =>
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const { compareCount } = useApp();
-  const { user, logout } = useAuth();
+  const { user, logout, isAdminSession } = useAuth();
   const navigate = useNavigate();
 
-  const dashboardPath = user?.role === "admin" ? "/admin" : user?.role === "agent" ? "/agent" : null;
+  const dashboardPath = isAdminSession ? "/admin" : user?.role === "agent" ? "/agent" : null;
 
   const handleLogout = () => {
     logout();

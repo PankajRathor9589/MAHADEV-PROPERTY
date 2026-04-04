@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { AppError } from "../middleware/errorHandler.js";
@@ -7,7 +8,48 @@ const signToken = (user) =>
     expiresIn: process.env.JWT_EXPIRES_IN || "7d"
   });
 
-const sanitizeUser = (user) => user.toJSON();
+const sanitizeUser = (user) => (typeof user?.toJSON === "function" ? user.toJSON() : user);
+
+const ensureAdminSessionUser = async () => {
+  const sessionEmail = String(process.env.ADMIN_SESSION_EMAIL || "admin.session@sagarinfra.local")
+    .trim()
+    .toLowerCase();
+  const sessionPhone = String(process.env.ADMIN_SESSION_PHONE || "7692016188").trim();
+  const existingUser = await User.findOne({ email: sessionEmail }).select("+password");
+
+  if (existingUser) {
+    if (existingUser.role !== "admin") {
+      throw new AppError(409, "Reserved admin session email is already in use.");
+    }
+
+    let shouldSave = false;
+
+    if (!existingUser.isActive) {
+      existingUser.isActive = true;
+      shouldSave = true;
+    }
+
+    if (!existingUser.phone && sessionPhone) {
+      existingUser.phone = sessionPhone;
+      shouldSave = true;
+    }
+
+    if (shouldSave) {
+      await existingUser.save();
+    }
+
+    return existingUser;
+  }
+
+  return User.create({
+    name: "Sagar Infra Admin",
+    email: sessionEmail,
+    phone: sessionPhone,
+    password: crypto.randomBytes(32).toString("hex"),
+    role: "admin",
+    isActive: true
+  });
+};
 
 const normalizeRole = (value) => {
   const normalized = String(value || "user").trim().toLowerCase();
@@ -89,6 +131,24 @@ export const login = async (req, res, next) => {
       success: true,
       message: "Login successful.",
       token: signToken(user),
+      user: sanitizeUser(user)
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const adminLogin = async (req, res, next) => {
+  try {
+    const user = await ensureAdminSessionUser();
+    const token = jwt.sign({ id: user._id, role: "admin", authType: "admin_key" }, process.env.JWT_SECRET, {
+      expiresIn: process.env.ADMIN_SESSION_EXPIRES_IN || "8h"
+    });
+
+    return res.json({
+      success: true,
+      message: "Admin access granted.",
+      token,
       user: sanitizeUser(user)
     });
   } catch (error) {

@@ -1,3 +1,8 @@
+# Core secret and build ignores
+.env
+node_modules
+dist
+
 # ======================
 # Dependencies
 # ======================

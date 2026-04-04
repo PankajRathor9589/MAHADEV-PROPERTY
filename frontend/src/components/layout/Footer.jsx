@@ -18,7 +18,7 @@ const Footer = () => (
           <Link to="/">Homepage</Link>
           <Link to="/properties">Property listings</Link>
           <Link to="/agent">Agent dashboard</Link>
-          <Link to="/admin">Admin dashboard</Link>
+          <Link to="/compare">Compare properties</Link>
         </div>
       </div>
 

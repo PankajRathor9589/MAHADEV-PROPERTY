@@ -18,7 +18,7 @@ const LoginPage = () => {
     try {
       const data = await login(form);
       const redirectPath =
-        location.state?.from?.pathname || (data.user.role === "admin" ? "/admin" : data.user.role === "agent" ? "/agent" : "/properties");
+        location.state?.from?.pathname || (data.user.role === "agent" ? "/agent" : data.user.role === "admin" ? "/admin/login" : "/properties");
       navigate(redirectPath);
     } catch (err) {
       setError(err.response?.data?.message || "Login failed.");
@@ -27,7 +27,7 @@ const LoginPage = () => {
 
   return (
     <>
-      <Seo title="Login" description="Sign in to access saved listings, agent tools, and admin moderation." />
+      <Seo title="Login" description="Sign in to access saved listings and agent tools." />
 
       <div className="grid min-h-[70vh] items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
         <section className="panel-card overflow-hidden p-0">
@@ -36,7 +36,7 @@ const LoginPage = () => {
               <p className="surface-label">Welcome back</p>
               <h1 className="section-heading mt-2 text-5xl leading-tight">Sign in to continue browsing, listing, and moderating properties.</h1>
               <p className="mt-3 max-w-xl text-sm leading-7 text-slate-600">
-                The interface supports buyer discovery, agent inventory management, and admin moderation from the same responsive frontend shell.
+                Use your account to continue browsing, save favorites, or manage property inventory. Secure admin access now uses a separate backend-verified key flow.
               </p>
             </div>
 
@@ -86,6 +86,12 @@ const LoginPage = () => {
             </button>
           </div>
           <p className="mt-5 text-sm text-slate-600">
+            Need admin access?{" "}
+            <Link to="/admin/login" className="font-semibold text-brand-700">
+              Use the secure admin key page
+            </Link>
+          </p>
+          <p className="mt-3 text-sm text-slate-600">
             New here?{" "}
             <Link to="/signup" className="font-semibold text-brand-700">
               Create an account

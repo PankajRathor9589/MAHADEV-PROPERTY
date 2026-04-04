@@ -389,6 +389,12 @@ export const authApi = {
       async () => getPayload(await api.post("/auth/register", payload)),
       async () => {
         await delay();
+        const requestedRole = String(payload.role || "buyer").toLowerCase();
+
+        if (requestedRole === "admin") {
+          throw createHttpError(403, "Admin accounts cannot be created here. Use the secure admin access page instead.");
+        }
+
         const users = getDemoUsers();
 
         if (users.some((user) => user.email.toLowerCase() === payload.email.toLowerCase())) {
@@ -400,10 +406,10 @@ export const authApi = {
           name: payload.name,
           email: payload.email,
           phone: payload.phone,
-          role: payload.role || "buyer",
+          role: requestedRole === "agent" ? "agent" : "buyer",
           password: payload.password,
           isActive: true,
-          agencyName: payload.role === "agent" ? `${payload.name.split(" ")[0] || "Prime"} Realty` : ""
+          agencyName: requestedRole === "agent" ? `${payload.name.split(" ")[0] || "Prime"} Realty` : ""
         };
 
         users.push(createdUser);
@@ -430,11 +436,16 @@ export const authApi = {
           throw createHttpError(403, "This account is inactive.");
         }
 
+        if (user.role === "admin") {
+          throw createHttpError(403, "Admin access requires the secure admin key login.");
+        }
+
         const token = `demo-token-${user.id}`;
         saveDemoSession({ token, userId: user.id });
         return { token, user: publicUser(user) };
       }
     ),
+  loginAdmin: async (adminKey) => getPayload(await api.post("/auth/admin/login", { adminKey })),
   me: async () =>
     withApiFallback(
       async () => getPayload(await api.get("/auth/me")),
@@ -445,6 +456,11 @@ export const authApi = {
         if (!user) {
           clearDemoSession();
           throw createHttpError(401, "Your session has expired.");
+        }
+
+        if (user.role === "admin") {
+          clearDemoSession();
+          throw createHttpError(403, "Admin access requires the secure admin key login.");
         }
 
         return { user };

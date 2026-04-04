@@ -1,64 +1,116 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { authApi } from "../api/services";
 import { clearDemoSession } from "../api/demoStore";
 
 const AuthContext = createContext(null);
+const TOKEN_KEY = "mp_token";
+
+const parseJwtPayload = (token) => {
+  try {
+    const [, payload] = String(token || "").split(".");
+    if (!payload) {
+      return null;
+    }
+
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padding = normalized.length % 4 ? "=".repeat(4 - (normalized.length % 4)) : "";
+    return JSON.parse(window.atob(`${normalized}${padding}`));
+  } catch {
+    return null;
+  }
+};
 
 export const AuthProvider = ({ children }) => {
+  const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY) || "");
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(localStorage.getItem(TOKEN_KEY)));
+
+  const clearSession = () => {
+    localStorage.removeItem(TOKEN_KEY);
+    clearDemoSession();
+    setToken("");
+    setUser(null);
+    setLoading(false);
+  };
 
   const loadMe = async () => {
-    const token = localStorage.getItem("mp_token");
-
     if (!token) {
       setLoading(false);
       return;
     }
 
+    setLoading(true);
+
     try {
       const data = await authApi.me();
       setUser(data.user);
-    } catch (error) {
-      localStorage.removeItem("mp_token");
-      setUser(null);
-    } finally {
-      setLoading(false);
+    } catch {
+      clearSession();
+      return;
     }
+
+    setLoading(false);
   };
 
   useEffect(() => {
     loadMe();
-  }, []);
+  }, [token]);
 
-  const login = async (payload) => {
-    const data = await authApi.login(payload);
-    localStorage.setItem("mp_token", data.token);
+  useEffect(() => {
+    if (!token) {
+      return undefined;
+    }
+
+    const payload = parseJwtPayload(token);
+    const expiresAt = Number(payload?.exp || 0) * 1000;
+
+    if (!expiresAt) {
+      return undefined;
+    }
+
+    const remainingMs = expiresAt - Date.now();
+
+    if (remainingMs <= 0) {
+      clearSession();
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      clearSession();
+    }, remainingMs);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [token]);
+
+  const persistSession = (data) => {
+    localStorage.setItem(TOKEN_KEY, data.token);
+    setToken(data.token);
     setUser(data.user);
+    setLoading(false);
     return data;
   };
 
-  const register = async (payload) => {
-    const data = await authApi.register(payload);
-    localStorage.setItem("mp_token", data.token);
-    setUser(data.user);
-    return data;
-  };
+  const login = async (payload) => persistSession(await authApi.login(payload));
+  const loginAdmin = async (adminKey) => persistSession(await authApi.loginAdmin(adminKey));
+  const register = async (payload) => persistSession(await authApi.register(payload));
 
-  const logout = () => {
-    localStorage.removeItem("mp_token");
-    clearDemoSession();
-    setUser(null);
-  };
+  const sessionPayload = useMemo(() => parseJwtPayload(token), [token]);
+  const isAdminSession = Boolean(user && user.role === "admin" && sessionPayload?.authType === "admin_key");
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        token,
         loading,
+        isAuthenticated: Boolean(token && user),
+        isAdminSession,
         login,
+        loginAdmin,
         register,
-        logout,
+        logout: clearSession,
         reload: loadMe
       }}
     >

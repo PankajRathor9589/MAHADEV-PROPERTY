@@ -5,11 +5,11 @@ import {
   getUsers,
   updateUser
 } from "../controllers/adminController.js";
-import { authorizeRoles, protect } from "../middleware/auth.js";
+import { protect, requireAdminAccess } from "../middleware/auth.js";
 
 const router = Router();
 
-router.use(protect, authorizeRoles("admin"));
+router.use(protect, requireAdminAccess);
 router.get("/analytics", getAdminAnalytics);
 router.get("/properties", getAdminProperties);
 router.get("/users", getUsers);

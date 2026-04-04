@@ -7,7 +7,8 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true, minlength: 6 },
     phone: { type: String, trim: true },
-    role: { type: String, enum: ["user", "admin"], default: "user" },
+    role: { type: String, enum: ["buyer", "agent", "admin", "user"], default: "buyer" },
+    isActive: { type: Boolean, default: true },
     favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Property" }],
     recentlyViewed: [{ type: mongoose.Schema.Types.ObjectId, ref: "Property" }],
     compareList: [{ type: mongoose.Schema.Types.ObjectId, ref: "Property" }]
