@@ -17,9 +17,9 @@ const PropertyCard = ({ property }) => {
   const phone = property.contactPhone || COMPANY_INFO.phoneLink;
 
   return (
-    <article className="group overflow-hidden rounded-[30px] border border-white/10 bg-white/5 shadow-soft transition duration-300 hover:-translate-y-1 hover:border-gold-300/30 hover:shadow-panel">
+    <article className="group overflow-hidden rounded-[28px] border border-white/10 bg-white/5 shadow-soft transition duration-300 hover:-translate-y-1 hover:border-gold-300/30 hover:shadow-panel">
       <Link to={`/properties/${property._id}`} className="block">
-        <div className="relative h-64 overflow-hidden bg-slate-900">
+        <div className="relative h-56 overflow-hidden bg-slate-900 sm:h-64">
           <img
             src={imageUrl}
             alt={property.title}
@@ -57,7 +57,7 @@ const PropertyCard = ({ property }) => {
           <p className="text-sm text-white/55">{property.shortDescription || property.description}</p>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 rounded-[24px] border border-white/10 bg-slate-950/40 p-3 text-sm text-white/70">
+        <div className="grid grid-cols-1 gap-2 rounded-[24px] border border-white/10 bg-slate-950/40 p-3 text-sm text-white/70 sm:grid-cols-3">
           <span className="inline-flex items-center gap-2">
             <Ruler size={15} />
             {formatNumber(property.area)} sq.ft
@@ -72,7 +72,7 @@ const PropertyCard = ({ property }) => {
           </span>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <a href={toPhoneHref(phone)} className="btn-primary flex-1">
             <Phone size={16} />
             Contact Now

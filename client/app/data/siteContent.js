@@ -7,32 +7,32 @@ export const COMPANY_INFO = {
   phoneDisplay: "7692016188",
   phoneLink: "+917692016188",
   whatsappNumber: "917692016188",
-  whatsappMessage: "Hi Sagar Infra, I want to know more about your services and properties.",
+  whatsappMessage: "Hi Sagar Infra, I want a free consultation for construction, contract work, or property services in Sagar Madhya Pradesh.",
   address: "Sagar Infra, Sagar, Madhya Pradesh",
   tagline: "Building Dreams, Creating Landmarks",
-  subtitle: "Construction, Infrastructure & Real Estate Experts in Sagar",
+  subtitle: "Best Contractor & Property Partner in Sagar Madhya Pradesh",
   description:
     "Sagar Infra is a trusted infrastructure and real estate company in Sagar, Madhya Pradesh, handling construction, government contracts, road building, material supply, land dealing, plotting, and civil works."
 };
 
 export const HERO_STATS = [
   { value: "100+", label: "Happy Clients" },
-  { value: "50+", label: "Projects & Properties" },
-  { value: "Verified", label: "Listings" }
+  { value: "50+", label: "Contracts & Properties" },
+  { value: "Verified", label: "Documents" }
 ];
 
 export const HOME_CAPABILITIES = [
   {
-    title: "Construction & Civil Execution",
-    copy: "Residential, commercial, RCC, and on-site civil work planned with quality, discipline, and local market understanding."
+    title: "National Highway & Government Work",
+    copy: "Sagar Infra undertakes government and private contracts including national highways, public infrastructure, and documented project execution."
   },
   {
-    title: "Government Contracts & Tenders",
-    copy: "Reliable support for tender-driven work, project coordination, and practical execution across infrastructure assignments."
+    title: "Document-Backed Execution",
+    copy: "Every serious project is handled with agreements, verified contracts, and transparent work documentation."
   },
   {
-    title: "Land, Plotting & Property Advisory",
-    copy: "Trusted help with plotting, land dealing, and verified property opportunities across Sagar and nearby growth corridors."
+    title: "Local Trust in Sagar Madhya Pradesh",
+    copy: "Direct access to Prashant Rathor for site discussions, consultation calls, and responsive WhatsApp support."
   }
 ];
 
@@ -43,51 +43,79 @@ export const ABOUT_HIGHLIGHTS = [
   "Construction and real estate under one brand"
 ];
 
-export const SERVICE_CATEGORIES = [
+export const SERVICES_DESCRIPTION =
+  "Sagar Infra undertakes government and private contracts including national highways, schools, colleges, and infrastructure development projects.";
+
+export const CONTRACTOR_SERVICES = [
   {
-    title: "Construction & Civil Works",
-    copy: "Residential, commercial, and site-development work executed with careful planning, dependable labor coordination, and practical timelines."
+    title: "National Highway Contracts",
+    copy: "Road and highway-oriented contract work delivered with disciplined site coordination, practical execution planning, and contractor-grade accountability."
   },
   {
-    title: "Road Building",
-    copy: "Road work and infrastructure support delivered with attention to execution quality, site readiness, and lasting utility."
+    title: "School & College Construction",
+    copy: "Institutional building work planned for durability, functional layouts, and dependable contractor communication from discussion to execution."
   },
   {
-    title: "RCC & Structural Work",
-    copy: "Concrete, reinforcement, slabs, columns, and structural civil work backed by a quality-focused delivery mindset."
+    title: "Government Projects",
+    copy: "Public-sector project support with documented agreements, verified scope handling, and clear progress communication."
   },
   {
-    title: "Government Tenders",
-    copy: "Support for government contracts, tender-oriented execution, documentation flow, and project-level coordination."
+    title: "RCC Roads",
+    copy: "Concrete and structural road work completed with a quality-first approach to reinforcement, casting discipline, and long-term performance."
   },
   {
-    title: "Material Supply",
-    copy: "Construction material supply that helps projects stay on schedule with reliable sourcing and responsive local support."
+    title: "Building Construction",
+    copy: "Residential, commercial, and mixed-use building projects executed with local experience and dependable timelines."
   },
   {
-    title: "Plotting & Land Dealing",
-    copy: "Land advisory, plotting, and property opportunities for families, investors, and business owners in Sagar."
+    title: "Plot Development",
+    copy: "Land preparation, plotting strategy, and verified property development support for investors, families, and project-ready buyers in Sagar."
   }
 ];
 
-export const WHY_CHOOSE_US = [
+export const TRUST_PILLARS = [
   {
-    title: "Trusted Local Expertise",
-    copy: "Owned and operated by Prashant Rathor, Sagar Infra brings practical knowledge of local sites, land pockets, vendors, and client needs."
+    title: "100% Verified Work",
+    copy: "Work discussions are backed by practical proof, documentation, and accountability-first communication."
   },
   {
-    title: "Quality With Accountability",
-    copy: "From construction work to property advisory, every enquiry is handled with transparent communication and a quality-first mindset."
+    title: "Government Experience",
+    copy: "Sagar Infra is positioned for tender-linked and infrastructure-oriented work with contractor-grade discipline."
   },
   {
-    title: "Multiple Services, One Partner",
-    copy: "Construction, road work, RCC, tenders, material supply, plotting, and real estate support under one trusted local brand."
+    title: "Trusted Contractor",
+    copy: "Clients get local expertise in Sagar with direct support from a known and accessible business owner."
+  }
+];
+
+export const OWNER_SECTION = {
+  title: "Owned by Prashant Rathor",
+  copy:
+    "Sagar Infra is led with a trust-first approach that combines local contractor experience, responsive communication, and direct accountability for project and property enquiries.",
+  note: "Speak directly for contract work, material supply, land development, or a free consultation."
+};
+
+export const DOCUMENT_PROOFS = [
+  {
+    title: "Government Tender File",
+    subtitle: "Tender-linked work order summary",
+    copy: "Sample redacted paperwork that reflects government tender participation, agreement flow, and document-backed execution."
+  },
+  {
+    title: "Verified Contract Copy",
+    subtitle: "Redacted agreement preview",
+    copy: "A privacy-safe representation of contractor documentation, signatures, and approved work scope structure."
+  },
+  {
+    title: "Legal Documentation Set",
+    subtitle: "Compliance and paperwork trail",
+    copy: "Illustrative proof card showing how Sagar Infra handles legal documentation and verified contract records."
   }
 ];
 
 export const TESTIMONIALS = [
   {
-    quote: "Professional guidance, strong local knowledge, and a team that genuinely cares about quality.",
+    quote: "Professional guidance, strong local knowledge, and a contractor mindset that builds confidence from the start.",
     name: "Rahul Sharma"
   },
   {
@@ -95,12 +123,16 @@ export const TESTIMONIALS = [
     name: "Neha Gupta"
   },
   {
-    quote: "Reliable support for both civil work and property advice. It felt easy to move forward with confidence.",
+    quote: "Reliable support for civil work, documentation, and property advice. It felt easy to move forward with confidence.",
     name: "Amit Verma"
   }
 ];
 
-export const TRUST_BADGES = ["Verified Properties", "Quality Execution", "Trusted Service"];
+export const TRUST_BADGES = [
+  "100% Verified Work",
+  "Government Experience",
+  "Trusted Contractor"
+];
 
 export const DEMO_PROPERTIES = [
   {
