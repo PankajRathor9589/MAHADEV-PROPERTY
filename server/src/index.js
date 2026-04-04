@@ -38,7 +38,7 @@ app.use("/uploads", express.static(uploadsDir));
 app.get("/api/health", (req, res) => {
   res.json({
     success: true,
-    message: "Mahadev Property API is healthy.",
+    message: "Sagar Infra API is healthy.",
     timestamp: new Date().toISOString()
   });
 });
