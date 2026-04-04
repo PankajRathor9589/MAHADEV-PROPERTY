@@ -1,152 +1,159 @@
-import { Building2, Heart, LayoutDashboard, LogOut, Menu, Search, ShieldCheck, User2, X } from "lucide-react";
+import { Building2, LayoutDashboard, LogIn, MapPin, Menu, Phone, UserCircle2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { COMPANY_INFO } from "../data/siteContent.js";
+import { toPhoneHref } from "../utils/format.js";
 
-const linkClass = ({ isActive }) =>
-  `rounded-full px-4 py-2 text-sm font-semibold transition ${
-    isActive
-      ? "bg-brand-600 text-white shadow-panel"
-      : "text-slate-700 hover:bg-white/80 hover:text-brand-700"
+const navItems = [
+  { label: "Home", to: "/" },
+  { label: "About", href: "/#about" },
+  { label: "Services", href: "/#services" },
+  { label: "Properties", to: "/properties" },
+  { label: "Contact", href: "/#contact" }
+];
+
+const navClass = ({ isActive }) =>
+  `rounded-full px-4 py-2 text-sm font-medium transition ${
+    isActive ? "bg-white/12 text-white premium-outline" : "text-white/70 hover:bg-white/8 hover:text-white"
   }`;
 
 const Navbar = () => {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
-  const location = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     setMenuOpen(false);
-  }, [location.pathname]);
+  }, [location.pathname, location.hash]);
 
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
-  const dashboardPath = isAdmin ? "/admin" : "/dashboard";
-  const dashboardLabel = isAdmin ? "Admin" : "Dashboard";
-
   return (
-    <header className="sticky top-0 z-30 border-b border-white/60 bg-[#f8fbf9]/85 backdrop-blur-xl">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8">
-        <NavLink to="/" className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-600 text-white shadow-panel">
-            <Building2 size={22} />
-          </span>
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brand-700">Mahadev</p>
-            <p className="text-lg font-bold text-slate-900">Property</p>
-          </div>
-        </NavLink>
-
-        <nav className="hidden items-center gap-2 lg:flex">
-          <NavLink to="/" className={linkClass}>
-            Home
+    <header className="sticky top-0 z-40 px-3 pt-3 sm:px-4">
+      <div className="section-shell">
+        <div className="glass-panel relative flex items-center justify-between gap-3 rounded-full px-4 py-3 shadow-panel">
+          <NavLink to="/" className="flex items-center gap-3">
+            <span className="rounded-2xl bg-gradient-to-br from-gold-300 to-gold-500 p-2.5 text-slate-950">
+              <Building2 size={20} />
+            </span>
+            <div>
+              <span className="block text-[11px] uppercase tracking-[0.35em] text-white/50">Sagar, Madhya Pradesh</span>
+              <span className="text-lg font-semibold text-white">{COMPANY_INFO.name}</span>
+            </div>
           </NavLink>
-          <NavLink to="/properties" className={linkClass}>
-            Browse
-          </NavLink>
-          {isAuthenticated && (
-            <NavLink to="/favorites" className={linkClass}>
-              Favorites
-            </NavLink>
-          )}
-          {isAuthenticated && (
-            <NavLink to={dashboardPath} className={linkClass}>
-              {dashboardLabel}
-            </NavLink>
-          )}
-        </nav>
 
-        <div className="hidden items-center gap-2 lg:flex">
-          {!isAuthenticated ? (
-            <>
-              <NavLink to="/login" className="btn-secondary">
-                Login
-              </NavLink>
-              <NavLink to="/register" className="btn-primary">
-                Post Property
-              </NavLink>
-            </>
-          ) : (
-            <>
-              <div className="flex items-center gap-3 rounded-full border border-white/70 bg-white/80 px-4 py-2 shadow-sm">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-brand-700">
-                  {isAdmin ? <ShieldCheck size={18} /> : <User2 size={18} />}
-                </span>
-                <div className="leading-tight">
-                  <p className="text-sm font-semibold text-slate-900">{user?.name}</p>
-                  <p className="text-xs uppercase tracking-wide text-slate-500">{user?.role}</p>
-                </div>
-              </div>
-              <NavLink to="/properties" className="btn-secondary">
-                <Search size={16} />
-                Browse
-              </NavLink>
-              <NavLink to="/favorites" className="btn-secondary">
-                <Heart size={16} />
-                Saved
-              </NavLink>
-              <NavLink to={dashboardPath} className="btn-secondary">
-                <LayoutDashboard size={16} />
-                {dashboardLabel}
-              </NavLink>
-              <button type="button" onClick={handleLogout} className="btn-danger">
-                <LogOut size={16} />
-                Logout
-              </button>
-            </>
-          )}
-        </div>
-
-        <button
-          type="button"
-          className="btn-secondary lg:hidden"
-          onClick={() => setMenuOpen((current) => !current)}
-        >
-          {menuOpen ? <X size={18} /> : <Menu size={18} />}
-        </button>
-      </div>
-
-      {menuOpen && (
-        <div className="border-t border-white/60 bg-white/95 px-4 py-4 lg:hidden sm:px-6">
-          <div className="mx-auto flex w-full max-w-7xl flex-col gap-2">
-            <NavLink to="/" className={linkClass}>
-              Home
-            </NavLink>
-            <NavLink to="/properties" className={linkClass}>
-              Browse
-            </NavLink>
-            {isAuthenticated && (
-              <NavLink to="/favorites" className={linkClass}>
-                Favorites
+          <nav className="hidden items-center gap-1 lg:flex">
+            {navItems.map((item) =>
+              item.to ? (
+                <NavLink key={item.label} className={navClass} to={item.to}>
+                  {item.label}
+                </NavLink>
+              ) : (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className="rounded-full px-4 py-2 text-sm font-medium text-white/70 transition hover:bg-white/8 hover:text-white"
+                >
+                  {item.label}
+                </a>
+              )
+            )}
+            {isAuthenticated && isAdmin && (
+              <NavLink className={navClass} to="/admin">
+                Dashboard
               </NavLink>
             )}
-            {isAuthenticated && (
-              <NavLink to={dashboardPath} className={linkClass}>
-                {dashboardLabel}
-              </NavLink>
-            )}
+          </nav>
+
+          <div className="hidden items-center gap-2 lg:flex">
+            <a href={toPhoneHref(COMPANY_INFO.phoneDisplay)} className="btn-secondary">
+              <Phone size={16} />
+              Contact Now
+            </a>
+
             {!isAuthenticated ? (
-              <>
-                <NavLink to="/login" className="btn-secondary">
-                  Login
-                </NavLink>
-                <NavLink to="/register" className="btn-primary">
-                  Post Property
-                </NavLink>
-              </>
+              <NavLink to="/login" className="btn-secondary">
+                <LogIn size={16} />
+                Admin Login
+              </NavLink>
             ) : (
-              <button type="button" onClick={handleLogout} className="btn-danger">
-                <LogOut size={16} />
-                Logout
-              </button>
+              <>
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-xs font-medium text-white/80">
+                  <UserCircle2 size={14} /> {user?.name}
+                </span>
+                {isAdmin && (
+                  <NavLink to="/admin" className="btn-secondary">
+                    <LayoutDashboard size={16} />
+                    Dashboard
+                  </NavLink>
+                )}
+                <button onClick={handleLogout} className="btn-primary">
+                  Logout
+                </button>
+              </>
             )}
           </div>
+
+          <button
+            type="button"
+            onClick={() => setMenuOpen((current) => !current)}
+            className="btn-secondary lg:hidden"
+            aria-label="Toggle navigation"
+          >
+            {menuOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
         </div>
-      )}
+
+        {menuOpen && (
+          <div className="glass-panel mt-3 rounded-[28px] p-4 shadow-panel lg:hidden">
+            <div className="grid gap-2">
+              {navItems.map((item) =>
+                item.to ? (
+                  <NavLink key={item.label} className={navClass} to={item.to}>
+                    {item.label}
+                  </NavLink>
+                ) : (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    className="rounded-full px-4 py-3 text-sm font-medium text-white/80 transition hover:bg-white/8 hover:text-white"
+                  >
+                    {item.label}
+                  </a>
+                )
+              )}
+
+              <div className="rounded-[24px] border border-white/10 bg-white/5 p-4 text-sm text-white/70">
+                <p className="inline-flex items-center gap-2 text-gold-100">
+                  <MapPin size={16} />
+                  {COMPANY_INFO.location}
+                </p>
+                <p className="mt-2">Owner: {COMPANY_INFO.owner}</p>
+              </div>
+
+              <a href={toPhoneHref(COMPANY_INFO.phoneDisplay)} className="btn-secondary">
+                <Phone size={16} />
+                Contact Now
+              </a>
+
+              {!isAuthenticated ? (
+                <NavLink to="/login" className="btn-secondary">
+                  Admin Login
+                </NavLink>
+              ) : (
+                <button onClick={handleLogout} className="btn-primary">
+                  Logout
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </header>
   );
 };

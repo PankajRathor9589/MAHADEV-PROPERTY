@@ -5,12 +5,12 @@ const inquirySchema = new mongoose.Schema(
     property: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Property",
-      required: true
+      default: null
     },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      default: null
     },
     buyer: {
       type: mongoose.Schema.Types.ObjectId,
@@ -21,6 +21,11 @@ const inquirySchema = new mongoose.Schema(
     email: { type: String, trim: true, lowercase: true, default: "" },
     phone: { type: String, required: true, trim: true },
     message: { type: String, trim: true, default: "" },
+    source: {
+      type: String,
+      enum: ["property", "homepage", "book_visit", "contact"],
+      default: "property"
+    },
     status: {
       type: String,
       enum: ["new", "contacted", "closed"],

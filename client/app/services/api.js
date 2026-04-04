@@ -32,14 +32,13 @@ const buildPropertyFormData = (payload) => {
       return;
     }
 
-    if (value === undefined || value === null) {
+    if (value === undefined || value === null || value === "") {
       return;
     }
 
     formData.append(key, String(value));
   });
 
-  // Arrays need to be serialized manually before sending multipart data.
   formData.append("amenities", JSON.stringify(payload.amenities || []));
 
   if (Array.isArray(payload.retainedImages)) {
@@ -84,7 +83,6 @@ export const fetchMe = async () => {
 };
 
 export const fetchProperties = async (params = {}) => safeRequest(http.get("/properties", { params }));
-export const fetchMyProperties = async () => safeRequest(http.get("/properties/mine"));
 export const fetchPropertyById = async (id) => {
   const data = await safeRequest(http.get(`/properties/${id}`));
   return data.data;
@@ -101,6 +99,7 @@ export const updateProperty = async (id, payload) => {
 };
 
 export const deleteProperty = async (id) => safeRequest(http.delete(`/properties/${id}`));
+
 export const updatePropertyApproval = async (id, approvalStatus, rejectionReason = "") => {
   const data = await safeRequest(
     http.patch(`/properties/${id}/approval`, { approvalStatus, rejectionReason })
@@ -115,12 +114,13 @@ export const updatePropertyFeatured = async (id, isFeatured, featuredDays = 30) 
   return data.data;
 };
 
-export const fetchFavorites = async () => safeRequest(http.get("/favorites"));
-export const addFavorite = async (propertyId) => safeRequest(http.post(`/favorites/${propertyId}`));
-export const removeFavorite = async (propertyId) => safeRequest(http.delete(`/favorites/${propertyId}`));
-
 export const submitInquiry = async (propertyId, payload) => {
   const data = await safeRequest(http.post(`/properties/${propertyId}/inquiries`, payload));
+  return data.data;
+};
+
+export const submitLead = async (payload) => {
+  const data = await safeRequest(http.post("/inquiries", payload));
   return data.data;
 };
 

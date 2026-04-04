@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { getInquiries, updateInquiryStatus } from "../controllers/inquiryController.js";
-import { protect } from "../middleware/auth.js";
+import { createLead, getInquiries, updateInquiryStatus } from "../controllers/inquiryController.js";
+import { optionalAuth, protect } from "../middleware/auth.js";
 
 const router = Router();
 
+router.post("/", optionalAuth, createLead);
 router.use(protect);
 router.get("/", getInquiries);
 router.patch("/:id/status", updateInquiryStatus);

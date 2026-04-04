@@ -2,11 +2,37 @@ import Inquiry from "../models/Inquiry.js";
 import Property from "../models/Property.js";
 import { AppError } from "../middleware/errorHandler.js";
 
+const allowedSources = new Set(["property", "homepage", "book_visit", "contact"]);
+
 const populateInquiry = (query) =>
   query
     .populate("property", "title listingType price category location images approvalStatus")
     .populate("owner", "name email phone role")
     .populate("buyer", "name email phone role");
+
+const getLeadPayload = (req) => {
+  const name = String(req.body.name || req.user?.name || "").trim();
+  const phone = String(req.body.phone || req.user?.phone || "").trim();
+  const email = String(req.body.email || req.user?.email || "")
+    .trim()
+    .toLowerCase();
+  const message = String(req.body.message || req.body.requirement || "").trim();
+  const requestedSource = String(req.body.source || "").trim().toLowerCase();
+  const source = allowedSources.has(requestedSource) ? requestedSource : "property";
+
+  if (!name || !phone) {
+    throw new AppError(400, "Name and phone are required.");
+  }
+
+  return {
+    buyer: req.user?._id || null,
+    name,
+    phone,
+    email,
+    message,
+    source
+  };
+};
 
 export const createInquiry = async (req, res, next) => {
   try {
@@ -24,25 +50,13 @@ export const createInquiry = async (req, res, next) => {
       throw new AppError(400, "You cannot send an inquiry to your own property.");
     }
 
-    const name = String(req.body.name || req.user?.name || "").trim();
-    const phone = String(req.body.phone || req.user?.phone || "").trim();
-    const email = String(req.body.email || req.user?.email || "")
-      .trim()
-      .toLowerCase();
-    const message = String(req.body.message || "").trim();
-
-    if (!name || !phone) {
-      throw new AppError(400, "Name and phone are required.");
-    }
+    const payload = getLeadPayload(req);
 
     const inquiry = await Inquiry.create({
       property: property._id,
       owner: property.postedBy._id,
-      buyer: req.user?._id || null,
-      name,
-      phone,
-      email,
-      message
+      ...payload,
+      source: payload.source === "property" ? "property" : payload.source
     });
 
     const populatedInquiry = await populateInquiry(Inquiry.findById(inquiry._id));
@@ -50,6 +64,47 @@ export const createInquiry = async (req, res, next) => {
     return res.status(201).json({
       success: true,
       message: "Inquiry sent successfully.",
+      data: populatedInquiry
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const createLead = async (req, res, next) => {
+  try {
+    const propertyId = String(req.body.propertyId || "").trim();
+    const payload = getLeadPayload(req);
+    let property = null;
+
+    if (propertyId) {
+      property = await Property.findById(propertyId).populate("postedBy", "name email phone role");
+
+      if (!property) {
+        throw new AppError(404, "Property not found.");
+      }
+
+      if (property.approvalStatus !== "approved") {
+        throw new AppError(400, "You can only create leads for approved properties.");
+      }
+
+      if (req.user && property.postedBy._id.toString() === req.user._id.toString()) {
+        throw new AppError(400, "You cannot create a lead for your own property.");
+      }
+    }
+
+    const inquiry = await Inquiry.create({
+      property: property?._id || null,
+      owner: property?.postedBy?._id || null,
+      ...payload,
+      source: payload.source === "property" && !property ? "homepage" : payload.source
+    });
+
+    const populatedInquiry = await populateInquiry(Inquiry.findById(inquiry._id));
+
+    return res.status(201).json({
+      success: true,
+      message: "Lead created successfully.",
       data: populatedInquiry
     });
   } catch (error) {
@@ -100,7 +155,10 @@ export const updateInquiryStatus = async (req, res, next) => {
       throw new AppError(404, "Inquiry not found.");
     }
 
-    if (req.user.role !== "admin" && inquiry.owner.toString() !== req.user._id.toString()) {
+    if (
+      req.user.role !== "admin" &&
+      (!inquiry.owner || inquiry.owner.toString() !== req.user._id.toString())
+    ) {
       throw new AppError(403, "You are not allowed to update this inquiry.");
     }
 

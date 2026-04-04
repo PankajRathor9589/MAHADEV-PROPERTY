@@ -1,6 +1,7 @@
 import { ImagePlus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { resolveImageUrl } from "../services/api.js";
+import { PROPERTY_CATEGORIES } from "../utils/format.js";
 
 const baseForm = {
   title: "",
@@ -93,9 +94,7 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
   };
 
   const removeNewImage = (key) => {
-    setNewImages((current) =>
-      current.filter((file) => `${file.name}-${file.lastModified}` !== key)
-    );
+    setNewImages((current) => current.filter((file) => `${file.name}-${file.lastModified}` !== key));
   };
 
   const removeExistingImage = (filename) => {
@@ -126,14 +125,12 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
     <form className="card space-y-6" onSubmit={handleSubmit}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-700">
-            Listing Studio
-          </p>
-          <h2 className="mt-2 text-2xl font-bold text-slate-900">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-gold-200/80">Listing Studio</p>
+          <h2 className="mt-2 text-2xl font-semibold text-white">
             {initialProperty ? "Edit Property" : "Add a New Property"}
           </h2>
-          <p className="mt-2 text-sm text-slate-600">
-            Fill in the details below. User listings go to admin review before becoming public.
+          <p className="mt-2 text-sm text-white/60">
+            Fill in the listing details, upload images, and manage the live property inventory.
           </p>
         </div>
 
@@ -146,49 +143,31 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-slate-700">Property Title</span>
-          <input
-            className="input-field"
-            name="title"
-            value={form.title}
-            onChange={handleChange}
-            required
-          />
+          <span className="text-sm font-semibold text-white/80">Property Title</span>
+          <input className="input-field" name="title" value={form.title} onChange={handleChange} required />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-slate-700">Listing Type</span>
-          <select
-            className="input-field"
-            name="listingType"
-            value={form.listingType}
-            onChange={handleChange}
-          >
+          <span className="text-sm font-semibold text-white/80">Listing Type</span>
+          <select className="input-field" name="listingType" value={form.listingType} onChange={handleChange}>
             <option value="sale">For Sale</option>
             <option value="rent">For Rent</option>
           </select>
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-slate-700">Category</span>
-          <select
-            className="input-field"
-            name="category"
-            value={form.category}
-            onChange={handleChange}
-          >
-            <option value="Apartment">Apartment</option>
-            <option value="Villa">Villa</option>
-            <option value="House">House</option>
-            <option value="Plot">Plot</option>
-            <option value="Commercial">Commercial</option>
-            <option value="Studio">Studio</option>
-            <option value="Farm House">Farm House</option>
+          <span className="text-sm font-semibold text-white/80">Category</span>
+          <select className="input-field" name="category" value={form.category} onChange={handleChange}>
+            {PROPERTY_CATEGORIES.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
           </select>
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-slate-700">Price (INR)</span>
+          <span className="text-sm font-semibold text-white/80">Price (INR)</span>
           <input
             className="input-field"
             type="number"
@@ -201,7 +180,7 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-slate-700">Area (sq.ft)</span>
+          <span className="text-sm font-semibold text-white/80">Area (sq.ft)</span>
           <input
             className="input-field"
             type="number"
@@ -214,7 +193,7 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-slate-700">Bedrooms</span>
+          <span className="text-sm font-semibold text-white/80">Bedrooms</span>
           <input
             className="input-field"
             type="number"
@@ -226,7 +205,7 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-slate-700">Bathrooms</span>
+          <span className="text-sm font-semibold text-white/80">Bathrooms</span>
           <input
             className="input-field"
             type="number"
@@ -238,50 +217,32 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-slate-700">City</span>
-          <input
-            className="input-field"
-            name="city"
-            value={form.city}
-            onChange={handleChange}
-            required
-          />
+          <span className="text-sm font-semibold text-white/80">City</span>
+          <input className="input-field" name="city" value={form.city} onChange={handleChange} required />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-slate-700">State</span>
-          <input
-            className="input-field"
-            name="state"
-            value={form.state}
-            onChange={handleChange}
-            required
-          />
+          <span className="text-sm font-semibold text-white/80">State</span>
+          <input className="input-field" name="state" value={form.state} onChange={handleChange} required />
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm font-semibold text-slate-700">Address</span>
-          <input
-            className="input-field"
-            name="address"
-            value={form.address}
-            onChange={handleChange}
-            required
-          />
+          <span className="text-sm font-semibold text-white/80">Address</span>
+          <input className="input-field" name="address" value={form.address} onChange={handleChange} required />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-slate-700">Landmark</span>
+          <span className="text-sm font-semibold text-white/80">Landmark</span>
           <input className="input-field" name="landmark" value={form.landmark} onChange={handleChange} />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-slate-700">Pincode</span>
+          <span className="text-sm font-semibold text-white/80">Pincode</span>
           <input className="input-field" name="pincode" value={form.pincode} onChange={handleChange} />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-slate-700">Latitude</span>
+          <span className="text-sm font-semibold text-white/80">Latitude</span>
           <input
             className="input-field"
             type="number"
@@ -293,7 +254,7 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-slate-700">Longitude</span>
+          <span className="text-sm font-semibold text-white/80">Longitude</span>
           <input
             className="input-field"
             type="number"
@@ -305,7 +266,7 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-slate-700">Contact Name</span>
+          <span className="text-sm font-semibold text-white/80">Contact Name</span>
           <input
             className="input-field"
             name="contactName"
@@ -316,7 +277,7 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-slate-700">Contact Phone</span>
+          <span className="text-sm font-semibold text-white/80">Contact Phone</span>
           <input
             className="input-field"
             name="contactPhone"
@@ -327,7 +288,7 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm font-semibold text-slate-700">Contact Email</span>
+          <span className="text-sm font-semibold text-white/80">Contact Email</span>
           <input
             className="input-field"
             type="email"
@@ -338,18 +299,18 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm font-semibold text-slate-700">Amenities</span>
+          <span className="text-sm font-semibold text-white/80">Amenities</span>
           <input
             className="input-field"
             name="amenities"
             value={form.amenities}
             onChange={handleChange}
-            placeholder="Parking, Lift, Gated security, Club house"
+            placeholder="Parking, Lift, Security, Club house"
           />
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm font-semibold text-slate-700">Description</span>
+          <span className="text-sm font-semibold text-white/80">Description</span>
           <textarea
             className="textarea-field"
             name="description"
@@ -363,31 +324,21 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-slate-900">Images</h3>
-            <p className="text-sm text-slate-500">Upload up to 10 high quality property photos.</p>
+            <h3 className="text-lg font-semibold text-white">Images</h3>
+            <p className="text-sm text-white/60">Upload up to 10 polished property visuals.</p>
           </div>
           <label className="btn-secondary cursor-pointer">
             <ImagePlus size={16} />
             Add photos
-            <input
-              type="file"
-              className="hidden"
-              multiple
-              accept="image/*"
-              onChange={handleImageSelect}
-            />
+            <input type="file" className="hidden" multiple accept="image/*" onChange={handleImageSelect} />
           </label>
         </div>
 
         {(existingImages.length > 0 || previews.length > 0) && (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {existingImages.map((image) => (
-              <div key={image.filename} className="relative overflow-hidden rounded-3xl border border-white/60">
-                <img
-                  src={resolveImageUrl(image.url)}
-                  alt="Property"
-                  className="h-28 w-full object-cover"
-                />
+              <div key={image.filename} className="relative overflow-hidden rounded-3xl border border-white/12">
+                <img src={resolveImageUrl(image.url)} alt="Property" className="h-28 w-full object-cover" />
                 <button
                   type="button"
                   onClick={() => removeExistingImage(image.filename)}
@@ -399,7 +350,7 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
             ))}
 
             {previews.map((preview) => (
-              <div key={preview.key} className="relative overflow-hidden rounded-3xl border border-white/60">
+              <div key={preview.key} className="relative overflow-hidden rounded-3xl border border-white/12">
                 <img src={preview.url} alt="Preview" className="h-28 w-full object-cover" />
                 <button
                   type="button"
@@ -418,7 +369,7 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
         <button className="btn-primary" disabled={isSubmitting}>
           {isSubmitting ? "Saving..." : initialProperty ? "Update property" : "Create property"}
         </button>
-        <p className="text-sm text-slate-500">Approved properties appear publicly in the browse page.</p>
+        <p className="text-sm text-white/55">Approved properties appear publicly in the browse page.</p>
       </div>
     </form>
   );

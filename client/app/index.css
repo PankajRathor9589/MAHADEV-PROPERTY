@@ -1,18 +1,14 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  color: #0f172a;
-  background:
-    radial-gradient(circle at top left, rgba(31, 122, 100, 0.16), transparent 30%),
-    radial-gradient(circle at top right, rgba(220, 146, 33, 0.18), transparent 24%),
-    linear-gradient(180deg, #f7faf8 0%, #eef4f1 100%);
-  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
-}
-
-* {
-  box-sizing: border-box;
+  font-family: "Manrope", sans-serif;
+  color: #f6f3eb;
+  background: #060b14;
+  color-scheme: dark;
 }
 
 html {
@@ -22,12 +18,16 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background-image:
-    radial-gradient(circle at 20% 0%, rgba(31, 122, 100, 0.1), transparent 28%),
-    linear-gradient(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.72)),
-    linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
-    linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px);
-  background-size: auto, auto, 36px 36px, 36px 36px;
+  background:
+    radial-gradient(circle at top left, rgba(82, 123, 217, 0.18), transparent 30%),
+    radial-gradient(circle at 85% 10%, rgba(223, 159, 40, 0.16), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(54, 95, 181, 0.2), transparent 32%),
+    linear-gradient(180deg, #08111e 0%, #05080f 42%, #05070c 100%);
+  color: #f6f3eb;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 a {
@@ -35,42 +35,127 @@ a {
   text-decoration: none;
 }
 
+::selection {
+  background: rgba(236, 184, 75, 0.35);
+  color: #fffaf0;
+}
+
 #root {
   min-height: 100vh;
 }
 
-.card {
-  @apply rounded-[28px] border border-white/60 bg-white/80 p-5 shadow-soft backdrop-blur;
+@layer base {
+  body {
+    @apply antialiased;
+  }
+}
+
+@keyframes floatSlow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px rgba(236, 184, 75, 0.15), 0 22px 60px -34px rgba(236, 184, 75, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(236, 184, 75, 0.28), 0 26px 78px -34px rgba(236, 184, 75, 0.58);
+  }
+}
+
+.font-display {
+  font-family: "Cormorant Garamond", serif;
+}
+
+.section-shell {
+  @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+.glass-panel {
+  @apply border border-white/10 bg-white/5 backdrop-blur-xl;
 }
 
 .input-field {
-  @apply w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100;
+  @apply w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white shadow-soft outline-none transition placeholder:text-white/40 focus:border-gold-300 focus:bg-white/10 focus:ring-2 focus:ring-gold-300/20;
 }
 
 .textarea-field {
   @apply input-field min-h-28 resize-y;
 }
 
+.card {
+  @apply rounded-[28px] border border-white/10 bg-white/5 p-5 shadow-soft backdrop-blur-xl;
+}
+
 .btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60;
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition duration-300 disabled:cursor-not-allowed disabled:opacity-60;
 }
 
 .btn-primary {
-  @apply btn bg-brand-600 text-white shadow-panel hover:bg-brand-700;
+  @apply btn bg-gold-400 text-slate-950 shadow-glow hover:-translate-y-0.5 hover:bg-gold-300;
 }
 
 .btn-secondary {
-  @apply btn border border-slate-200 bg-white text-slate-700 hover:border-brand-100 hover:bg-brand-50;
+  @apply btn border border-white/10 bg-white/5 text-white hover:bg-white/10;
 }
 
 .btn-danger {
-  @apply btn bg-rose-600 text-white hover:bg-rose-700;
+  @apply btn bg-rose-500 text-white hover:bg-rose-400;
+}
+
+.btn-ghost {
+  @apply btn border border-gold-300/30 bg-gold-300/10 text-gold-100 hover:border-gold-200/60 hover:bg-gold-300/15;
 }
 
 .badge {
-  @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold;
+  @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold;
 }
 
 .pill {
-  @apply inline-flex items-center rounded-full border border-white/70 bg-white/75 px-3 py-1 text-xs font-semibold text-slate-700 backdrop-blur;
+  @apply inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/80;
+}
+
+.surface-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.hero-shadow {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 50px 140px -60px rgba(236, 184, 75, 0.24);
+}
+
+.premium-outline {
+  box-shadow: 0 0 0 1px rgba(236, 184, 75, 0.18);
+}
+
+.fade-up {
+  animation: fadeUp 0.6s ease both;
+}
+
+.float-slow {
+  animation: floatSlow 7s ease-in-out infinite;
+}
+
+.pulse-gold {
+  animation: pulseGlow 3.2s ease-in-out infinite;
 }
