@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { fetchMe, loginUser, registerUser } from "../services/api.js";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { fetchMe, loginAdminUser, loginUser, registerUser } from "../services/api.js";
 
 const AuthContext = createContext(null);
 
@@ -86,6 +86,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginAsAdmin = async (payload) => {
+    setLoading(true);
+    try {
+      const response = await loginAdminUser(payload);
+      setToken(response.token);
+      setUser(response.user);
+      return response.user;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const register = async (payload) => {
     setLoading(true);
     try {
@@ -114,25 +126,25 @@ export const AuthProvider = ({ children }) => {
     setBootstrapping(false);
   };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        token,
-        user,
-        loading,
-        bootstrapping,
-        isAuthenticated: Boolean(token && user),
-        isAdmin: user?.role === "admin",
-        login,
-        register,
-        refreshUser,
-        setUser,
-        logout
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({
+      token,
+      user,
+      loading,
+      bootstrapping,
+      isAuthenticated: Boolean(token && user),
+      isAdmin: user?.role === "admin",
+      login,
+      loginAsAdmin,
+      register,
+      refreshUser,
+      setUser,
+      logout
+    }),
+    [token, user, loading, bootstrapping]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

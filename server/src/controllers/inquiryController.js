@@ -2,7 +2,7 @@ import Inquiry from "../models/Inquiry.js";
 import Property from "../models/Property.js";
 import { AppError } from "../middleware/errorHandler.js";
 
-const allowedSources = new Set(["property", "homepage", "book_visit", "contact"]);
+const allowedSources = new Set(["property", "homepage", "book_visit", "contact", "contract", "sell"]);
 
 const populateInquiry = (query) =>
   query
@@ -10,7 +10,7 @@ const populateInquiry = (query) =>
     .populate("owner", "name email phone role")
     .populate("buyer", "name email phone role");
 
-const getLeadPayload = (req) => {
+const getLeadPayload = (req, fallbackSource = "homepage") => {
   const name = String(req.body.name || req.user?.name || "").trim();
   const phone = String(req.body.phone || req.user?.phone || "").trim();
   const email = String(req.body.email || req.user?.email || "")
@@ -18,7 +18,7 @@ const getLeadPayload = (req) => {
     .toLowerCase();
   const message = String(req.body.message || req.body.requirement || "").trim();
   const requestedSource = String(req.body.source || "").trim().toLowerCase();
-  const source = allowedSources.has(requestedSource) ? requestedSource : "property";
+  const source = allowedSources.has(requestedSource) ? requestedSource : fallbackSource;
 
   if (!name || !phone) {
     throw new AppError(400, "Name and phone are required.");
@@ -30,7 +30,10 @@ const getLeadPayload = (req) => {
     phone,
     email,
     message,
-    source
+    source,
+    serviceType: String(req.body.serviceType || req.body.projectType || "").trim(),
+    location: String(req.body.location || "").trim(),
+    budget: String(req.body.budget || "").trim()
   };
 };
 
@@ -50,13 +53,13 @@ export const createInquiry = async (req, res, next) => {
       throw new AppError(400, "You cannot send an inquiry to your own property.");
     }
 
-    const payload = getLeadPayload(req);
+    const payload = getLeadPayload(req, "property");
 
     const inquiry = await Inquiry.create({
       property: property._id,
       owner: property.postedBy._id,
       ...payload,
-      source: payload.source === "property" ? "property" : payload.source
+      source: "property"
     });
 
     const populatedInquiry = await populateInquiry(Inquiry.findById(inquiry._id));
@@ -74,7 +77,7 @@ export const createInquiry = async (req, res, next) => {
 export const createLead = async (req, res, next) => {
   try {
     const propertyId = String(req.body.propertyId || "").trim();
-    const payload = getLeadPayload(req);
+    let payload = getLeadPayload(req, propertyId ? "property" : "homepage");
     let property = null;
 
     if (propertyId) {
@@ -93,11 +96,15 @@ export const createLead = async (req, res, next) => {
       }
     }
 
+    if (!property && payload.source === "property") {
+      payload = { ...payload, source: "homepage" };
+    }
+
     const inquiry = await Inquiry.create({
       property: property?._id || null,
       owner: property?.postedBy?._id || null,
       ...payload,
-      source: payload.source === "property" && !property ? "homepage" : payload.source
+      source: payload.source
     });
 
     const populatedInquiry = await populateInquiry(Inquiry.findById(inquiry._id));
@@ -114,7 +121,7 @@ export const createLead = async (req, res, next) => {
 
 export const getInquiries = async (req, res, next) => {
   try {
-    const { status, scope = "all" } = req.query;
+    const { status, scope = "all", source } = req.query;
     const filters = {};
 
     if (req.user.role !== "admin") {
@@ -129,6 +136,10 @@ export const getInquiries = async (req, res, next) => {
 
     if (status) {
       filters.status = status;
+    }
+
+    if (source && allowedSources.has(String(source))) {
+      filters.source = String(source);
     }
 
     const inquiries = await populateInquiry(Inquiry.find(filters).sort({ createdAt: -1 }));

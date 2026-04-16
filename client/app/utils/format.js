@@ -9,10 +9,10 @@ export const PROPERTY_CATEGORIES = [
 ];
 
 export const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=80";
+  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=72";
 
 export const PROPERTY_FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1460317442991-0ec209397118?auto=format&fit=crop&w=1400&q=80";
+  "https://images.unsplash.com/photo-1460317442991-0ec209397118?auto=format&fit=crop&w=1200&q=72";
 
 export const formatCurrency = (value) =>
   new Intl.NumberFormat("en-IN", {

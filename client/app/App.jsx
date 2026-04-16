@@ -19,14 +19,14 @@ const App = () => {
     <div className="min-h-screen overflow-x-hidden">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-gold-300 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-slate-950"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
       >
         Skip to content
       </a>
-      <h1 className="sr-only">SAGAR INFRA LIVE</h1>
+      <h1 className="sr-only">Sagar Infra</h1>
       <Navbar />
 
-      <main id="main-content" className="relative pb-16 pt-3 sm:pt-4">
+      <main id="main-content" className="relative pb-16 pt-6 sm:pt-8">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/properties" element={<PropertiesPage />} />
@@ -53,7 +53,6 @@ const App = () => {
       </main>
 
       <Footer />
-
       <WhatsAppFloat />
     </div>
   );

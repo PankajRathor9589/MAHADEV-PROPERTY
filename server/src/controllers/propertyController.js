@@ -121,13 +121,37 @@ const getSortOption = (value) => {
   return { createdAt: -1 };
 };
 
+const normalizeCategory = (value, fallback = "Plot") => {
+  const normalized = String(value || fallback).trim();
+
+  if (["Flat", "Apartment"].includes(normalized)) {
+    return "Apartment";
+  }
+
+  if (["Farm", "Farm Land", "Farm House"].includes(normalized)) {
+    return "Farm House";
+  }
+
+  return normalized || fallback;
+};
+
 const buildLocation = (input, current = {}) => {
   const currentCoordinates = current.coordinates || {};
+  const locationLabel = String(input.location || input.locationText || "").trim();
+  const nextAddress = hasKey(input, "address")
+    ? String(input.address || "").trim()
+    : locationLabel || current.address || "";
+  const nextCity = hasKey(input, "city")
+    ? String(input.city || "").trim()
+    : current.city || "Sagar";
+  const nextState = hasKey(input, "state")
+    ? String(input.state || "").trim()
+    : current.state || "Madhya Pradesh";
 
   return {
-    city: hasKey(input, "city") ? String(input.city || "").trim() : current.city,
-    state: hasKey(input, "state") ? String(input.state || "").trim() : current.state,
-    address: hasKey(input, "address") ? String(input.address || "").trim() : current.address,
+    city: nextCity,
+    state: nextState,
+    address: nextAddress,
     landmark: hasKey(input, "landmark") ? String(input.landmark || "").trim() : current.landmark || "",
     pincode: hasKey(input, "pincode") ? String(input.pincode || "").trim() : current.pincode || "",
     coordinates: {
@@ -145,26 +169,30 @@ const buildPayload = (input, current = {}, user) => ({
   title: hasKey(input, "title") ? String(input.title || "").trim() : current.title,
   description: hasKey(input, "description")
     ? String(input.description || "").trim()
-    : current.description,
+    : current.description || "",
   listingType: hasKey(input, "listingType")
     ? String(input.listingType || "").trim().toLowerCase()
-    : current.listingType,
-  category: hasKey(input, "category") ? String(input.category || "").trim() : current.category,
-  price: hasKey(input, "price") ? toNumber(input.price, current.price) : current.price,
+    : current.listingType || "sale",
+  category: hasKey(input, "type")
+    ? normalizeCategory(input.type, current.category || "Plot")
+    : hasKey(input, "category")
+      ? normalizeCategory(input.category, current.category || "Plot")
+      : current.category || "Plot",
+  price: hasKey(input, "price") ? toNumber(input.price, current.price ?? 0) : current.price ?? 0,
   bedrooms: hasKey(input, "bedrooms")
     ? toNumber(input.bedrooms, current.bedrooms || 0)
     : current.bedrooms || 0,
   bathrooms: hasKey(input, "bathrooms")
     ? toNumber(input.bathrooms, current.bathrooms || 0)
     : current.bathrooms || 0,
-  area: hasKey(input, "area") ? toNumber(input.area, current.area) : current.area,
+  area: hasKey(input, "area") ? toNumber(input.area, current.area ?? 0) : current.area ?? 0,
   amenities: hasKey(input, "amenities")
     ? parseArrayInput(input.amenities, current.amenities || [])
     : current.amenities || [],
   location: buildLocation(input, current.location || {}),
   contactName: hasKey(input, "contactName")
     ? String(input.contactName || "").trim()
-    : current.contactName || user?.name || "",
+    : current.contactName || user?.name || "Prashant Rathor",
   contactEmail: hasKey(input, "contactEmail")
     ? String(input.contactEmail || "")
         .trim()
@@ -172,10 +200,10 @@ const buildPayload = (input, current = {}, user) => ({
     : current.contactEmail || user?.email || "",
   contactPhone: hasKey(input, "contactPhone")
     ? String(input.contactPhone || "").trim()
-    : current.contactPhone || user?.phone || "",
+    : current.contactPhone || user?.phone || process.env.ADMIN_SESSION_PHONE || "7692016188",
   approvalStatus: hasKey(input, "approvalStatus")
     ? String(input.approvalStatus || "").trim().toLowerCase()
-    : current.approvalStatus,
+    : current.approvalStatus || "approved",
   rejectionReason: hasKey(input, "rejectionReason")
     ? String(input.rejectionReason || "").trim()
     : current.rejectionReason || ""
@@ -224,18 +252,13 @@ export const createProperty = async (req, res, next) => {
     }
 
     if (!payload.contactPhone) {
-      payload.contactPhone = req.user.phone || "";
+      payload.contactPhone = req.user.phone || process.env.ADMIN_SESSION_PHONE || "";
     }
 
-    if (req.user.role === "admin") {
-      payload.approvalStatus = ["approved", "rejected"].includes(payload.approvalStatus)
-        ? payload.approvalStatus
-        : "approved";
-      payload.rejectionReason = payload.approvalStatus === "rejected" ? payload.rejectionReason : "";
-    } else {
-      payload.approvalStatus = "pending";
-      payload.rejectionReason = "";
-    }
+    payload.approvalStatus = ["approved", "rejected", "pending"].includes(payload.approvalStatus)
+      ? payload.approvalStatus
+      : "approved";
+    payload.rejectionReason = payload.approvalStatus === "rejected" ? payload.rejectionReason : "";
 
     const property = await Property.create(payload);
     const populatedProperty = await populatePropertyQuery(Property.findById(property._id));
@@ -255,9 +278,11 @@ export const getAllProperties = async (req, res, next) => {
   try {
     const {
       search,
+      location,
       city,
       state,
       listingType,
+      type,
       category,
       minPrice,
       maxPrice,
@@ -274,10 +299,11 @@ export const getAllProperties = async (req, res, next) => {
     const filters = {};
     const andFilters = [];
     const requestingMine = mine === "true" && req.user;
+    const isAdminScope = req.user?.role === "admin" && req.query.scope === "all";
 
     if (requestingMine) {
       filters.postedBy = req.user._id;
-    } else {
+    } else if (!isAdminScope) {
       filters.approvalStatus = "approved";
     }
 
@@ -293,8 +319,9 @@ export const getAllProperties = async (req, res, next) => {
       filters.listingType = String(listingType).trim().toLowerCase();
     }
 
-    if (category) {
-      filters.category = String(category).trim();
+    const resolvedCategory = type || category;
+    if (resolvedCategory) {
+      filters.category = normalizeCategory(resolvedCategory);
     }
 
     if (minPrice || maxPrice) {
@@ -315,6 +342,18 @@ export const getAllProperties = async (req, res, next) => {
       andFilters.push({
         isFeatured: true,
         $or: [{ featuredUntil: null }, { featuredUntil: { $gte: new Date() } }]
+      });
+    }
+
+    if (location) {
+      const locationRegex = new RegExp(String(location).trim(), "i");
+      andFilters.push({
+        $or: [
+          { "location.city": locationRegex },
+          { "location.state": locationRegex },
+          { "location.address": locationRegex },
+          { "location.landmark": locationRegex }
+        ]
       });
     }
 
@@ -415,15 +454,12 @@ export const updateProperty = async (req, res, next) => {
 
     payload.images = [...retainedImages, ...newImages];
 
-    if (req.user.role !== "admin") {
-      // Any user-side edit should go back through moderation before becoming public again.
-      payload.approvalStatus = "pending";
-      payload.rejectionReason = "";
-      payload.isFeatured = property.isFeatured;
-      payload.featuredUntil = property.featuredUntil;
-    } else if (!["pending", "approved", "rejected"].includes(payload.approvalStatus)) {
+    if (!["pending", "approved", "rejected"].includes(payload.approvalStatus)) {
       payload.approvalStatus = property.approvalStatus;
     }
+
+    payload.isFeatured = property.isFeatured;
+    payload.featuredUntil = property.featuredUntil;
 
     const updatedProperty = await populatePropertyQuery(
       Property.findByIdAndUpdate(req.params.id, payload, {
@@ -437,7 +473,7 @@ export const updateProperty = async (req, res, next) => {
       message:
         req.user.role === "admin"
           ? "Property updated successfully."
-          : "Property updated and sent for admin review.",
+          : "Property updated successfully.",
       data: updatedProperty
     });
   } catch (error) {

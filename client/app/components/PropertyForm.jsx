@@ -5,23 +5,10 @@ import { PROPERTY_CATEGORIES } from "../utils/format.js";
 
 const baseForm = {
   title: "",
-  listingType: "sale",
-  category: "Apartment",
+  type: "Plot",
   price: "",
-  area: "",
-  bedrooms: 2,
-  bathrooms: 2,
-  city: "",
-  state: "",
-  address: "",
-  landmark: "",
-  pincode: "",
-  latitude: "",
-  longitude: "",
-  contactName: "",
-  contactEmail: "",
+  location: "",
   contactPhone: "",
-  amenities: "",
   description: ""
 };
 
@@ -32,23 +19,10 @@ const mapPropertyToForm = (property) => {
 
   return {
     title: property.title || "",
-    listingType: property.listingType || "sale",
-    category: property.category || "Apartment",
+    type: property.category || "Plot",
     price: property.price || "",
-    area: property.area || "",
-    bedrooms: property.bedrooms ?? 0,
-    bathrooms: property.bathrooms ?? 0,
-    city: property.location?.city || "",
-    state: property.location?.state || "",
-    address: property.location?.address || "",
-    landmark: property.location?.landmark || "",
-    pincode: property.location?.pincode || "",
-    latitude: property.location?.coordinates?.lat ?? "",
-    longitude: property.location?.coordinates?.lng ?? "",
-    contactName: property.contactName || "",
-    contactEmail: property.contactEmail || "",
+    location: property.location?.address || property.location?.city || "",
     contactPhone: property.contactPhone || "",
-    amenities: (property.amenities || []).join(", "),
     description: property.description || ""
   };
 };
@@ -106,10 +80,7 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
 
     await onSubmit({
       ...form,
-      amenities: form.amenities
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean),
+      type: form.type,
       images: newImages,
       retainedImages: existingImages
     });
@@ -125,11 +96,11 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
     <form className="card space-y-6" onSubmit={handleSubmit}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-gold-200/80">Listing Studio</p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-600">Listing Studio</p>
+          <h2 className="mt-2 text-2xl font-semibold text-ink-700">
             {initialProperty ? "Edit Property" : "Add a New Property"}
           </h2>
-          <p className="mt-2 text-sm text-white/60">
+          <p className="mt-2 text-sm text-ink-500">
             Fill in the listing details, upload images, and manage the live property inventory.
           </p>
         </div>
@@ -143,21 +114,13 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-white/80">Property Title</span>
+          <span className="text-sm font-semibold text-ink-600">Property Title</span>
           <input className="input-field" name="title" value={form.title} onChange={handleChange} required />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-white/80">Listing Type</span>
-          <select className="input-field" name="listingType" value={form.listingType} onChange={handleChange}>
-            <option value="sale">For Sale</option>
-            <option value="rent">For Rent</option>
-          </select>
-        </label>
-
-        <label className="space-y-2">
-          <span className="text-sm font-semibold text-white/80">Category</span>
-          <select className="input-field" name="category" value={form.category} onChange={handleChange}>
+          <span className="text-sm font-semibold text-ink-600">Property Type</span>
+          <select className="input-field" name="type" value={form.type} onChange={handleChange}>
             {PROPERTY_CATEGORIES.map((category) => (
               <option key={category} value={category}>
                 {category}
@@ -167,165 +130,31 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-white/80">Price (INR)</span>
-          <input
-            className="input-field"
-            type="number"
-            min="0"
-            name="price"
-            value={form.price}
-            onChange={handleChange}
-            required
-          />
+          <span className="text-sm font-semibold text-ink-600">Price (INR)</span>
+          <input className="input-field" type="number" min="0" name="price" value={form.price} onChange={handleChange} required />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-white/80">Area (sq.ft)</span>
-          <input
-            className="input-field"
-            type="number"
-            min="0"
-            name="area"
-            value={form.area}
-            onChange={handleChange}
-            required
-          />
-        </label>
-
-        <label className="space-y-2">
-          <span className="text-sm font-semibold text-white/80">Bedrooms</span>
-          <input
-            className="input-field"
-            type="number"
-            min="0"
-            name="bedrooms"
-            value={form.bedrooms}
-            onChange={handleChange}
-          />
-        </label>
-
-        <label className="space-y-2">
-          <span className="text-sm font-semibold text-white/80">Bathrooms</span>
-          <input
-            className="input-field"
-            type="number"
-            min="0"
-            name="bathrooms"
-            value={form.bathrooms}
-            onChange={handleChange}
-          />
-        </label>
-
-        <label className="space-y-2">
-          <span className="text-sm font-semibold text-white/80">City</span>
-          <input className="input-field" name="city" value={form.city} onChange={handleChange} required />
-        </label>
-
-        <label className="space-y-2">
-          <span className="text-sm font-semibold text-white/80">State</span>
-          <input className="input-field" name="state" value={form.state} onChange={handleChange} required />
+          <span className="text-sm font-semibold text-ink-600">Contact Phone (Optional)</span>
+          <input className="input-field" name="contactPhone" value={form.contactPhone} onChange={handleChange} placeholder="Defaults to Sagar Infra contact" />
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm font-semibold text-white/80">Address</span>
-          <input className="input-field" name="address" value={form.address} onChange={handleChange} required />
-        </label>
-
-        <label className="space-y-2">
-          <span className="text-sm font-semibold text-white/80">Landmark</span>
-          <input className="input-field" name="landmark" value={form.landmark} onChange={handleChange} />
-        </label>
-
-        <label className="space-y-2">
-          <span className="text-sm font-semibold text-white/80">Pincode</span>
-          <input className="input-field" name="pincode" value={form.pincode} onChange={handleChange} />
-        </label>
-
-        <label className="space-y-2">
-          <span className="text-sm font-semibold text-white/80">Latitude</span>
-          <input
-            className="input-field"
-            type="number"
-            step="any"
-            name="latitude"
-            value={form.latitude}
-            onChange={handleChange}
-          />
-        </label>
-
-        <label className="space-y-2">
-          <span className="text-sm font-semibold text-white/80">Longitude</span>
-          <input
-            className="input-field"
-            type="number"
-            step="any"
-            name="longitude"
-            value={form.longitude}
-            onChange={handleChange}
-          />
-        </label>
-
-        <label className="space-y-2">
-          <span className="text-sm font-semibold text-white/80">Contact Name</span>
-          <input
-            className="input-field"
-            name="contactName"
-            value={form.contactName}
-            onChange={handleChange}
-            required
-          />
-        </label>
-
-        <label className="space-y-2">
-          <span className="text-sm font-semibold text-white/80">Contact Phone</span>
-          <input
-            className="input-field"
-            name="contactPhone"
-            value={form.contactPhone}
-            onChange={handleChange}
-            required
-          />
+          <span className="text-sm font-semibold text-ink-600">Location</span>
+          <input className="input-field" name="location" value={form.location} onChange={handleChange} required />
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm font-semibold text-white/80">Contact Email</span>
-          <input
-            className="input-field"
-            type="email"
-            name="contactEmail"
-            value={form.contactEmail}
-            onChange={handleChange}
-          />
-        </label>
-
-        <label className="space-y-2 md:col-span-2">
-          <span className="text-sm font-semibold text-white/80">Amenities</span>
-          <input
-            className="input-field"
-            name="amenities"
-            value={form.amenities}
-            onChange={handleChange}
-            placeholder="Parking, Lift, Security, Club house"
-          />
-        </label>
-
-        <label className="space-y-2 md:col-span-2">
-          <span className="text-sm font-semibold text-white/80">Description</span>
-          <textarea
-            className="textarea-field"
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            required
-          />
+          <span className="text-sm font-semibold text-ink-600">Description</span>
+          <textarea className="textarea-field" name="description" value={form.description} onChange={handleChange} required />
         </label>
       </div>
 
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-white">Images</h3>
-            <p className="text-sm text-white/60">Upload up to 10 polished property visuals.</p>
+            <h3 className="text-lg font-semibold text-ink-700">Images</h3>
+            <p className="text-sm text-ink-500">Upload up to 10 polished property visuals.</p>
           </div>
           <label className="btn-secondary cursor-pointer">
             <ImagePlus size={16} />
@@ -334,15 +163,15 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
           </label>
         </div>
 
-        {(existingImages.length > 0 || previews.length > 0) && (
+        {existingImages.length > 0 || previews.length > 0 ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {existingImages.map((image) => (
-              <div key={image.filename} className="relative overflow-hidden rounded-3xl border border-white/12">
-                <img src={resolveImageUrl(image.url)} alt="Property" className="h-28 w-full object-cover" />
+              <div key={image.filename} className="relative overflow-hidden rounded-3xl border border-brand-100 bg-cream-100">
+                <img src={resolveImageUrl(image.url)} alt="Property" className="h-28 w-full object-cover" loading="lazy" decoding="async" />
                 <button
                   type="button"
                   onClick={() => removeExistingImage(image.filename)}
-                  className="absolute right-2 top-2 rounded-full bg-black/70 p-2 text-white"
+                  className="absolute right-2 top-2 rounded-full bg-ink-900/80 p-2 text-white"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -350,26 +179,26 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
             ))}
 
             {previews.map((preview) => (
-              <div key={preview.key} className="relative overflow-hidden rounded-3xl border border-white/12">
-                <img src={preview.url} alt="Preview" className="h-28 w-full object-cover" />
+              <div key={preview.key} className="relative overflow-hidden rounded-3xl border border-brand-100 bg-cream-100">
+                <img src={preview.url} alt="Preview" className="h-28 w-full object-cover" loading="lazy" decoding="async" />
                 <button
                   type="button"
                   onClick={() => removeNewImage(preview.key)}
-                  className="absolute right-2 top-2 rounded-full bg-black/70 p-2 text-white"
+                  className="absolute right-2 top-2 rounded-full bg-ink-900/80 p-2 text-white"
                 >
                   <Trash2 size={14} />
                 </button>
               </div>
             ))}
           </div>
-        )}
+        ) : null}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <button className="btn-primary" disabled={isSubmitting}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <button className="btn-primary w-full sm:w-auto" disabled={isSubmitting}>
           {isSubmitting ? "Saving..." : initialProperty ? "Update property" : "Create property"}
         </button>
-        <p className="text-sm text-white/55">Approved properties appear publicly in the browse page.</p>
+        <p className="text-sm text-ink-500">Required fields: title, price, location, images, and description.</p>
       </div>
     </form>
   );

@@ -14,6 +14,7 @@ const ensureAdminSessionUser = async () => {
   const sessionEmail = String(process.env.ADMIN_SESSION_EMAIL || "admin.session@sagarinfra.local")
     .trim()
     .toLowerCase();
+  const sessionName = String(process.env.ADMIN_SESSION_NAME || "Sagar Infra Admin").trim();
   const sessionPhone = String(process.env.ADMIN_SESSION_PHONE || "7692016188").trim();
   const existingUser = await User.findOne({ email: sessionEmail }).select("+password");
 
@@ -42,7 +43,7 @@ const ensureAdminSessionUser = async () => {
   }
 
   return User.create({
-    name: "Sagar Infra Admin",
+    name: sessionName,
     email: sessionEmail,
     phone: sessionPhone,
     password: crypto.randomBytes(32).toString("hex"),
@@ -51,19 +52,9 @@ const ensureAdminSessionUser = async () => {
   });
 };
 
-const normalizeRole = (value) => {
-  const normalized = String(value || "user").trim().toLowerCase();
-
-  if (["buyer", "visitor", "seller", "agent"].includes(normalized)) {
-    return "user";
-  }
-
-  return normalized === "admin" ? "admin" : "user";
-};
-
 export const register = async (req, res, next) => {
   try {
-    const { name, email, phone = "", password, role: requestedRole, adminKey } = req.body;
+    const { name, email, phone = "", password } = req.body;
 
     if (!name || !email || !password) {
       throw new AppError(400, "Name, email, and password are required.");
@@ -79,19 +70,12 @@ export const register = async (req, res, next) => {
       throw new AppError(409, "An account with this email already exists.");
     }
 
-    const role = normalizeRole(requestedRole);
-    if (role === "admin") {
-      if (!process.env.ADMIN_REGISTRATION_KEY || adminKey !== process.env.ADMIN_REGISTRATION_KEY) {
-        throw new AppError(403, "Admin registration is not allowed.");
-      }
-    }
-
     const user = await User.create({
       name: String(name).trim(),
       email: normalizedEmail,
       phone: String(phone || "").trim(),
       password: String(password),
-      role
+      role: "user"
     });
 
     return res.status(201).json({

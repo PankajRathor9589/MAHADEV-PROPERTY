@@ -14,65 +14,66 @@ import {
 const PropertyCard = ({ property }) => {
   const imageUrl = resolveImageUrl(property.images?.[0]?.url) || PROPERTY_FALLBACK_IMAGE;
   const locationText = formatLocation(property.location, true);
-  const phone = property.contactPhone || COMPANY_INFO.phoneLink;
+  const phone = property.contactPhone || COMPANY_INFO.phoneDisplay;
+  const area = property.area || property.areaSqFt || 0;
 
   return (
-    <article className="group overflow-hidden rounded-[28px] border border-white/10 bg-white/5 shadow-soft transition duration-300 hover:-translate-y-1 hover:border-gold-300/30 hover:shadow-panel">
+    <article className="card card-hover flex h-full flex-col overflow-hidden p-0">
       <Link to={`/properties/${property._id}`} className="block">
-        <div className="relative h-56 overflow-hidden bg-slate-900 sm:h-64">
+        <div className="relative h-56 overflow-hidden bg-brand-50 sm:h-64">
           <img
             src={imageUrl}
             alt={property.title}
-            className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+            className="h-full w-full object-cover transition duration-700 hover:scale-105"
             loading="lazy"
+            decoding="async"
+            sizes="(min-width: 1536px) 22rem, (min-width: 1280px) 24vw, (min-width: 768px) 45vw, 100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink-900/55 via-ink-900/10 to-transparent" />
           <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-            <span className="badge bg-slate-950/70 text-white backdrop-blur">
-              {property.listingType === "rent" ? "Rent" : "Sale"}
-            </span>
-            <span className="badge bg-white/10 text-white backdrop-blur">{property.category}</span>
-            {isFeaturedProperty(property) && (
-              <span className="badge bg-gold-300/20 text-gold-100 backdrop-blur">
+            <span className="badge bg-white/90 text-ink-700 shadow-sm">{property.listingType === "rent" ? "Rent" : "Buy"}</span>
+            <span className="badge bg-brand-500 text-white shadow-sm">{property.category}</span>
+            {isFeaturedProperty(property) ? (
+              <span className="badge bg-[#f5e4bf] text-brand-700 shadow-sm">
                 <Sparkles size={12} />
                 Featured
               </span>
-            )}
+            ) : null}
           </div>
         </div>
       </Link>
 
-      <div className="space-y-4 p-5">
+      <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
         <div className="space-y-2">
           <div className="flex items-start justify-between gap-4">
-            <div>
-              <h3 className="text-xl font-semibold text-white">{property.title}</h3>
-              <p className="mt-2 inline-flex items-center gap-2 text-sm text-white/65">
-                <MapPin size={15} />
-                {locationText}
+            <div className="min-w-0">
+              <h3 className="line-clamp-2 text-xl font-semibold text-ink-700">{property.title}</h3>
+              <p className="mt-2 inline-flex max-w-full items-center gap-2 text-sm text-ink-500">
+                <MapPin size={15} className="shrink-0 text-brand-600" />
+                <span className="line-clamp-1">{locationText}</span>
               </p>
             </div>
-            <p className="text-lg font-bold text-gold-200">{formatCurrency(property.price)}</p>
+            <p className="shrink-0 text-lg font-bold text-brand-600">{formatCurrency(property.price)}</p>
           </div>
-          <p className="text-sm text-white/55">{property.shortDescription || property.description}</p>
+          <p className="line-clamp-3 text-sm leading-7 text-ink-500">{property.shortDescription || property.description}</p>
         </div>
 
-        <div className="grid grid-cols-1 gap-2 rounded-[24px] border border-white/10 bg-slate-950/40 p-3 text-sm text-white/70 sm:grid-cols-3">
-          <span className="inline-flex items-center gap-2">
-            <Ruler size={15} />
-            {formatNumber(property.area)} sq.ft
+        <div className="grid grid-cols-1 gap-2 rounded-2xl bg-cream-100 p-3 text-sm text-ink-600 sm:grid-cols-3">
+          <span className="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 shadow-sm">
+            <Ruler size={15} className="text-brand-600" />
+            {formatNumber(area)} sq.ft
           </span>
-          <span className="inline-flex items-center gap-2">
-            <BedDouble size={15} />
+          <span className="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 shadow-sm">
+            <BedDouble size={15} className="text-brand-600" />
             {property.bedrooms || 0}
           </span>
-          <span className="inline-flex items-center gap-2">
-            <Bath size={15} />
+          <span className="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 shadow-sm">
+            <Bath size={15} className="text-brand-600" />
             {property.bathrooms || 0}
           </span>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="mt-auto flex flex-col gap-3 sm:flex-row">
           <a href={toPhoneHref(phone)} className="btn-primary flex-1">
             <Phone size={16} />
             Contact Now

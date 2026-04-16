@@ -1,15 +1,15 @@
 import { Search, SlidersHorizontal } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import LeadCaptureForm from "../components/LeadCaptureForm.jsx";
 import PropertyCard from "../components/PropertyCard.jsx";
 import { COMPANY_INFO, mergeWithDemoProperties } from "../data/siteContent.js";
 import { fetchProperties } from "../services/api.js";
 
 const initialFilters = {
   search: "",
-  city: "",
-  listingType: "",
-  category: "",
+  location: "",
+  type: "",
   minPrice: "",
   maxPrice: "",
   sort: "latest"
@@ -55,22 +55,6 @@ const PropertiesPage = () => {
   const filteredProperties = useMemo(() => {
     const term = filters.search.trim().toLowerCase();
 
-    const matchesCategory = (property) => {
-      if (!filters.category) {
-        return true;
-      }
-
-      if (filters.category === "Apartment") {
-        return property.category === "Apartment";
-      }
-
-      if (filters.category === "House") {
-        return ["House", "Villa"].includes(property.category);
-      }
-
-      return property.category === filters.category;
-    };
-
     const filtered = allProperties.filter((property) => {
       const haystack = [
         property.title,
@@ -89,15 +73,11 @@ const PropertiesPage = () => {
         return false;
       }
 
-      if (filters.city && !haystack.includes(filters.city.toLowerCase())) {
+      if (filters.location && !haystack.includes(filters.location.toLowerCase())) {
         return false;
       }
 
-      if (filters.listingType && property.listingType !== filters.listingType) {
-        return false;
-      }
-
-      if (!matchesCategory(property)) {
+      if (filters.type && property.category !== filters.type) {
         return false;
       }
 
@@ -164,21 +144,22 @@ const PropertiesPage = () => {
   return (
     <div className="space-y-8">
       <section className="section-shell">
-        <div className="card surface-grid">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="card surface-grid space-y-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gold-200/80">Property Listings</p>
-              <h1 className="mt-2 font-display text-4xl font-semibold text-white">Available properties and plotting opportunities in {COMPANY_INFO.city}, {COMPANY_INFO.state}</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-white/60">
-                Explore verified plots, homes, commercial spaces, and premium addresses curated by Sagar Infra alongside its construction and infrastructure expertise.
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-600">Property Listings</p>
+              <h1 className="section-title mt-2">Buy property in {COMPANY_INFO.city}, {COMPANY_INFO.state}</h1>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-ink-500">
+                Filter listings by price, location, and property type to find the right plot, home, or commercial
+                space faster.
               </p>
             </div>
-            <div className="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white/75">
+            <div className="rounded-full border border-brand-200 bg-brand-50 px-5 py-3 text-sm font-semibold text-brand-700">
               {filteredProperties.length} opportunities found
             </div>
           </div>
 
-          <form className="mt-6 grid gap-3 lg:grid-cols-4" onSubmit={applyFilters}>
+          <form className="grid gap-3 md:grid-cols-2 xl:grid-cols-4" onSubmit={applyFilters}>
             <input
               className="input-field"
               name="search"
@@ -186,13 +167,8 @@ const PropertiesPage = () => {
               onChange={handleChange}
               placeholder="Search location, property, or landmark"
             />
-            <input className="input-field" name="city" value={filters.city} onChange={handleChange} placeholder="Location" />
-            <select className="input-field" name="listingType" value={filters.listingType} onChange={handleChange}>
-              <option value="">Buy or rent</option>
-              <option value="sale">Buy</option>
-              <option value="rent">Rent</option>
-            </select>
-            <select className="input-field" name="category" value={filters.category} onChange={handleChange}>
+            <input className="input-field" name="location" value={filters.location} onChange={handleChange} placeholder="Location" />
+            <select className="input-field" name="type" value={filters.type} onChange={handleChange}>
               <option value="">All types</option>
               <option value="Plot">Plot</option>
               <option value="House">House</option>
@@ -225,12 +201,12 @@ const PropertiesPage = () => {
               <option value="popular">Most viewed</option>
             </select>
 
-            <div className="flex flex-wrap gap-3">
-              <button className="btn-primary">
+            <div className="flex flex-col gap-3 md:col-span-2 md:flex-row xl:col-span-2">
+              <button className="btn-primary w-full md:w-auto">
                 <Search size={16} />
                 Apply Filters
               </button>
-              <button type="button" className="btn-secondary" onClick={clearFilters}>
+              <button type="button" className="btn-secondary w-full md:w-auto" onClick={clearFilters}>
                 <SlidersHorizontal size={16} />
                 Reset
               </button>
@@ -240,22 +216,20 @@ const PropertiesPage = () => {
       </section>
 
       <section className="section-shell">
-        {loading ? <p className="text-sm text-white/60">Loading properties...</p> : null}
+        {loading ? <p className="text-sm text-ink-500">Loading properties...</p> : null}
 
-        {!loading && (
+        {!loading ? (
           <>
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {visibleProperties.length > 0 ? (
                 visibleProperties.map((property) => <PropertyCard key={property._id} property={property} />)
               ) : (
-                <div className="card col-span-full text-center text-sm text-white/60">
-                  No properties matched your search.
-                </div>
+                <div className="card col-span-full text-center text-sm text-ink-500">No properties matched your filters.</div>
               )}
             </div>
 
-            {totalPages > 1 && (
-              <div className="mt-8 flex items-center justify-center gap-3">
+            {totalPages > 1 ? (
+              <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <button
                   type="button"
                   className="btn-secondary"
@@ -264,7 +238,7 @@ const PropertiesPage = () => {
                 >
                   Previous
                 </button>
-                <span className="text-sm text-white/65">
+                <span className="text-sm text-ink-500">
                   Page {safePage} of {totalPages}
                 </span>
                 <button
@@ -276,9 +250,47 @@ const PropertiesPage = () => {
                   Next
                 </button>
               </div>
-            )}
+            ) : null}
           </>
-        )}
+        ) : null}
+      </section>
+
+      <section className="section-shell">
+        <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+          <div className="card surface-grid">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-600">Buy / Sell</p>
+            <h2 className="section-title mt-2">Need help buying or want to sell a property in Sagar?</h2>
+            <p className="mt-4 text-sm leading-8 text-ink-500">
+              Use the filters above to browse available properties. If you want to sell, share your location and
+              requirement so Sagar Infra can follow up with the right next steps.
+            </p>
+            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-1">
+              <div className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm">
+                <p className="text-lg font-semibold text-ink-700">Buy Support</p>
+                <p className="mt-2 text-sm leading-7 text-ink-500">
+                  Filter by price, location, and property type to shortlist the right opportunity faster.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm">
+                <p className="text-lg font-semibold text-ink-700">Sell Support</p>
+                <p className="mt-2 text-sm leading-7 text-ink-500">
+                  Share your plot, house, or commercial property details and the team will contact you directly.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <LeadCaptureForm
+            title="Sell Property with Sagar Infra"
+            description="Submit your name, phone, location, and property requirement to start the selling process."
+            submitLabel="Start Sell Request"
+            successMessage="Sell request received. Sagar Infra will contact you soon."
+            source="sell"
+            showEmail
+            showLocation
+            requirementSeed="I want to sell my property through Sagar Infra."
+          />
+        </div>
       </section>
     </div>
   );

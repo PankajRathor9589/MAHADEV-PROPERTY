@@ -17,19 +17,34 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const uploadsDir = path.resolve(__dirname, "../../uploads");
-const allowedOrigins = (process.env.CLIENT_URL || "*")
-  .split(",")
+const allowedOrigins = [
+  ...(process.env.CLIENT_URL || "").split(","),
+  ...(process.env.FRONTEND_URL || "").split(","),
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : ""
+]
   .map((item) => item.trim())
   .filter(Boolean);
 
+if (allowedOrigins.length === 0 && process.env.NODE_ENV !== "production") {
+  allowedOrigins.push("http://localhost:5173", "http://127.0.0.1:5173");
+}
+
 const app = express();
 app.disable("x-powered-by");
+app.set("trust proxy", 1);
 
-app.use(
-  cors({
-    origin: allowedOrigins.includes("*") ? true : allowedOrigins
-  })
-);
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes("*") || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("Origin not allowed by CORS"));
+  }
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
@@ -44,9 +59,11 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/property", propertyRoutes);
 app.use("/api/properties", propertyRoutes);
-app.use("/api/favorites", favoriteRoutes);
+app.use("/api/leads", inquiryRoutes);
 app.use("/api/inquiries", inquiryRoutes);
+app.use("/api/favorites", favoriteRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.use(notFoundHandler);

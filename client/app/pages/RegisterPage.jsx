@@ -9,9 +9,7 @@ const RegisterPage = () => {
     name: "",
     email: "",
     phone: "",
-    password: "",
-    role: "user",
-    adminKey: ""
+    password: ""
   });
   const [error, setError] = useState("");
 
@@ -35,10 +33,11 @@ const RegisterPage = () => {
   return (
     <section className="section-shell">
       <div className="mx-auto max-w-2xl card">
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-gold-200/80">Admin Access</p>
-        <h1 className="mt-3 font-display text-4xl font-semibold text-white">Create an account</h1>
-        <p className="mt-3 text-sm leading-7 text-white/60">
-          Register as a user for browsing access, or use an admin registration key to unlock the property management console.
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-600">Create Account</p>
+        <h1 className="mt-3 font-display text-4xl font-semibold text-ink-700">Create an account</h1>
+        <p className="mt-3 text-sm leading-7 text-ink-500">
+          Register for quick property enquiries, updates, and smoother follow-up from Sagar Infra. Admin access is
+          managed separately through the secure login key.
         </p>
 
         <form className="mt-8 grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
@@ -46,38 +45,23 @@ const RegisterPage = () => {
           <input className="input-field" type="email" name="email" value={form.email} onChange={handleChange} placeholder="Email address" required />
           <input className="input-field" name="phone" value={form.phone} onChange={handleChange} placeholder="Phone number" />
           <input className="input-field" type="password" name="password" value={form.password} onChange={handleChange} placeholder="Password" required />
+          <div className="rounded-2xl border border-brand-100 bg-brand-50 p-4 text-sm leading-7 text-ink-500 md:col-span-2">
+            User accounts can browse properties, submit requirements, and stay connected with Sagar Infra. For admin
+            dashboard access, use the secure admin key from the login page.
+          </div>
 
-          <select className="input-field" name="role" value={form.role} onChange={handleChange}>
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-          </select>
-
-          {form.role === "admin" ? (
-            <input
-              className="input-field"
-              name="adminKey"
-              value={form.adminKey}
-              onChange={handleChange}
-              placeholder="Admin registration key"
-            />
-          ) : (
-            <div className="rounded-[24px] border border-white/10 bg-slate-950/35 p-4 text-sm text-white/60">
-              User accounts can browse listings and submit property requirements through the lead desk.
-            </div>
-          )}
-
-          {error ? <p className="rounded-2xl bg-rose-500/12 p-4 text-sm text-rose-200 md:col-span-2">{error}</p> : null}
+          {error ? <p className="rounded-2xl bg-rose-50 p-4 text-sm text-rose-700 md:col-span-2">{error}</p> : null}
 
           <div className="md:col-span-2">
-            <button className="btn-primary" disabled={loading}>
+            <button className="btn-primary w-full sm:w-auto" disabled={loading}>
               {loading ? "Creating account..." : "Register"}
             </button>
           </div>
         </form>
 
-        <p className="mt-6 text-sm text-white/60">
+        <p className="mt-6 text-sm text-ink-500">
           Already registered?{" "}
-          <Link className="font-semibold text-gold-100 underline underline-offset-4" to="/login">
+          <Link className="font-semibold text-brand-700 underline underline-offset-4" to="/login">
             Login instead
           </Link>
         </p>

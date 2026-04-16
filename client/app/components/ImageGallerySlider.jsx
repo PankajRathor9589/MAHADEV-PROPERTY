@@ -17,11 +17,18 @@ const ImageGallerySlider = ({ images = [], title = "Property" }) => {
 
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden rounded-[32px] border border-white/10 bg-slate-950/50">
-        <img src={activeImage.resolved} alt={title} className="h-[420px] w-full object-cover md:h-[520px]" />
+      <div className="overflow-hidden rounded-[28px] border border-brand-100 bg-cream-100">
+        <img
+          src={activeImage.resolved}
+          alt={title}
+          className="h-[320px] w-full object-cover md:h-[520px]"
+          loading="eager"
+          decoding="async"
+          sizes="(min-width: 1024px) 62vw, 100vw"
+        />
       </div>
 
-      {normalizedImages.length > 1 && (
+      {normalizedImages.length > 1 ? (
         <div className="grid grid-cols-4 gap-3 sm:grid-cols-6">
           {normalizedImages.map((image, index) => (
             <button
@@ -29,14 +36,20 @@ const ImageGallerySlider = ({ images = [], title = "Property" }) => {
               type="button"
               onClick={() => setActiveIndex(index)}
               className={`overflow-hidden rounded-2xl border transition ${
-                index === activeIndex ? "border-gold-300 ring-2 ring-gold-300/20" : "border-white/10"
+                index === activeIndex ? "border-brand-400 ring-2 ring-brand-100" : "border-brand-100"
               }`}
             >
-              <img src={image.resolved} alt={`${title} ${index + 1}`} className="h-20 w-full object-cover" />
+              <img
+                src={image.resolved}
+                alt={`${title} ${index + 1}`}
+                className="h-20 w-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
             </button>
           ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 };

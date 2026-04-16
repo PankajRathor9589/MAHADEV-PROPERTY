@@ -10,9 +10,9 @@ const imageSchema = new mongoose.Schema(
 
 const locationSchema = new mongoose.Schema(
   {
-    city: { type: String, required: true, trim: true },
-    state: { type: String, required: true, trim: true },
-    address: { type: String, required: true, trim: true },
+    city: { type: String, trim: true, default: "" },
+    state: { type: String, trim: true, default: "" },
+    address: { type: String, trim: true, default: "" },
     landmark: { type: String, trim: true, default: "" },
     pincode: { type: String, trim: true, default: "" },
     coordinates: {
@@ -30,23 +30,23 @@ const propertySchema = new mongoose.Schema(
     listingType: {
       type: String,
       enum: ["sale", "rent"],
-      required: true
+      default: "sale"
     },
     category: {
       type: String,
       enum: ["Apartment", "Villa", "House", "Plot", "Commercial", "Studio", "Farm House"],
-      default: "Apartment"
+      default: "Plot"
     },
     price: { type: Number, required: true, min: 0 },
     bedrooms: { type: Number, min: 0, default: 0 },
     bathrooms: { type: Number, min: 0, default: 0 },
-    area: { type: Number, required: true, min: 0 },
+    area: { type: Number, min: 0, default: 0 },
     amenities: { type: [String], default: [] },
     location: locationSchema,
     images: { type: [imageSchema], default: [] },
-    contactName: { type: String, required: true, trim: true },
+    contactName: { type: String, trim: true, default: "" },
     contactEmail: { type: String, trim: true, lowercase: true, default: "" },
-    contactPhone: { type: String, required: true, trim: true },
+    contactPhone: { type: String, trim: true, default: "" },
     postedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

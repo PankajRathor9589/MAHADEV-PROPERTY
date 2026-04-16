@@ -10,18 +10,18 @@ import {
   updatePropertyApproval,
   updatePropertyFeatured
 } from "../controllers/propertyController.js";
-import { authorizeRoles, optionalAuth, protect } from "../middleware/auth.js";
+import { authorizeRoles, optionalAuth, protect, requireAdminAccess } from "../middleware/auth.js";
 import { uploadPropertyImages } from "../middleware/upload.js";
 
 const router = Router();
 
 router.get("/", optionalAuth, getAllProperties);
-router.get("/mine", protect, getMyProperties);
+router.get("/mine", protect, requireAdminAccess, getMyProperties);
 router.get("/:id", optionalAuth, getPropertyById);
 router.post("/:id/inquiries", optionalAuth, createInquiry);
-router.post("/", protect, uploadPropertyImages.array("images", 10), createProperty);
-router.put("/:id", protect, uploadPropertyImages.array("images", 10), updateProperty);
-router.delete("/:id", protect, deleteProperty);
+router.post("/", protect, requireAdminAccess, uploadPropertyImages.array("images", 10), createProperty);
+router.put("/:id", protect, requireAdminAccess, uploadPropertyImages.array("images", 10), updateProperty);
+router.delete("/:id", protect, requireAdminAccess, deleteProperty);
 router.patch("/:id/approval", protect, authorizeRoles("admin"), updatePropertyApproval);
 router.patch("/:id/featured", protect, authorizeRoles("admin"), updatePropertyFeatured);
 

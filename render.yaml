@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: mahadev-property-api
+    name: sagar-infra-api
     env: node
     rootDir: server
     plan: free
@@ -15,13 +15,21 @@ services:
         value: 10000
       - key: CLIENT_URL
         value: https://your-frontend-domain.vercel.app
+      - key: FRONTEND_URL
+        value: https://your-frontend-domain.vercel.app
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
         sync: false
       - key: JWT_EXPIRES_IN
         value: 7d
-      - key: ADMIN_REGISTRATION_KEY
+      - key: ADMIN_SECRET_KEY
         sync: false
+      - key: ADMIN_SESSION_NAME
+        value: Sagar Infra Admin
+      - key: ADMIN_SESSION_EMAIL
+        value: admin.session@sagarinfra.local
+      - key: ADMIN_SESSION_PHONE
+        value: 7692016188
       - key: MAX_FILE_SIZE_MB
         value: 5

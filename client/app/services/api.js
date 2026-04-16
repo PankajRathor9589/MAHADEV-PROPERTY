@@ -1,12 +1,15 @@
 import axios from "axios";
 
-export const API_BASE_URL = (import.meta.env.VITE_API_URL || "").trim();
+export const API = import.meta.env.VITE_API_URL;
+export const API_BASE_URL = String(API || "").trim().replace(/\/$/, "");
 export const API_ORIGIN = API_BASE_URL ? API_BASE_URL.replace(/\/api\/?$/, "") : "";
 const hasApiBase = Boolean(API_BASE_URL);
-const defaultApiMessage = "API is not configured for this deployment. Set VITE_API_URL to enable login, admin, and lead features.";
+const defaultApiMessage = "API is not configured for this deployment. Set VITE_API_URL to enable login, admin, property, and lead features.";
+const wakeMessage = "Server waking up, please wait...";
 
 const http = axios.create({
-  baseURL: API_BASE_URL || undefined
+  baseURL: API_BASE_URL || undefined,
+  timeout: 15000
 });
 
 const getToken = () => localStorage.getItem("sagar_infra_token");
@@ -27,10 +30,12 @@ http.interceptors.request.use((config) => {
 });
 
 const parseError = (error) =>
-  error?.response?.data?.message ||
-  (Array.isArray(error?.response?.data?.details) ? error.response.data.details.join(", ") : "") ||
-  error.message ||
-  "Request failed";
+  (!error?.response || error?.code === "ERR_NETWORK" || [502, 503, 504].includes(error?.response?.status))
+    ? wakeMessage
+    : error?.response?.data?.message ||
+      (Array.isArray(error?.response?.data?.details) ? error.response.data.details.join(", ") : "") ||
+      error.message ||
+      "Request failed";
 
 const buildPropertyFormData = (payload) => {
   const formData = new FormData();
@@ -93,6 +98,11 @@ export const loginUser = async (payload) => {
   return safeRequest(http.post("/auth/login", payload));
 };
 
+export const loginAdminUser = async (payload) => {
+  requireApiBase();
+  return safeRequest(http.post("/auth/admin/login", payload));
+};
+
 export const fetchMe = async () => {
   requireApiBase();
   const data = await safeRequest(http.get("/auth/me"));
@@ -101,39 +111,47 @@ export const fetchMe = async () => {
 
 export const fetchProperties = async (params = {}) => {
   if (!hasApiBase) {
-    return { data: [] };
+    return {
+      data: [],
+      pagination: {
+        page: 1,
+        limit: 0,
+        total: 0,
+        pages: 1
+      }
+    };
   }
 
-  return safeRequest(http.get("/properties", { params }));
+  return safeRequest(http.get("/property", { params }));
 };
 
 export const fetchPropertyById = async (id) => {
   requireApiBase();
-  const data = await safeRequest(http.get(`/properties/${id}`));
+  const data = await safeRequest(http.get(`/property/${id}`));
   return data.data;
 };
 
 export const createProperty = async (payload) => {
   requireApiBase();
-  const data = await safeRequest(http.post("/properties", buildPropertyFormData(payload)));
+  const data = await safeRequest(http.post("/property", buildPropertyFormData(payload)));
   return data.data;
 };
 
 export const updateProperty = async (id, payload) => {
   requireApiBase();
-  const data = await safeRequest(http.put(`/properties/${id}`, buildPropertyFormData(payload)));
+  const data = await safeRequest(http.put(`/property/${id}`, buildPropertyFormData(payload)));
   return data.data;
 };
 
 export const deleteProperty = async (id) => {
   requireApiBase();
-  return safeRequest(http.delete(`/properties/${id}`));
+  return safeRequest(http.delete(`/property/${id}`));
 };
 
 export const updatePropertyApproval = async (id, approvalStatus, rejectionReason = "") => {
   requireApiBase();
   const data = await safeRequest(
-    http.patch(`/properties/${id}/approval`, { approvalStatus, rejectionReason })
+    http.patch(`/property/${id}/approval`, { approvalStatus, rejectionReason })
   );
   return data.data;
 };
@@ -141,31 +159,37 @@ export const updatePropertyApproval = async (id, approvalStatus, rejectionReason
 export const updatePropertyFeatured = async (id, isFeatured, featuredDays = 30) => {
   requireApiBase();
   const data = await safeRequest(
-    http.patch(`/properties/${id}/featured`, { isFeatured, featuredDays })
+    http.patch(`/property/${id}/featured`, { isFeatured, featuredDays })
   );
   return data.data;
 };
 
 export const submitInquiry = async (propertyId, payload) => {
-  requireApiBase();
-  const data = await safeRequest(http.post(`/properties/${propertyId}/inquiries`, payload));
+  requireApiBase("Online lead submission is not configured yet. Please call or WhatsApp Sagar Infra to continue.");
+  const data = await safeRequest(
+    http.post("/leads", {
+      propertyId,
+      source: "property",
+      ...payload
+    })
+  );
   return data.data;
 };
 
 export const submitLead = async (payload) => {
   requireApiBase("Online lead submission is not configured yet. Please call or WhatsApp Sagar Infra to continue.");
-  const data = await safeRequest(http.post("/inquiries", payload));
+  const data = await safeRequest(http.post("/leads", payload));
   return data.data;
 };
 
 export const fetchInquiries = async (params = {}) => {
   requireApiBase();
-  return safeRequest(http.get("/inquiries", { params }));
+  return safeRequest(http.get("/leads", { params }));
 };
 
 export const updateInquiryStatus = async (id, status) => {
   requireApiBase();
-  const data = await safeRequest(http.patch(`/inquiries/${id}/status`, { status }));
+  const data = await safeRequest(http.patch(`/leads/${id}/status`, { status }));
   return data.data;
 };
 

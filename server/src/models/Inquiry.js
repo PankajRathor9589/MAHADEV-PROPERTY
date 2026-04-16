@@ -23,9 +23,12 @@ const inquirySchema = new mongoose.Schema(
     message: { type: String, trim: true, default: "" },
     source: {
       type: String,
-      enum: ["property", "homepage", "book_visit", "contact"],
-      default: "property"
+      enum: ["property", "homepage", "book_visit", "contact", "contract", "sell"],
+      default: "homepage"
     },
+    serviceType: { type: String, trim: true, default: "" },
+    location: { type: String, trim: true, default: "" },
+    budget: { type: String, trim: true, default: "" },
     status: {
       type: String,
       enum: ["new", "contacted", "closed"],
@@ -46,6 +49,7 @@ const inquirySchema = new mongoose.Schema(
 inquirySchema.index({ owner: 1, status: 1, createdAt: -1 });
 inquirySchema.index({ buyer: 1, createdAt: -1 });
 inquirySchema.index({ property: 1, createdAt: -1 });
+inquirySchema.index({ source: 1, status: 1, createdAt: -1 });
 
 const Inquiry = mongoose.model("Inquiry", inquirySchema);
 

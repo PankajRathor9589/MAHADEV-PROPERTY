@@ -175,17 +175,18 @@ const AdminDashboardPage = () => {
     <div className="space-y-8">
       <section className="section-shell">
         <div className="card surface-grid">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gold-200/80">Admin Panel</p>
-          <h1 className="mt-2 font-display text-4xl font-semibold text-white">Add listings, moderate inventory, and manage leads</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-white/60">
-            This console lets you create and delete property listings, review approvals, feature premium inventory, and track every incoming lead from the public site.
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-600">Admin Panel</p>
+          <h1 className="section-title mt-2">Add listings, moderate inventory, and manage leads</h1>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-ink-500">
+            Add or delete properties, keep premium inventory featured, and review incoming property, contact, sell,
+            and contract leads from the public site.
           </p>
         </div>
       </section>
 
-      <section className="section-shell">
-        {error ? <p className="rounded-2xl bg-rose-500/12 p-4 text-sm text-rose-200">{error}</p> : null}
-        {success ? <p className="rounded-2xl bg-emerald-500/12 p-4 text-sm text-emerald-200">{success}</p> : null}
+      <section className="section-shell space-y-3">
+        {error ? <p className="rounded-2xl bg-rose-50 p-4 text-sm text-rose-700">{error}</p> : null}
+        {success ? <p className="rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-700">{success}</p> : null}
       </section>
 
       <section className="section-shell">
@@ -201,14 +202,14 @@ const AdminDashboardPage = () => {
         />
 
         <div className="card">
-          <h2 className="text-2xl font-semibold text-white">Manage Listings</h2>
-          <p className="mt-2 text-sm text-white/60">
+          <h2 className="text-2xl font-semibold text-ink-700">Manage Listings</h2>
+          <p className="mt-2 text-sm text-ink-500">
             Edit, approve, reject, feature, or delete any property from the inventory.
           </p>
 
           <div className="mt-6">
             {loading ? (
-              <p className="text-sm text-white/60">Loading listings...</p>
+              <p className="text-sm text-ink-500">Loading listings...</p>
             ) : (
               <DashboardPropertyTable
                 properties={sortedProperties}
@@ -226,14 +227,15 @@ const AdminDashboardPage = () => {
 
       <section className="section-shell">
         <div className="card">
-          <h2 className="text-2xl font-semibold text-white">Lead Management</h2>
-          <p className="mt-2 text-sm text-white/60">
-            Review property enquiries, homepage callback requests, and book-visit submissions in one place.
+          <h2 className="text-2xl font-semibold text-ink-700">Lead Management</h2>
+          <p className="mt-2 text-sm text-ink-500">
+            Review property enquiries, contract applications, sell-property requests, and contact submissions in one
+            place.
           </p>
 
           <div className="mt-6">
             {loading ? (
-              <p className="text-sm text-white/60">Loading leads...</p>
+              <p className="text-sm text-ink-500">Loading leads...</p>
             ) : (
               <InquiryTable inquiries={inquiries} editable onStatusChange={handleLeadStatus} />
             )}
