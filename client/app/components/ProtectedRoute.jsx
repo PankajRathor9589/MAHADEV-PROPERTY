@@ -7,9 +7,11 @@ const ProtectedRoute = ({ allowedRoles = [], children }) => {
 
   if (bootstrapping) {
     return (
-      <div className="card flex min-h-[240px] items-center justify-center text-sm text-slate-500">
-        Loading your account...
-      </div>
+      <section className="section-shell">
+        <div className="card flex min-h-[220px] items-center justify-center text-sm text-ink-500">
+          Loading your account...
+        </div>
+      </section>
     );
   }
 

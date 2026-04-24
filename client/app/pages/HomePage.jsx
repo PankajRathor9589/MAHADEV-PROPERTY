@@ -1,446 +1,405 @@
 import {
   ArrowRight,
-  BadgeCheck,
   Building2,
   CheckCircle2,
+  Home,
+  Landmark,
   MapPin,
-  MessageCircle,
+  MessageCircleMore,
   Phone,
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  TrendingUp,
+  UserRound
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import DocumentProofSection from "../components/DocumentProofSection.jsx";
-import FeaturedPropertyCarousel from "../components/FeaturedPropertyCarousel.jsx";
+import BrandMark from "../components/BrandMark.jsx";
 import LeadCaptureForm from "../components/LeadCaptureForm.jsx";
-import OwnerSection from "../components/OwnerSection.jsx";
 import PropertyCard from "../components/PropertyCard.jsx";
-import ServicesSection from "../components/ServicesSection.jsx";
-import TrustSection from "../components/TrustSection.jsx";
+import Reveal from "../components/Reveal.jsx";
 import {
-  ABOUT_HIGHLIGHTS,
   COMPANY_INFO,
+  CONTACT_SERVICE_OPTIONS,
+  FEATURED_FALLBACK_PROPERTIES,
   HERO_STATS,
-  HOME_CAPABILITIES,
-  TESTIMONIALS,
-  mergeWithDemoProperties
+  SERVICE_PILLARS,
+  TRUST_DESCRIPTIONS,
+  WHY_CHOOSE_US
 } from "../data/siteContent.js";
-import { fetchProperties } from "../services/api.js";
-import { HERO_IMAGE, toPhoneHref, toWhatsAppHref } from "../utils/format.js";
+import { API_BASE_URL, fetchProperties } from "../services/api.js";
+import { toPhoneHref, toWhatsAppHref } from "../utils/format.js";
 
-const aboutCards = [
-  {
-    title: "Contractor-first approach",
-    copy: "The website is built around practical project clarity, direct communication, and proof-led trust instead of generic sales talk.",
-    icon: Building2
-  },
-  {
-    title: "Strong local presence",
-    copy: "Clients in Sagar get faster site coordination, quicker follow-up, and more confidence because the brand is locally rooted.",
-    icon: MapPin
-  },
-  {
-    title: "Construction + property together",
-    copy: "The same brand supports contractor work, verified properties, plotting, and consultation, which makes the experience easier to trust.",
-    icon: ShieldCheck
-  }
-];
+const serviceIcons = {
+  map: Landmark,
+  home: Home,
+  building: Building2,
+  investment: TrendingUp
+};
 
-const confidencePoints = [
-  "Government contract experience",
-  "Construction and property support under one brand",
-  "Verified documents with privacy-safe previews",
-  "Direct owner communication in Sagar MP"
-];
-
-const contractOptions = [
-  { label: "National Highway Projects", value: "National Highway Projects" },
-  { label: "School & College Construction", value: "School & College Construction" },
-  { label: "Government Contracts", value: "Government Contracts" }
-];
+const valueIcons = {
+  sparkles: Sparkles,
+  shield: ShieldCheck,
+  pin: MapPin,
+  support: CheckCircle2
+};
 
 const HomePage = () => {
-  const [liveProperties, setLiveProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [featuredProperties, setFeaturedProperties] = useState(FEATURED_FALLBACK_PROPERTIES);
+  const [loadingProperties, setLoadingProperties] = useState(Boolean(API_BASE_URL));
+  const [propertyMode, setPropertyMode] = useState(API_BASE_URL ? "live" : "showcase");
+  const [propertyMessage, setPropertyMessage] = useState(
+    API_BASE_URL ? "" : "Showcasing a signature collection while live inventory is being connected."
+  );
 
   useEffect(() => {
-    const load = async () => {
+    document.title = COMPANY_INFO.metaTitle;
+
+    const description = document.querySelector('meta[name="description"]');
+    if (description) {
+      description.setAttribute("content", COMPANY_INFO.metaDescription);
+    }
+  }, []);
+
+  useEffect(() => {
+    const loadProperties = async () => {
+      if (!API_BASE_URL) {
+        setLoadingProperties(false);
+        return;
+      }
+
       try {
-        setLoading(true);
-        const response = await fetchProperties({ limit: 12, sort: "latest" });
-        setLiveProperties(response.data || []);
+        setLoadingProperties(true);
+        setPropertyMessage("");
+        const response = await fetchProperties({
+          limit: 4,
+          sort: "latest"
+        });
+
+        if (response.data?.length) {
+          setFeaturedProperties(response.data);
+          setPropertyMode("live");
+          return;
+        }
+
+        setFeaturedProperties(FEATURED_FALLBACK_PROPERTIES);
+        setPropertyMode("showcase");
+        setPropertyMessage("Curated signature listings are displayed while live inventory is being refreshed.");
       } catch (error) {
-        setLiveProperties([]);
+        setFeaturedProperties(FEATURED_FALLBACK_PROPERTIES);
+        setPropertyMode("showcase");
+        setPropertyMessage(error.message || "Live inventory is syncing. Showing the signature collection instead.");
       } finally {
-        setLoading(false);
+        setLoadingProperties(false);
       }
     };
 
-    load();
+    loadProperties();
   }, []);
 
-  const allProperties = useMemo(() => mergeWithDemoProperties(liveProperties), [liveProperties]);
-  const featuredProperties = useMemo(
-    () => {
-      const featured = allProperties.filter((property) => property.isFeatured).slice(0, 4);
-      return featured.length > 0 ? featured : allProperties.slice(0, 4);
-    },
-    [allProperties]
-  );
-  const latestProperties = useMemo(() => allProperties.slice(0, 4), [allProperties]);
-
   return (
-    <div className="space-y-16 pb-4">
-      <section className="section-shell">
-        <div className="hero-shadow relative overflow-hidden rounded-[32px] border border-brand-100 bg-white">
-          <div className="absolute -left-16 top-0 h-48 w-48 rounded-full bg-brand-100 blur-3xl" />
-          <div className="absolute bottom-0 right-0 h-56 w-56 rounded-full bg-[#f5e4bf] blur-3xl" />
-
-          <div className="relative grid gap-8 px-5 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.05fr_0.95fr] lg:px-12 lg:py-14">
-            <div className="flex flex-col justify-center">
-              <span className="pill w-fit">Trusted contractor and property support in {COMPANY_INFO.city}, {COMPANY_INFO.state}</span>
-              <h1 className="hero-title mt-6">{COMPANY_INFO.name}</h1>
-              <p className="mt-4 max-w-2xl text-lg font-semibold text-brand-700 sm:text-xl">{COMPANY_INFO.subtitle}</p>
-              <p className="mt-3 text-xs uppercase tracking-[0.35em] text-ink-400 sm:text-sm">{COMPANY_INFO.tagline}</p>
-              <p className="mt-5 max-w-3xl text-sm leading-8 text-ink-500 sm:text-base">
-                {COMPANY_INFO.description} We help clients looking for government contracts, construction support,
-                verified plots, and trusted local property guidance in Sagar Madhya Pradesh.
-              </p>
-
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <a href={toPhoneHref(COMPANY_INFO.phoneDisplay)} className="btn-primary w-full sm:w-auto">
-                  <Phone size={16} />
-                  Call Now
-                </a>
-                <a
-                  href={toWhatsAppHref(COMPANY_INFO.whatsappNumber, COMPANY_INFO.whatsappMessage)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn-secondary w-full sm:w-auto"
-                >
-                  <MessageCircle size={16} />
-                  WhatsApp
-                </a>
-              </div>
-
-              <div className="mt-5 flex flex-wrap gap-3 text-sm text-ink-500">
-                <a href="#services" className="rounded-full border border-brand-200 bg-brand-50 px-4 py-2 font-medium transition hover:bg-brand-100">
-                  Services
-                </a>
-                <a href="#documents" className="rounded-full border border-brand-200 bg-brand-50 px-4 py-2 font-medium transition hover:bg-brand-100">
-                  Verified Documents
-                </a>
-                <Link to="/properties" className="rounded-full border border-brand-200 bg-brand-50 px-4 py-2 font-medium transition hover:bg-brand-100">
-                  Properties
-                </Link>
-                <a href="#contact" className="rounded-full border border-brand-200 bg-brand-50 px-4 py-2 font-medium transition hover:bg-brand-100">
-                  Contact
-                </a>
-              </div>
-
-              <div className="mt-8 grid gap-4 sm:grid-cols-3">
-                {HERO_STATS.map((item) => (
-                  <div key={item.label} className="glass-card-strong rounded-2xl p-4 md:p-5">
-                    <p className="text-3xl font-bold text-brand-600">{item.value}</p>
-                    <p className="mt-2 text-sm text-ink-500">{item.label}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-8 flex flex-wrap gap-3">
-                {ABOUT_HIGHLIGHTS.map((item) => (
-                  <span key={item} className="pill">
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid gap-4 lg:content-start">
-              <div className="relative overflow-hidden rounded-[28px] border border-brand-100 bg-brand-50 min-h-[280px] sm:min-h-[320px]">
-                <img
-                  src={HERO_IMAGE}
-                  alt="Sagar Infra hero"
-                  className="absolute inset-0 h-full w-full object-cover"
-                  loading="eager"
-                  decoding="async"
-                  fetchpriority="high"
-                  sizes="(min-width: 1024px) 42vw, 100vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-ink-900/65 via-ink-900/15 to-transparent" />
-                <div className="relative flex h-full flex-col justify-between p-6 text-white">
-                  <span className="w-fit rounded-full bg-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] backdrop-blur-sm">
-                    Premium first impression
-                  </span>
-                  <div>
-                    <p className="inline-flex items-center gap-2 text-sm font-semibold text-white/90">
-                      <BadgeCheck size={16} />
-                      Contractor and property brand in Sagar MP
-                    </p>
-                    <p className="mt-3 max-w-md text-sm leading-7 text-white/85">
-                      A cleaner, faster, and more trustworthy digital presence for construction clients and property enquiries.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {HOME_CAPABILITIES.map((item) => (
-                  <div key={item.title} className="card card-hover h-full bg-white/95">
-                    <span className="inline-flex rounded-2xl bg-brand-50 p-3 text-brand-700">
-                      <BadgeCheck size={18} />
-                    </span>
-                    <p className="mt-4 font-semibold text-ink-700">{item.title}</p>
-                    <p className="mt-2 line-clamp-4 text-sm leading-7 text-ink-500">{item.copy}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <TrustSection />
-
-      <section id="about" className="section-shell grid gap-5 md:grid-cols-2 xl:grid-cols-[1.2fr_0.9fr_0.9fr_0.9fr]">
-        <div className="card surface-grid md:col-span-2 xl:col-span-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-600">About Us</p>
-          <h2 className="section-title mt-2">A modern digital identity for a company clients can trust</h2>
-          <p className="mt-4 text-sm leading-8 text-ink-500">
-            Sagar Infra is positioned as a contractor-first business with a polished online presence, clear services,
-            visible trust signals, and easy owner contact. The goal is to help serious clients feel confident quickly.
-          </p>
-          <p className="mt-4 text-sm leading-8 text-ink-500">
-            That means responsive layouts, readable cards, verified proof sections, and property access without losing
-            the core construction and infrastructure identity of the brand.
-          </p>
-        </div>
-
-        {aboutCards.map((item) => {
-          const Icon = item.icon;
-
-          return (
-            <article key={item.title} className="card card-hover h-full">
-              <span className="inline-flex rounded-2xl bg-brand-50 p-3 text-brand-700">
-                <Icon size={18} />
-              </span>
-              <h3 className="mt-4 text-xl font-semibold text-ink-700">{item.title}</h3>
-              <p className="mt-3 line-clamp-5 text-sm leading-7 text-ink-500">{item.copy}</p>
-            </article>
-          );
-        })}
-      </section>
-
-      <OwnerSection />
-
-      <ServicesSection />
-
-      <section id="contractor" className="section-shell">
-        <div className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
-          <div className="card surface-grid space-y-5">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-600">Contractor System</p>
-              <h2 className="section-title mt-2">National highway, school, and government contract opportunities handled professionally</h2>
-              <p className="mt-3 text-sm leading-8 text-ink-500">
-                The platform now presents contractor work clearly for serious project discussions instead of hiding it
-                behind generic property language.
-              </p>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
-              {contractOptions.map((item) => (
-                <div key={item.value} className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm">
-                  <p className="text-lg font-semibold text-ink-700">{item.label}</p>
-                  <p className="mt-2 text-sm leading-7 text-ink-500">
-                    Share project details, execution scope, and location for faster follow-up from the Sagar Infra team.
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <LeadCaptureForm
-            title="Apply for Contract"
-            description="Send your project type, location, and requirement to discuss highway work, school or college construction, and government contracts."
-            submitLabel="Apply for Contract"
-            successMessage="Contract application received. Sagar Infra will contact you soon."
-            source="contract"
-            showEmail
-            showLocation
-            serviceOptions={contractOptions}
-            requirementSeed="I want to discuss a contractor opportunity with Sagar Infra."
+    <>
+      <section className="section-shell pb-8 pt-8">
+        <div className="relative overflow-hidden rounded-[40px] border border-white/12 shadow-glass">
+          <img
+            src={COMPANY_INFO.heroImage}
+            alt="Luxury real estate skyline by SAGAR INFRA"
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
           />
+          <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(5,13,28,0.88)_10%,rgba(5,13,28,0.64)_45%,rgba(5,13,28,0.28)_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.18),transparent_28%)]" />
+          <div className="floating-glow absolute -left-16 top-20 h-52 w-52 rounded-full bg-gold-400/18 blur-3xl" />
+          <div className="floating-glow absolute bottom-10 right-0 h-56 w-56 rounded-full bg-navy-400/28 blur-3xl" />
+
+          <Reveal className="absolute right-6 top-6 z-10 hidden md:block" delay={0.25} y={18}>
+            <div className="glass-panel min-w-[260px] p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.34em] text-gold-300">Direct Contact</p>
+              <div className="mt-4 space-y-3">
+                <p className="inline-flex items-center gap-3 text-white">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-gold-200">
+                    <UserRound size={18} />
+                  </span>
+                  <span>
+                    <span className="block text-sm text-white/60">Owner</span>
+                    <span className="text-lg font-semibold">{COMPANY_INFO.owner}</span>
+                  </span>
+                </p>
+                <a href={toPhoneHref(COMPANY_INFO.phoneDisplay)} className="inline-flex items-center gap-3 text-white">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-gold-200">
+                    <Phone size={18} />
+                  </span>
+                  <span>
+                    <span className="block text-sm text-white/60">Call</span>
+                    <span className="text-lg font-semibold">{COMPANY_INFO.phoneDisplay}</span>
+                  </span>
+                </a>
+              </div>
+            </div>
+          </Reveal>
+
+          <div className="relative grid min-h-[740px] items-end gap-8 px-5 py-6 sm:px-8 sm:py-8 lg:grid-cols-[1.15fr_0.85fr] lg:px-12 lg:py-12">
+            <Reveal className="max-w-3xl" delay={0.05}>
+              <div className="glass-panel p-7 sm:p-9 lg:p-10">
+                <BrandMark showWordmark={false} compact />
+                <p className="section-kicker mt-6">Luxury Real Estate Advisory</p>
+                <h1 className="hero-title mt-5">{COMPANY_INFO.name}</h1>
+                <p className="mt-3 font-display text-3xl italic text-white/92 sm:text-4xl">
+                  {COMPANY_INFO.tagline}
+                </p>
+                <p className="mt-5 max-w-2xl text-base leading-8 text-slate-200 sm:text-lg">
+                  {COMPANY_INFO.serviceLine}
+                </p>
+
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  <Link to="/properties" className="btn-primary w-full sm:w-auto">
+                    Explore Properties
+                    <ArrowRight size={16} />
+                  </Link>
+                  <Link to="/#contact" className="btn-ghost w-full sm:w-auto">
+                    Contact Now
+                  </Link>
+                </div>
+
+                <div className="mt-8 flex flex-wrap gap-3">
+                  {TRUST_DESCRIPTIONS.map((item) => (
+                    <span
+                      key={item}
+                      className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/[0.08] px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-xl"
+                    >
+                      <ShieldCheck size={14} className="text-gold-300" />
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
+
+            <Reveal className="lg:justify-self-end" delay={0.18} y={36}>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                className="glass-panel max-w-[380px] p-6"
+              >
+                <p className="section-kicker">Signature Portfolio</p>
+                <h2 className="mt-3 text-4xl font-semibold leading-none text-gradient-gold">Prime. Polished. Trusted.</h2>
+                <p className="mt-4 text-sm leading-7 text-white/72">
+                  A high-end brand presence built for buyers who value clarity, location quality, and a more premium
+                  real estate experience.
+                </p>
+
+                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                  {HERO_STATS.map((item) => (
+                    <div key={item.label} className="rounded-[24px] border border-white/12 bg-white/[0.06] p-4">
+                      <p className="text-xl font-semibold text-white">{item.value}</p>
+                      <p className="mt-2 text-sm leading-6 text-white/60">{item.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            </Reveal>
+          </div>
         </div>
       </section>
 
-      <DocumentProofSection />
+      <section id="services" className="section-shell pt-6">
+        <SectionHeading
+          kicker="Services"
+          title="Luxury advisory tailored to the real estate decisions that matter most"
+          copy="Every service is presented like a premium brand touchpoint, with glassmorphism cards, clear positioning, and direct action paths."
+        />
 
-      <section className="section-shell space-y-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-600">Featured Properties</p>
-            <h2 className="section-title mt-2">Verified properties presented with the same trust-first approach</h2>
-          </div>
-          <Link to="/properties" className="btn-secondary w-full sm:w-auto">
-            Explore All
+        <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {SERVICE_PILLARS.map((item, index) => {
+            const Icon = serviceIcons[item.icon] || Building2;
+
+            return (
+              <Reveal
+                key={item.title}
+                delay={index * 0.08}
+                className="glass-panel h-full p-6 transition duration-500 hover:-translate-y-2 hover:border-gold-300/40"
+              >
+                <span className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-gold-300/40 bg-gold-400/16 text-gold-100">
+                  <Icon size={24} />
+                </span>
+                <p className="mt-5 text-xs font-semibold uppercase tracking-[0.34em] text-gold-300">{item.eyebrow}</p>
+                <h3 className="mt-3 text-3xl font-semibold text-white">{item.title}</h3>
+                <p className="mt-4 text-sm leading-7 text-white/70">{item.description}</p>
+              </Reveal>
+            );
+          })}
+        </div>
+      </section>
+
+      <section id="properties" className="section-shell pt-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <SectionHeading
+            kicker={propertyMode === "live" ? "Live Inventory" : "Signature Collection"}
+            title="Premium property showcases designed to feel like a luxury real estate campaign"
+            copy="Elegant imagery, cinematic overlays, and conversion-ready cards keep the browsing experience premium on every screen."
+          />
+          <Link to="/properties" className="btn-ghost w-full sm:w-auto">
+            Explore All Listings
             <ArrowRight size={16} />
           </Link>
         </div>
 
-        {loading ? <p className="text-sm text-ink-500">Loading featured properties...</p> : <FeaturedPropertyCarousel properties={featuredProperties} />}
-      </section>
-
-      <section id="properties" className="section-shell space-y-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-600">Properties</p>
-            <h2 className="section-title mt-2">Buy verified plots, homes, and commercial spaces in Sagar MP</h2>
-          </div>
-          <p className="max-w-2xl text-sm leading-7 text-ink-500">
-            For clients who need both construction capability and verified property guidance, Sagar Infra brings both
-            worlds together in one clean and responsive experience.
+        {loadingProperties ? <p className="mt-6 text-sm text-white/68">Loading signature properties...</p> : null}
+        {propertyMessage ? (
+          <p className="mt-6 rounded-full border border-gold-300/20 bg-gold-400/10 px-4 py-3 text-sm text-gold-100">
+            {propertyMessage}
           </p>
-        </div>
+        ) : null}
 
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {latestProperties.map((property) => (
-            <PropertyCard key={property._id} property={property} />
+        <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {featuredProperties.map((property, index) => (
+            <Reveal key={property._id || property.title} delay={index * 0.08}>
+              <PropertyCard property={property} />
+            </Reveal>
           ))}
         </div>
       </section>
 
-      <section className="section-shell">
-        <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-          <div className="card surface-grid space-y-5">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-600">Buy / Sell</p>
-              <h2 className="section-title mt-2">Buy confidently or sell your property with local guidance</h2>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
-              <div className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm">
-                <p className="text-lg font-semibold text-ink-700">Buy Property</p>
-                <p className="mt-2 text-sm leading-7 text-ink-500">
-                  Browse verified listings with direct owner contact, location clarity, and contractor-backed insight.
-                </p>
-                <Link to="/properties" className="btn-secondary mt-4 w-full sm:w-auto">
-                  Explore Listings
-                  <ArrowRight size={16} />
-                </Link>
-              </div>
-              <div className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm">
-                <p className="text-lg font-semibold text-ink-700">Sell Property</p>
-                <p className="mt-2 text-sm leading-7 text-ink-500">
-                  Share your location, budget expectation, and property summary to start the selling conversation.
+      <section className="section-shell pt-8">
+        <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
+          <Reveal className="overflow-hidden rounded-[36px] border border-white/12 shadow-glass" delay={0.05}>
+            <div className="relative h-full min-h-[520px]">
+              <img
+                src="https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1600&q=80"
+                alt="Premium residence interior by SAGAR INFRA"
+                className="absolute inset-0 h-full w-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,13,28,0.12),rgba(5,13,28,0.88))]" />
+              <div className="absolute inset-x-6 bottom-6 rounded-[28px] border border-white/14 bg-navy-950/58 p-6 backdrop-blur-2xl">
+                <p className="section-kicker">Why Clients Choose Us</p>
+                <p className="mt-4 text-4xl font-semibold text-white">A premium look paired with grounded local trust</p>
+                <p className="mt-4 text-sm leading-7 text-white/72">
+                  The brand experience feels elevated, while the advice remains practical, transparent, and owner-led.
                 </p>
               </div>
             </div>
-          </div>
+          </Reveal>
 
-          <LeadCaptureForm
-            title="Sell Your Property"
-            description="Submit your property details and the Sagar Infra team will help you present, verify, and move it forward."
-            submitLabel="Share Property Details"
-            successMessage="Property requirement received. Sagar Infra will contact you shortly."
-            source="sell"
-            showEmail
-            showLocation
-            requirementSeed="I want to sell my property with Sagar Infra."
-          />
-        </div>
-      </section>
+          <div className="space-y-6">
+            <SectionHeading
+              kicker="Why Choose Us"
+              title="Designed to communicate quality, reliability, and real market understanding"
+              copy="These pillars help SAGAR INFRA feel premium without losing trust, warmth, or local clarity."
+            />
 
-      <section className="section-shell grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
-        <div className="card surface-grid space-y-5">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-600">Why Clients Trust Us</p>
-            <h2 className="section-title mt-2">A professional local brand that looks clear and feels dependable</h2>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            {confidencePoints.map((item) => (
-              <div key={item} className="rounded-2xl border border-brand-100 bg-brand-50 p-4">
-                <CheckCircle2 size={18} className="text-brand-600" />
-                <p className="mt-3 text-sm leading-7 text-ink-600">{item}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+            <div className="grid gap-5 sm:grid-cols-2">
+              {WHY_CHOOSE_US.map((item, index) => {
+                const Icon = valueIcons[item.icon] || Sparkles;
 
-        <div className="grid gap-4">
-          {TESTIMONIALS.map((testimonial) => (
-            <article key={testimonial.name} className="card card-hover h-full">
-              <Sparkles size={18} className="text-brand-600" />
-              <p className="mt-4 line-clamp-4 text-base leading-8 text-ink-600 sm:text-lg">"{testimonial.quote}"</p>
-              <div className="mt-5">
-                <p className="font-semibold text-ink-700">{testimonial.name}</p>
-                <p className="text-sm text-ink-400">Client, Sagar</p>
-              </div>
-            </article>
-          ))}
+                return (
+                  <Reveal
+                    key={item.title}
+                    delay={index * 0.08}
+                    className="glass-panel h-full p-6 transition duration-500 hover:-translate-y-2 hover:border-gold-300/40"
+                  >
+                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-gold-300/40 bg-gold-400/14 text-gold-100">
+                      <Icon size={20} />
+                    </span>
+                    <h3 className="mt-5 text-3xl font-semibold text-white">{item.title}</h3>
+                    <p className="mt-4 text-sm leading-7 text-white/70">{item.description}</p>
+                  </Reveal>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </section>
 
       <section id="contact" className="section-shell">
-        <div className="grid gap-6 xl:grid-cols-[1fr_0.95fr]">
-          <div className="card surface-grid flex flex-col justify-between gap-6">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-600">Contact</p>
-              <h2 className="section-title mt-2">{COMPANY_INFO.owner}</h2>
-              <p className="mt-3 text-lg font-semibold text-brand-700">{COMPANY_INFO.name}</p>
-              <p className="mt-4 max-w-2xl text-sm leading-8 text-ink-500">
-                Call or message for highway and government contracts, school and college construction, building work,
-                plot development, and verified property consultation in Sagar Madhya Pradesh.
-              </p>
+        <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+          <Reveal className="glass-panel surface-grid p-7 sm:p-8" delay={0.05}>
+            <p className="section-kicker">Contact</p>
+            <h2 className="mt-3 text-5xl font-semibold leading-none text-white">Talk to a premium property advisor</h2>
+            <p className="mt-5 text-sm leading-8 text-white/72 sm:text-base">
+              Whether you are exploring land, a family home, or a commercial address, SAGAR INFRA is ready with a
+              luxury-grade presentation and local market clarity.
+            </p>
+
+            <div className="mt-8 rounded-[30px] border border-gold-300/20 bg-gold-400/10 p-6">
+              <p className="text-sm font-semibold uppercase tracking-[0.34em] text-gold-200">Call Now</p>
+              <a
+                href={toPhoneHref(COMPANY_INFO.phoneDisplay)}
+                className="mt-4 inline-flex text-4xl font-semibold tracking-[0.08em] text-white"
+              >
+                {COMPANY_INFO.phoneDisplay}
+              </a>
+              <p className="mt-3 text-sm text-white/68">Directly with {COMPANY_INFO.owner}</p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <a href={toPhoneHref(COMPANY_INFO.phoneDisplay)} className="rounded-2xl border border-brand-100 bg-brand-50 p-4 transition hover:-translate-y-1 hover:shadow-md">
-                <ContactAction title="Call Now" value={COMPANY_INFO.phoneDisplay} icon={<Phone size={18} />} />
-              </a>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-[26px] border border-white/14 bg-white/[0.06] p-5">
+                <p className="inline-flex items-center gap-2 text-sm font-semibold text-gold-200">
+                  <MapPin size={16} />
+                  Prime Market Focus
+                </p>
+                <p className="mt-3 text-sm leading-7 text-white/70">{COMPANY_INFO.location}</p>
+              </div>
+              <div className="rounded-[26px] border border-white/14 bg-white/[0.06] p-5">
+                <p className="inline-flex items-center gap-2 text-sm font-semibold text-gold-200">
+                  <ShieldCheck size={16} />
+                  Trusted Support
+                </p>
+                <p className="mt-3 text-sm leading-7 text-white/70">
+                  Fast replies, site visit coordination, and premium enquiry handling.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <a
-                href={toWhatsAppHref(COMPANY_INFO.whatsappNumber, COMPANY_INFO.whatsappMessage)}
+                href={toWhatsAppHref(
+                  COMPANY_INFO.whatsappNumber,
+                  "Hi SAGAR INFRA, I want to discuss a premium property requirement."
+                )}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-2xl border border-brand-100 bg-brand-50 p-4 transition hover:-translate-y-1 hover:shadow-md"
+                className="btn-whatsapp w-full sm:w-auto"
               >
-                <ContactAction title="WhatsApp" value="Get Free Consultation" icon={<MessageCircle size={18} />} />
+                <MessageCircleMore size={16} />
+                WhatsApp Now
+              </a>
+              <a href={toPhoneHref(COMPANY_INFO.phoneDisplay)} className="btn-ghost w-full sm:w-auto">
+                <Phone size={16} />
+                Call Directly
               </a>
             </div>
+          </Reveal>
 
-            <div className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm">
-              <p className="inline-flex items-center gap-2 text-sm font-semibold text-brand-700">
-                <MapPin size={16} />
-                {COMPANY_INFO.location}
-              </p>
-              <p className="mt-3 text-sm leading-7 text-ink-500">
-                Premium presentation, documented trust, and strong local contractor positioning for serious enquiries.
-              </p>
-            </div>
-          </div>
-
-          <LeadCaptureForm
-            title="Request Free Consultation"
-            description="Share your requirement for contracts, construction, documentation discussion, land development, or property support and we will contact you quickly."
-            submitLabel="Get Free Consultation"
-            successMessage="Thanks, Sagar Infra will contact you shortly."
-            source="contact"
-            showEmail
-            showLocation
-          />
+          <Reveal delay={0.12}>
+            <LeadCaptureForm
+              title="Share Your Requirement"
+              description="Tell us what you are looking for and we will arrange a direct consultation with SAGAR INFRA."
+              submitLabel="Submit Requirement"
+              successMessage="Thanks, your requirement has been shared successfully."
+              source="contact"
+              showEmail
+              showLocation
+              serviceOptions={CONTACT_SERVICE_OPTIONS}
+              requirementSeed="I want to discuss a premium real estate requirement in Sagar."
+            />
+          </Reveal>
         </div>
       </section>
-    </div>
+    </>
   );
 };
 
-const ContactAction = ({ title, value, icon }) => (
-  <div>
-    <p className="inline-flex items-center gap-2 text-sm font-semibold text-brand-700">
-      {icon}
-      {title}
-    </p>
-    <p className="mt-3 text-xl font-semibold text-ink-700 sm:text-2xl">{value}</p>
-    <p className="mt-2 text-sm text-ink-500">Fast response for contractor, construction, and property enquiries.</p>
+const SectionHeading = ({ kicker, title, copy }) => (
+  <div className="max-w-3xl">
+    <p className="section-kicker">{kicker}</p>
+    <h2 className="section-title mt-3">{title}</h2>
+    {copy ? <p className="mt-4 text-sm leading-8 text-white/70 sm:text-base">{copy}</p> : null}
   </div>
 );
 

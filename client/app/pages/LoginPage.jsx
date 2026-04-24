@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { COMPANY_INFO } from "../data/siteContent.js";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -10,6 +11,10 @@ const LoginPage = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [adminForm, setAdminForm] = useState({ adminKey: "" });
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    document.title = `Login | ${COMPANY_INFO.metaTitle}`;
+  }, []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -21,7 +26,7 @@ const LoginPage = () => {
     setAdminForm((current) => ({ ...current, [name]: value }));
   };
 
-  const handleSubmit = async (event) => {
+  const handleUserSubmit = async (event) => {
     event.preventDefault();
 
     try {
@@ -49,13 +54,12 @@ const LoginPage = () => {
 
   return (
     <section className="section-shell">
-      <div className="mx-auto max-w-lg card">
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-600">Welcome back</p>
-        <h1 className="mt-3 font-display text-4xl font-semibold text-ink-700">Login to Sagar Infra</h1>
+      <div className="mx-auto max-w-2xl card">
+        <p className="section-kicker">Login</p>
+        <h1 className="mt-2 text-4xl font-semibold text-ink-800">Sign in to {COMPANY_INFO.name}</h1>
         <p className="mt-3 text-sm leading-7 text-ink-500">
-          Use your user account for saved access, or sign in with the secure admin key stored in
-          <span className="mx-1 rounded bg-brand-50 px-2 py-1 font-semibold text-brand-700">ADMIN_SECRET_KEY</span>
-          on the backend.
+          Use a normal account for leads and browsing, or enter the secure backend <strong>ADMIN_SECRET_KEY</strong>
+          for admin access.
         </p>
 
         <div className="mt-8 flex rounded-full border border-brand-200 bg-brand-50 p-1">
@@ -81,12 +85,12 @@ const LoginPage = () => {
               mode === "admin" ? "bg-white text-brand-700 shadow-sm" : "text-ink-500"
             }`}
           >
-            Admin Access
+            Admin Login
           </button>
         </div>
 
         {mode === "user" ? (
-          <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+          <form className="mt-6 space-y-4" onSubmit={handleUserSubmit}>
             <input
               className="input-field"
               type="email"

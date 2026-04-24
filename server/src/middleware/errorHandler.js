@@ -6,12 +6,18 @@ export class AppError extends Error {
   }
 }
 
-export const notFoundHandler = (req, res, next) => {
-  next(new AppError(404, `Route not found: ${req.originalUrl}`));
+export const notFoundHandler = (req, res) => {
+  return res.status(404).json({
+    success: false,
+    message: "Route not found",
+    path: req.originalUrl,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
 };
 
 export const errorHandler = (error, req, res, next) => {
-  console.error(error);
+  console.error(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`, error);
 
   let statusCode = error.statusCode || 500;
   let message = error.message || "Internal server error.";
@@ -34,12 +40,18 @@ export const errorHandler = (error, req, res, next) => {
   } else if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError") {
     statusCode = 401;
     message = "Invalid or expired token.";
+  } else if (error.name === "MongoServerError" && /auth/i.test(String(error.message))) {
+    statusCode = 401;
+    message = "Database authentication failed.";
   }
 
   return res.status(statusCode).json({
     success: false,
     message,
     details,
+    path: req.originalUrl,
+    method: req.method,
+    timestamp: new Date().toISOString(),
     stack: process.env.NODE_ENV === "production" ? undefined : error.stack
   });
 };

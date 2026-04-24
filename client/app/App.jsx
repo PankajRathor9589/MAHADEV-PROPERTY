@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Footer from "./components/Footer.jsx";
 import Navbar from "./components/Navbar.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
@@ -11,22 +12,37 @@ import PropertiesPage from "./pages/PropertiesPage.jsx";
 import PropertyDetailsPage from "./pages/PropertyDetailsPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 
+const ScrollManager = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      requestAnimationFrame(() => {
+        const target = document.querySelector(location.hash);
+
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+      return;
+    }
+
+    window.scrollTo({ top: 0, left: 0 });
+  }, [location.pathname, location.hash]);
+
+  return null;
+};
+
 const App = () => {
   const { isAuthenticated, isAdmin } = useAuth();
   const authenticatedHome = isAdmin ? "/admin" : "/properties";
 
   return (
-    <div className="min-h-screen overflow-x-hidden">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
-      >
-        Skip to content
-      </a>
-      <h1 className="sr-only">Sagar Infra</h1>
+    <div className="relative min-h-screen overflow-x-hidden">
+      <ScrollManager />
       <Navbar />
 
-      <main id="main-content" className="relative pb-16 pt-6 sm:pt-8">
+      <main className="relative z-10 pb-20">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/properties" element={<PropertiesPage />} />

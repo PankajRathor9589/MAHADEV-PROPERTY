@@ -8,11 +8,11 @@ const WhatsAppFloat = () => {
       href={toWhatsAppHref(COMPANY_INFO.whatsappNumber, COMPANY_INFO.whatsappMessage)}
       target="_blank"
       rel="noreferrer"
-      className="pulse-gold fixed bottom-4 right-4 z-40 inline-flex items-center gap-2 rounded-full bg-[#25D366] px-4 py-3 text-sm font-semibold text-white shadow-xl transition hover:-translate-y-1 hover:shadow-2xl sm:bottom-6 sm:right-6"
+      className="wa-pulse fixed bottom-5 right-4 z-40 inline-flex items-center gap-2 rounded-full border border-white/16 bg-[#25D366] px-5 py-3.5 text-sm font-semibold text-white shadow-[0_22px_44px_rgba(37,211,102,0.34)] transition hover:-translate-y-1 hover:shadow-[0_28px_52px_rgba(37,211,102,0.42)] sm:right-6"
       aria-label="Chat on WhatsApp"
     >
       <MessageCircleMore size={18} />
-      <span className="hidden sm:inline">WhatsApp</span>
+      <span className="hidden sm:inline">WhatsApp Concierge</span>
     </a>
   );
 };

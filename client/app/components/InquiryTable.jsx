@@ -41,21 +41,29 @@ const InquiryTable = ({ inquiries, editable = false, onStatusChange }) => {
           {inquiries.map((inquiry) => (
             <tr key={inquiry._id} className="border-t border-brand-100 align-top">
               <td className="px-4 py-4">
-                <span className="badge bg-brand-50 text-brand-700">{sourceLabels[inquiry.source] || "Lead"}</span>
+                <span className="badge bg-brand-50 text-brand-700">
+                  {sourceLabels[inquiry.source] || "Lead"}
+                </span>
               </td>
               <td className="px-4 py-4">
-                <p className="font-semibold text-ink-700">{inquiry.name}</p>
+                <p className="font-semibold text-ink-800">{inquiry.name}</p>
                 <p className="mt-1 text-xs text-ink-500">{inquiry.phone}</p>
                 {inquiry.email ? <p className="text-xs text-ink-400">{inquiry.email}</p> : null}
               </td>
               <td className="px-4 py-4 text-ink-500">
                 <p>{inquiry.message || "No requirement shared."}</p>
-                {inquiry.serviceType ? <p className="mt-2 text-xs font-semibold text-brand-700">{inquiry.serviceType}</p> : null}
+                {inquiry.serviceType ? (
+                  <p className="mt-2 text-xs font-semibold text-brand-700">{inquiry.serviceType}</p>
+                ) : null}
                 {inquiry.location ? <p className="mt-1 text-xs text-ink-400">{inquiry.location}</p> : null}
               </td>
               <td className="px-4 py-4">
-                <p className="font-medium text-ink-700">{inquiry.property?.title || inquiry.serviceType || "General enquiry"}</p>
-                {inquiry.property?.location?.city ? <p className="mt-1 text-xs text-ink-400">{inquiry.property.location.city}</p> : null}
+                <p className="font-medium text-ink-800">
+                  {inquiry.property?.title || inquiry.serviceType || "General enquiry"}
+                </p>
+                {inquiry.property?.location?.city ? (
+                  <p className="mt-1 text-xs text-ink-400">{inquiry.property.location.city}</p>
+                ) : null}
               </td>
               <td className="px-4 py-4 text-ink-500">{formatDate(inquiry.createdAt)}</td>
               <td className="px-4 py-4">

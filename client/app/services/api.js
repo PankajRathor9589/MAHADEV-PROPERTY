@@ -3,13 +3,15 @@ import axios from "axios";
 export const API = import.meta.env.VITE_API_URL;
 export const API_BASE_URL = String(API || "").trim().replace(/\/$/, "");
 export const API_ORIGIN = API_BASE_URL ? API_BASE_URL.replace(/\/api\/?$/, "") : "";
+
 const hasApiBase = Boolean(API_BASE_URL);
-const defaultApiMessage = "API is not configured for this deployment. Set VITE_API_URL to enable login, admin, property, and lead features.";
+const defaultApiMessage =
+  "API is not configured for this deployment. Set VITE_API_URL to enable login, admin, property, and lead features.";
 const wakeMessage = "Server waking up, please wait...";
 
 const http = axios.create({
   baseURL: API_BASE_URL || undefined,
-  timeout: 15000
+  timeout: 20000
 });
 
 const getToken = () => localStorage.getItem("sagar_infra_token");
@@ -22,6 +24,7 @@ const requireApiBase = (message = defaultApiMessage) => {
 
 http.interceptors.request.use((config) => {
   const token = getToken();
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -29,13 +32,27 @@ http.interceptors.request.use((config) => {
   return config;
 });
 
-const parseError = (error) =>
-  (!error?.response || error?.code === "ERR_NETWORK" || [502, 503, 504].includes(error?.response?.status))
-    ? wakeMessage
-    : error?.response?.data?.message ||
-      (Array.isArray(error?.response?.data?.details) ? error.response.data.details.join(", ") : "") ||
-      error.message ||
-      "Request failed";
+const parseError = (error) => {
+  if (!error?.response || error?.code === "ERR_NETWORK" || [502, 503, 504].includes(error?.response?.status)) {
+    return wakeMessage;
+  }
+
+  return (
+    error?.response?.data?.message ||
+    (Array.isArray(error?.response?.data?.details) ? error.response.data.details.join(", ") : "") ||
+    error.message ||
+    "Request failed"
+  );
+};
+
+const safeRequest = async (requestPromise) => {
+  try {
+    const response = await requestPromise;
+    return response.data;
+  } catch (error) {
+    throw new Error(parseError(error));
+  }
+};
 
 const buildPropertyFormData = (payload) => {
   const formData = new FormData();
@@ -79,15 +96,6 @@ export const resolveImageUrl = (path) => {
   return API_ORIGIN ? `${API_ORIGIN}${path}` : path;
 };
 
-const safeRequest = async (promise) => {
-  try {
-    const response = await promise;
-    return response.data;
-  } catch (error) {
-    throw new Error(parseError(error));
-  }
-};
-
 export const registerUser = async (payload) => {
   requireApiBase();
   return safeRequest(http.post("/auth/register", payload));
@@ -112,6 +120,7 @@ export const fetchMe = async () => {
 export const fetchProperties = async (params = {}) => {
   if (!hasApiBase) {
     return {
+      success: true,
       data: [],
       pagination: {
         page: 1,
@@ -151,7 +160,10 @@ export const deleteProperty = async (id) => {
 export const updatePropertyApproval = async (id, approvalStatus, rejectionReason = "") => {
   requireApiBase();
   const data = await safeRequest(
-    http.patch(`/property/${id}/approval`, { approvalStatus, rejectionReason })
+    http.patch(`/property/${id}/approval`, {
+      approvalStatus,
+      rejectionReason
+    })
   );
   return data.data;
 };
@@ -159,18 +171,9 @@ export const updatePropertyApproval = async (id, approvalStatus, rejectionReason
 export const updatePropertyFeatured = async (id, isFeatured, featuredDays = 30) => {
   requireApiBase();
   const data = await safeRequest(
-    http.patch(`/property/${id}/featured`, { isFeatured, featuredDays })
-  );
-  return data.data;
-};
-
-export const submitInquiry = async (propertyId, payload) => {
-  requireApiBase("Online lead submission is not configured yet. Please call or WhatsApp Sagar Infra to continue.");
-  const data = await safeRequest(
-    http.post("/leads", {
-      propertyId,
-      source: "property",
-      ...payload
+    http.patch(`/property/${id}/featured`, {
+      isFeatured,
+      featuredDays
     })
   );
   return data.data;

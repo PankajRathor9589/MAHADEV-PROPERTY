@@ -3,6 +3,7 @@ import AnalyticsCards from "../components/AnalyticsCards.jsx";
 import DashboardPropertyTable from "../components/DashboardPropertyTable.jsx";
 import InquiryTable from "../components/InquiryTable.jsx";
 import PropertyForm from "../components/PropertyForm.jsx";
+import { COMPANY_INFO } from "../data/siteContent.js";
 import {
   createProperty,
   deleteProperty,
@@ -26,6 +27,10 @@ const AdminDashboardPage = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  useEffect(() => {
+    document.title = `Admin Dashboard | ${COMPANY_INFO.metaTitle}`;
+  }, []);
+
   const analyticsItems = useMemo(() => {
     const totals = analytics?.totals || {};
 
@@ -35,7 +40,7 @@ const AdminDashboardPage = () => {
       { label: "Pending", value: totals.pendingProperties ?? 0 },
       { label: "Featured", value: totals.featuredProperties ?? 0 },
       { label: "Leads", value: totals.totalInquiries ?? 0 },
-      { label: "Admins", value: totals.totalAdmins ?? 0 }
+      { label: "Users", value: totals.totalUsers ?? 0 }
     ];
   }, [analytics]);
 
@@ -165,7 +170,7 @@ const AdminDashboardPage = () => {
     try {
       await updateInquiryStatus(id, status);
       setInquiries((current) => current.map((item) => (item._id === id ? { ...item, status } : item)));
-      setSuccess("Lead status updated.");
+      setSuccess("Lead status updated successfully.");
     } catch (statusError) {
       setError(statusError.message);
     }
@@ -175,62 +180,63 @@ const AdminDashboardPage = () => {
     <div className="space-y-8">
       <section className="section-shell">
         <div className="card surface-grid">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-600">Admin Panel</p>
-          <h1 className="section-title mt-2">Add listings, moderate inventory, and manage leads</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-ink-500">
-            Add or delete properties, keep premium inventory featured, and review incoming property, contact, sell,
-            and contract leads from the public site.
+          <p className="section-kicker">Admin Dashboard</p>
+          <h1 className="section-title mt-2">Add, manage, feature, and remove premium property listings</h1>
+          <p className="mt-4 max-w-3xl text-sm leading-8 text-ink-500">
+            This protected area is powered by the backend admin secret flow. From here, you can add property cards,
+            delete listings, and review every lead submitted through the public site.
           </p>
         </div>
       </section>
 
-      <section className="section-shell space-y-3">
+      <section className="section-shell space-y-3 py-0">
         {error ? <p className="rounded-2xl bg-rose-50 p-4 text-sm text-rose-700">{error}</p> : null}
         {success ? <p className="rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-700">{success}</p> : null}
       </section>
 
-      <section className="section-shell">
+      <section className="section-shell pt-0">
         <AnalyticsCards items={analyticsItems} />
       </section>
 
-      <section className="section-shell grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <PropertyForm
-          initialProperty={editingProperty}
-          onSubmit={handleSubmit}
-          isSubmitting={saving}
-          onCancel={() => setEditingProperty(null)}
-        />
+      <section className="section-shell pt-0">
+        <div className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
+          <PropertyForm
+            initialProperty={editingProperty}
+            onSubmit={handleSubmit}
+            isSubmitting={saving}
+            onCancel={() => setEditingProperty(null)}
+          />
 
-        <div className="card">
-          <h2 className="text-2xl font-semibold text-ink-700">Manage Listings</h2>
-          <p className="mt-2 text-sm text-ink-500">
-            Edit, approve, reject, feature, or delete any property from the inventory.
-          </p>
+          <div className="card">
+            <h2 className="text-2xl font-semibold text-ink-800">Manage Listings</h2>
+            <p className="mt-2 text-sm leading-7 text-ink-500">
+              Approve, reject, feature, edit, or delete any listing from the property inventory.
+            </p>
 
-          <div className="mt-6">
-            {loading ? (
-              <p className="text-sm text-ink-500">Loading listings...</p>
-            ) : (
-              <DashboardPropertyTable
-                properties={sortedProperties}
-                onEdit={setEditingProperty}
-                onDelete={handleDelete}
-                onApprove={handleApprove}
-                onReject={handleReject}
-                onToggleFeatured={handleToggleFeatured}
-                loadingId={busyId}
-              />
-            )}
+            <div className="mt-6">
+              {loading ? (
+                <p className="text-sm text-ink-500">Loading listings...</p>
+              ) : (
+                <DashboardPropertyTable
+                  properties={sortedProperties}
+                  onEdit={setEditingProperty}
+                  onDelete={handleDelete}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                  onToggleFeatured={handleToggleFeatured}
+                  loadingId={busyId}
+                />
+              )}
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="section-shell">
+      <section className="section-shell pt-0">
         <div className="card">
-          <h2 className="text-2xl font-semibold text-ink-700">Lead Management</h2>
-          <p className="mt-2 text-sm text-ink-500">
-            Review property enquiries, contract applications, sell-property requests, and contact submissions in one
-            place.
+          <h2 className="text-2xl font-semibold text-ink-800">Lead Management</h2>
+          <p className="mt-2 text-sm leading-7 text-ink-500">
+            Review contact requests, property leads, sell-property submissions, and contract applications in one place.
           </p>
 
           <div className="mt-6">

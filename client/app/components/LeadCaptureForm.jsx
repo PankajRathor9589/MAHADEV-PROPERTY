@@ -8,12 +8,12 @@ const LeadCaptureForm = ({
   title,
   description,
   submitLabel = "Submit Requirement",
-  successMessage = "Your request has been shared with our team.",
+  successMessage = "Your requirement has been shared with Sagar Infra.",
   propertyId = "",
   source = "homepage",
   requirementSeed = "",
   compact = false,
-  showEmail = true,
+  showEmail = false,
   showLocation = false,
   serviceOptions = []
 }) => {
@@ -32,16 +32,16 @@ const LeadCaptureForm = ({
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    setForm((prev) => ({
-      ...prev,
-      serviceType: prev.serviceType || serviceOptions[0]?.value || "",
-      requirement: prev.requirement || requirementSeed
+    setForm((current) => ({
+      ...current,
+      serviceType: current.serviceType || serviceOptions[0]?.value || "",
+      requirement: current.requirement || requirementSeed
     }));
   }, [requirementSeed, serviceOptions]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((current) => ({ ...current, [name]: value }));
   };
 
   const handleSubmit = async (event) => {
@@ -60,13 +60,14 @@ const LeadCaptureForm = ({
         email: form.email,
         location: form.location,
         serviceType: form.serviceType,
+        requirement: form.requirement,
         message: form.requirement
       });
 
       setSuccess(successMessage);
       setForm(getBaseForm());
-    } catch (err) {
-      setError(err.message);
+    } catch (submitError) {
+      setError(submitError.message);
     } finally {
       setSubmitting(false);
     }
@@ -75,10 +76,8 @@ const LeadCaptureForm = ({
   return (
     <form onSubmit={handleSubmit} className={`card ${compact ? "space-y-4" : "space-y-5"}`}>
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-brand-600">Contact Form</p>
-        <h3 className={`${compact ? "text-2xl" : "text-3xl"} mt-2 font-display font-semibold text-ink-700`}>
-          {title}
-        </h3>
+        <p className="section-kicker">Lead Form</p>
+        <h3 className={`${compact ? "text-2xl" : "text-3xl"} mt-2 font-semibold text-ink-800`}>{title}</h3>
         {description ? <p className="mt-2 text-sm leading-7 text-ink-500">{description}</p> : null}
       </div>
 
@@ -88,7 +87,7 @@ const LeadCaptureForm = ({
           name="name"
           value={form.name}
           onChange={handleChange}
-          placeholder="Name"
+          placeholder="Your name"
           required
         />
         <input
@@ -96,9 +95,10 @@ const LeadCaptureForm = ({
           name="phone"
           value={form.phone}
           onChange={handleChange}
-          placeholder="Phone"
+          placeholder="Phone number"
           required
         />
+
         {showEmail ? (
           <input
             className="input-field"
@@ -106,18 +106,20 @@ const LeadCaptureForm = ({
             name="email"
             value={form.email}
             onChange={handleChange}
-            placeholder="Email"
+            placeholder="Email address"
           />
         ) : null}
+
         {showLocation ? (
           <input
             className="input-field"
             name="location"
             value={form.location}
             onChange={handleChange}
-            placeholder="Location"
+            placeholder="Preferred location"
           />
         ) : null}
+
         {serviceOptions.length ? (
           <select className="input-field" name="serviceType" value={form.serviceType} onChange={handleChange}>
             {serviceOptions.map((option) => (
@@ -127,6 +129,7 @@ const LeadCaptureForm = ({
             ))}
           </select>
         ) : null}
+
         <textarea
           className="textarea-field"
           name="requirement"
@@ -140,11 +143,14 @@ const LeadCaptureForm = ({
       {error ? <p className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p> : null}
       {success ? (
         <p className="inline-flex items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-          <CheckCircle2 size={16} /> {success}
+          <CheckCircle2 size={16} />
+          {success}
         </p>
       ) : null}
 
-      <p className="text-xs leading-6 text-ink-400">Your details stay private and are only used by Sagar Infra for follow-up.</p>
+      <p className="text-xs leading-6 text-ink-400">
+        Your details are sent to the protected lead system for direct Sagar Infra follow-up.
+      </p>
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <button type="submit" className="btn-primary w-full sm:w-auto" disabled={submitting}>

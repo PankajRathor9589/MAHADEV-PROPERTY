@@ -41,9 +41,11 @@ const DashboardPropertyTable = ({
           {properties.map((property) => (
             <tr key={property._id} className="border-t border-brand-100 align-top">
               <td className="px-4 py-4">
-                <p className="font-semibold text-ink-700">{property.title}</p>
+                <p className="font-semibold text-ink-800">{property.title}</p>
                 <p className="mt-1 text-xs text-ink-500">{formatLocation(property.location, true)}</p>
-                {property.rejectionReason ? <p className="mt-2 text-xs text-rose-700">Reason: {property.rejectionReason}</p> : null}
+                {property.rejectionReason ? (
+                  <p className="mt-2 text-xs text-rose-700">Reason: {property.rejectionReason}</p>
+                ) : null}
               </td>
               <td className="px-4 py-4 capitalize text-ink-500">
                 {property.listingType} / {property.category}
@@ -54,7 +56,9 @@ const DashboardPropertyTable = ({
                   <span className={`badge ${statusStyles[property.approvalStatus] || "bg-brand-50 text-brand-700"}`}>
                     {property.approvalStatus}
                   </span>
-                  {isFeaturedProperty(property) ? <span className="badge bg-[#f5e4bf] text-brand-700">Featured</span> : null}
+                  {isFeaturedProperty(property) ? (
+                    <span className="badge bg-[#f5e4bf] text-brand-700">Featured</span>
+                  ) : null}
                 </div>
               </td>
               <td className="px-4 py-4 text-ink-500">{formatDate(property.createdAt)}</td>

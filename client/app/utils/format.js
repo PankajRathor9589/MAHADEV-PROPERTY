@@ -1,18 +1,36 @@
 export const PROPERTY_CATEGORIES = [
-  "Apartment",
-  "Villa",
-  "House",
   "Plot",
+  "House",
+  "Apartment",
   "Commercial",
+  "Villa",
   "Studio",
   "Farm House"
 ];
 
-export const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=72";
+export const PROPERTY_LISTING_TYPES = [
+  { label: "Buy Property", value: "sale" },
+  { label: "Rent Property", value: "rent" }
+];
 
-export const PROPERTY_FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1460317442991-0ec209397118?auto=format&fit=crop&w=1200&q=72";
+export const PROPERTY_CATEGORY_IMAGES = {
+  Plot:
+    "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80",
+  House:
+    "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=1200&q=80",
+  Apartment:
+    "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80",
+  Commercial:
+    "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80",
+  Villa:
+    "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+  Studio:
+    "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
+  "Farm House":
+    "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80"
+};
+
+export const PROPERTY_FALLBACK_IMAGE = PROPERTY_CATEGORY_IMAGES.Plot;
 
 export const formatCurrency = (value) =>
   new Intl.NumberFormat("en-IN", {
@@ -24,13 +42,6 @@ export const formatCurrency = (value) =>
 export const formatNumber = (value) =>
   new Intl.NumberFormat("en-IN", {
     maximumFractionDigits: 0
-  }).format(Number(value || 0));
-
-export const formatCompactNumber = (value) =>
-  new Intl.NumberFormat("en-IN", {
-    notation: "compact",
-    compactDisplay: "short",
-    maximumFractionDigits: 1
   }).format(Number(value || 0));
 
 export const formatDate = (value) => {
@@ -72,23 +83,15 @@ export const toPhoneHref = (phone) => {
     return "tel:+917692016188";
   }
 
-  if (digits.length === 10) {
-    return `tel:+91${digits}`;
-  }
-
-  return `tel:+${digits}`;
+  return digits.length === 10 ? `tel:+91${digits}` : `tel:+${digits}`;
 };
 
 export const toWhatsAppHref = (phone, message = "") => {
   const digits = normalizePhoneDigits(phone);
   const whatsappNumber = digits.length === 10 ? `91${digits}` : digits || "917692016188";
-  const base = `https://wa.me/${whatsappNumber}`;
+  const baseUrl = `https://wa.me/${whatsappNumber}`;
 
-  if (!message) {
-    return base;
-  }
-
-  return `${base}?text=${encodeURIComponent(message)}`;
+  return message ? `${baseUrl}?text=${encodeURIComponent(message)}` : baseUrl;
 };
 
 export const isFeaturedProperty = (property) => {

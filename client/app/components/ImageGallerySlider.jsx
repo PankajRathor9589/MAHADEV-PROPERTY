@@ -10,7 +10,10 @@ const ImageGallerySlider = ({ images = [], title = "Property" }) => {
   }, [images]);
 
   const normalizedImages = images.length
-    ? images.map((image) => ({ ...image, resolved: resolveImageUrl(image.url) || PROPERTY_FALLBACK_IMAGE }))
+    ? images.map((image) => ({
+        ...image,
+        resolved: resolveImageUrl(image.url) || PROPERTY_FALLBACK_IMAGE
+      }))
     : [{ resolved: PROPERTY_FALLBACK_IMAGE, filename: "fallback" }];
 
   const activeImage = normalizedImages[activeIndex] || normalizedImages[0];
@@ -21,7 +24,7 @@ const ImageGallerySlider = ({ images = [], title = "Property" }) => {
         <img
           src={activeImage.resolved}
           alt={title}
-          className="h-[320px] w-full object-cover md:h-[520px]"
+          className="h-[280px] w-full object-cover md:h-[520px]"
           loading="eager"
           decoding="async"
           sizes="(min-width: 1024px) 62vw, 100vw"
