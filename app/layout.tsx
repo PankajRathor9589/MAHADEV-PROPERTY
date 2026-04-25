@@ -33,9 +33,9 @@ export const metadata: Metadata = {
       follow: true
     }
   },
-  verification: {
-    google: "3HTweA4yjZQY0k..."
-  },
+ verification: {
+  google: "3HTweA4yjZQY0kAbcXYZ123FULLCODE"
+},
   openGraph: {
     type: "website",
     url: siteUrl,
