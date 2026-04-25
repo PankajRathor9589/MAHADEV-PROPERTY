@@ -15,10 +15,9 @@ export const COMPANY_INFO = {
   ownerImage: "/owner.jpg",
   heroImage:
     "https://images.unsplash.com/photo-1460317442991-0ec209397118?auto=format&fit=crop&w=1800&q=80",
-  canonicalUrl: "https://sagar-infra.vercel.app",
-  metaTitle: "SAGAR INFRA | Premium Real Estate in Sagar",
-  metaDescription:
-    "SAGAR INFRA is a luxury real estate brand in Sagar for premium plots, homes, shops, and commercial property advisory with trusted owner-led guidance.",
+  canonicalUrl: "https://www.sagar-infra.in",
+  metaTitle: "Sagar Infra \u2013 Plots, Homes & Shops",
+  metaDescription: "Buy plots, homes & shops with Sagar Infra. Contact Prashant Rathor (7692016188).",
   metaKeywords:
     "Sagar Infra, luxury real estate Sagar, premium plots Sagar, commercial property Sagar, homes in Sagar, Prashant Rathor"
 };

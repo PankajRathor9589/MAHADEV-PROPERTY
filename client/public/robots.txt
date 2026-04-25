@@ -1,7 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /admin
-Disallow: /login
-Disallow: /register
 
-Sitemap: https://sagar-infra.vercel.app/sitemap.xml
+Sitemap: https://www.sagar-infra.in/sitemap.xml
