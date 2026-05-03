@@ -1,5 +1,14 @@
 import mongoose from "mongoose";
 
+const toSlug = (value = "property") =>
+  String(value)
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "property";
+
 const imageSchema = new mongoose.Schema(
   {
     url: { type: String, required: true },
@@ -25,6 +34,7 @@ const locationSchema = new mongoose.Schema(
 
 const propertySchema = new mongoose.Schema(
   {
+    slug: { type: String, required: true, unique: true, trim: true, lowercase: true },
     title: { type: String, required: true, trim: true },
     description: { type: String, required: true, trim: true },
     listingType: {
@@ -84,6 +94,14 @@ propertySchema.virtual("isFeaturedActive").get(function isFeaturedActive() {
   }
 
   return this.featuredUntil >= new Date();
+});
+
+propertySchema.pre("validate", function ensureSlug(next) {
+  if (!this.slug && this.title && this._id) {
+    this.slug = `${toSlug(this.title)}-${String(this._id).slice(-6).toLowerCase()}`;
+  }
+
+  next();
 });
 
 propertySchema.index({

@@ -1,11 +1,13 @@
 import { useEffect } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Footer from "./components/Footer.jsx";
+import MobileStickyActions from "./components/MobileStickyActions.jsx";
 import Navbar from "./components/Navbar.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import WhatsAppFloat from "./components/WhatsAppFloat.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
 import AdminDashboardPage from "./pages/AdminDashboardPage.jsx";
+import AdminLoginPage from "./pages/AdminLoginPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import PropertiesPage from "./pages/PropertiesPage.jsx";
@@ -35,22 +37,25 @@ const ScrollManager = () => {
 
 const App = () => {
   const { isAuthenticated, isAdmin } = useAuth();
+  const location = useLocation();
   const authenticatedHome = isAdmin ? "/admin" : "/properties";
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
   return (
     <div className="relative min-h-screen overflow-x-hidden">
       <ScrollManager />
       <Navbar />
 
-      <main className="relative z-10 pb-20">
+      <main className={`relative z-10 ${isAdminRoute ? "pb-10" : "pb-28 md:pb-16"}`}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/properties" element={<PropertiesPage />} />
           <Route path="/properties/:id" element={<PropertyDetailsPage />} />
+          <Route path="/admin/login" element={isAdmin ? <Navigate to="/admin" replace /> : <AdminLoginPage />} />
           <Route
             path="/admin"
             element={
-              <ProtectedRoute allowedRoles={["admin"]}>
+              <ProtectedRoute allowedRoles={["admin"]} redirectTo="/admin/login">
                 <AdminDashboardPage />
               </ProtectedRoute>
             }
@@ -68,8 +73,9 @@ const App = () => {
         </Routes>
       </main>
 
-      <Footer />
-      <WhatsAppFloat />
+      {!isAdminRoute ? <Footer /> : null}
+      {!isAdminRoute ? <WhatsAppFloat /> : null}
+      {!isAdminRoute ? <MobileStickyActions /> : null}
     </div>
   );
 };

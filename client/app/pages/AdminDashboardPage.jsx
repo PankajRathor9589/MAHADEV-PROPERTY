@@ -1,8 +1,18 @@
+import {
+  BarChart3,
+  Building2,
+  Clapperboard,
+  LayoutDashboard,
+  MessageSquareMore,
+  ShieldCheck,
+  Sparkles
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import AnalyticsCards from "../components/AnalyticsCards.jsx";
 import DashboardPropertyTable from "../components/DashboardPropertyTable.jsx";
 import InquiryTable from "../components/InquiryTable.jsx";
 import PropertyForm from "../components/PropertyForm.jsx";
+import Seo from "../components/Seo.jsx";
 import { COMPANY_INFO } from "../data/siteContent.js";
 import {
   createProperty,
@@ -13,8 +23,16 @@ import {
   updateInquiryStatus,
   updateProperty,
   updatePropertyApproval,
-  updatePropertyFeatured
+  updatePropertyFeatured,
+  uploadPropertyMedia
 } from "../services/api.js";
+
+const adminNav = [
+  { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "studio", label: "Property Studio", icon: Clapperboard },
+  { id: "inventory", label: "Inventory", icon: Building2 },
+  { id: "leads", label: "Leads", icon: MessageSquareMore }
+];
 
 const AdminDashboardPage = () => {
   const [analytics, setAnalytics] = useState(null);
@@ -27,20 +45,16 @@ const AdminDashboardPage = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  useEffect(() => {
-    document.title = `Admin Dashboard | ${COMPANY_INFO.metaTitle}`;
-  }, []);
-
   const analyticsItems = useMemo(() => {
     const totals = analytics?.totals || {};
 
     return [
-      { label: "Properties", value: totals.totalProperties ?? 0 },
-      { label: "Approved", value: totals.approvedProperties ?? 0 },
-      { label: "Pending", value: totals.pendingProperties ?? 0 },
-      { label: "Featured", value: totals.featuredProperties ?? 0 },
-      { label: "Leads", value: totals.totalInquiries ?? 0 },
-      { label: "Users", value: totals.totalUsers ?? 0 }
+      { label: "Properties", value: totals.totalProperties ?? 0, icon: Building2, helper: "Live inventory count" },
+      { label: "Approved", value: totals.approvedProperties ?? 0, icon: ShieldCheck, helper: "Visible on website" },
+      { label: "Pending", value: totals.pendingProperties ?? 0, icon: Sparkles, helper: "Awaiting review" },
+      { label: "Featured", value: totals.featuredProperties ?? 0, icon: Clapperboard, helper: "Premium listings" },
+      { label: "Leads", value: totals.totalInquiries ?? 0, icon: MessageSquareMore, helper: "Active enquiries" },
+      { label: "Users", value: totals.totalUsers ?? 0, icon: BarChart3, helper: "Platform accounts" }
     ];
   }, [analytics]);
 
@@ -74,17 +88,64 @@ const AdminDashboardPage = () => {
     loadData();
   }, []);
 
+  const preparePropertyPayload = async (payload) => {
+    const {
+      videoFiles = [],
+      retainedVideos = [],
+      retainedImages = [],
+      youtubeUrl = "",
+      videoTourUrl = "",
+      images = [],
+      ...rest
+    } = payload;
+
+    let uploadedVideoUrls = [];
+
+    if (videoFiles.length > 0) {
+      try {
+        const uploadedItems = await uploadPropertyMedia(videoFiles);
+        uploadedVideoUrls = uploadedItems
+          .filter((entry) => entry?.type === "video" || entry?.path || entry?.url)
+          .map((entry) => entry.path || entry.url)
+          .filter(Boolean);
+      } catch (mediaError) {
+        throw new Error(
+          `${mediaError.message} If video uploads are not available on this API yet, use the hosted video URL or YouTube link fields instead.`
+        );
+      }
+    }
+
+    const mergedVideoUrls = [...new Set([...retainedVideos, ...uploadedVideoUrls, videoTourUrl].filter(Boolean))];
+    const media = [
+      ...retainedImages.map((image) => ({ type: "image", url: image.url })),
+      ...mergedVideoUrls.map((url) => ({ type: "video", url })),
+      ...(youtubeUrl ? [{ type: "youtube", url: youtubeUrl }] : [])
+    ];
+
+    return {
+      ...rest,
+      youtubeUrl,
+      videoTourUrl: videoTourUrl || mergedVideoUrls[0] || "",
+      videos: mergedVideoUrls,
+      media,
+      images,
+      retainedImages
+    };
+  };
+
   const handleSubmit = async (payload) => {
     try {
       setSaving(true);
       setError("");
       setSuccess("");
 
+      const requestPayload = await preparePropertyPayload(payload);
+
       if (editingProperty) {
-        await updateProperty(editingProperty._id, payload);
+        await updateProperty(editingProperty._id, requestPayload);
         setSuccess("Property updated successfully.");
       } else {
-        await createProperty(payload);
+        await createProperty(requestPayload);
         setSuccess("Property created successfully.");
       }
 
@@ -177,78 +238,148 @@ const AdminDashboardPage = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <>
+      <Seo
+        title={`Admin Dashboard | ${COMPANY_INFO.name}`}
+        description={`Protected property management dashboard for ${COMPANY_INFO.name}.`}
+        canonical={`${COMPANY_INFO.canonicalUrl}/admin`}
+        robots="noindex, nofollow"
+      />
+
       <section className="section-shell">
-        <div className="card surface-grid">
-          <p className="section-kicker">Admin Dashboard</p>
-          <h1 className="section-title mt-2">Add, manage, feature, and remove premium property listings</h1>
-          <p className="mt-4 max-w-3xl text-sm leading-8 text-ink-500">
-            This protected area is powered by the backend admin secret flow. From here, you can add property cards,
-            delete listings, and review every lead submitted through the public site.
-          </p>
-        </div>
-      </section>
+        <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
+          <aside className="xl:sticky xl:top-28 xl:self-start">
+            <div className="rounded-[32px] border border-[#eadfcf] bg-white p-5 shadow-[0_20px_58px_rgba(15,23,42,0.08)]">
+              <div>
+                <p className="section-kicker">Admin Control</p>
+                <h1 className="mt-2 text-3xl font-semibold text-ink-900">Premium inventory dashboard</h1>
+                <p className="mt-3 text-sm leading-7 text-ink-500">
+                  Manage listings, featured visibility, and lead flow with a cleaner, more usable control surface.
+                </p>
+              </div>
 
-      <section className="section-shell space-y-3 py-0">
-        {error ? <p className="rounded-2xl bg-rose-50 p-4 text-sm text-rose-700">{error}</p> : null}
-        {success ? <p className="rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-700">{success}</p> : null}
-      </section>
+              <nav className="mt-6 space-y-2">
+                {adminNav.map((item) => {
+                  const Icon = item.icon;
 
-      <section className="section-shell pt-0">
-        <AnalyticsCards items={analyticsItems} />
-      </section>
+                  return (
+                    <a
+                      key={item.id}
+                      href={`#${item.id}`}
+                      className="flex items-center gap-3 rounded-[22px] border border-[#ece2d4] bg-[#fbf8f2] px-4 py-3 text-sm font-semibold text-ink-700 transition hover:border-gold-300 hover:bg-white"
+                    >
+                      <Icon size={16} className="text-gold-600" />
+                      {item.label}
+                    </a>
+                  );
+                })}
+              </nav>
 
-      <section className="section-shell pt-0">
-        <div className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
-          <PropertyForm
-            initialProperty={editingProperty}
-            onSubmit={handleSubmit}
-            isSubmitting={saving}
-            onCancel={() => setEditingProperty(null)}
-          />
-
-          <div className="card">
-            <h2 className="text-2xl font-semibold text-ink-800">Manage Listings</h2>
-            <p className="mt-2 text-sm leading-7 text-ink-500">
-              Approve, reject, feature, edit, or delete any listing from the property inventory.
-            </p>
-
-            <div className="mt-6">
-              {loading ? (
-                <p className="text-sm text-ink-500">Loading listings...</p>
-              ) : (
-                <DashboardPropertyTable
-                  properties={sortedProperties}
-                  onEdit={setEditingProperty}
-                  onDelete={handleDelete}
-                  onApprove={handleApprove}
-                  onReject={handleReject}
-                  onToggleFeatured={handleToggleFeatured}
-                  loadingId={busyId}
-                />
-              )}
+              <div className="mt-6 rounded-[24px] border border-gold-300/40 bg-[#fbf2df] p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.26em] text-gold-700">Workflow Tip</p>
+                <p className="mt-3 text-sm leading-7 text-ink-600">
+                  Add exact location fields, amenities, and one strong cover image first, then layer video for a more
+                  premium public listing.
+                </p>
+              </div>
             </div>
+          </aside>
+
+          <div className="space-y-6">
+            <section id="overview" className="rounded-[32px] border border-[#eadfcf] bg-white p-6 shadow-[0_20px_58px_rgba(15,23,42,0.08)] sm:p-7">
+              <p className="section-kicker">Admin Dashboard</p>
+              <h2 className="mt-2 text-4xl font-semibold text-ink-900">Manage, feature, and publish premium property listings</h2>
+              <p className="mt-4 max-w-4xl text-sm leading-8 text-ink-500">
+                This protected dashboard keeps the existing backend workflow intact while improving layout, readability,
+                table clarity, and property authoring quality.
+              </p>
+            </section>
+
+            {error ? <p className="rounded-2xl bg-rose-50 p-4 text-sm text-rose-700">{error}</p> : null}
+            {success ? <p className="rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-700">{success}</p> : null}
+
+            <section className="pt-0">
+              <AnalyticsCards items={analyticsItems} />
+            </section>
+
+            <section id="studio" className="grid gap-6 2xl:grid-cols-[1.04fr_0.96fr]">
+              <PropertyForm
+                initialProperty={editingProperty}
+                onSubmit={handleSubmit}
+                isSubmitting={saving}
+                onCancel={() => setEditingProperty(null)}
+              />
+
+              <div className="rounded-[32px] border border-[#eadfcf] bg-white p-6 shadow-[0_20px_58px_rgba(15,23,42,0.08)] sm:p-7">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="section-kicker">Publishing Standards</p>
+                    <h2 className="mt-2 text-3xl font-semibold text-ink-900">Keep every live listing premium and conversion-ready</h2>
+                  </div>
+                  <span className="inline-flex items-center gap-2 rounded-full border border-gold-300 bg-[#f7ecd7] px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-gold-700">
+                    <Sparkles size={14} />
+                    Owner Control
+                  </span>
+                </div>
+
+                <div className="mt-6 grid gap-4 md:grid-cols-2">
+                  <div className="rounded-[26px] border border-[#ece2d4] bg-[#fbf8f2] p-5">
+                    <p className="text-lg font-semibold text-ink-900">Image-first presentation</p>
+                    <p className="mt-3 text-sm leading-7 text-ink-500">
+                      Cover visuals, gallery framing, and clean copy all affect how premium the property feels on the public site.
+                    </p>
+                  </div>
+                  <div className="rounded-[26px] border border-[#ece2d4] bg-[#fbf8f2] p-5">
+                    <p className="text-lg font-semibold text-ink-900">Builder-grade detail pages</p>
+                    <p className="mt-3 text-sm leading-7 text-ink-500">
+                      Amenities, area, room counts, and location specifics now help each public detail page feel more complete.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section id="inventory" className="rounded-[32px] border border-[#eadfcf] bg-white p-6 shadow-[0_20px_58px_rgba(15,23,42,0.08)] sm:p-7">
+              <h2 className="text-3xl font-semibold text-ink-900">Manage Listings</h2>
+              <p className="mt-2 text-sm leading-7 text-ink-500">
+                Approve, reject, feature, edit, or delete any listing from the property inventory.
+              </p>
+
+              <div className="mt-6">
+                {loading ? (
+                  <p className="text-sm text-ink-500">Loading listings...</p>
+                ) : (
+                  <DashboardPropertyTable
+                    properties={sortedProperties}
+                    onEdit={setEditingProperty}
+                    onDelete={handleDelete}
+                    onApprove={handleApprove}
+                    onReject={handleReject}
+                    onToggleFeatured={handleToggleFeatured}
+                    loadingId={busyId}
+                  />
+                )}
+              </div>
+            </section>
+
+            <section id="leads" className="rounded-[32px] border border-[#eadfcf] bg-white p-6 shadow-[0_20px_58px_rgba(15,23,42,0.08)] sm:p-7">
+              <h2 className="text-3xl font-semibold text-ink-900">Lead Management</h2>
+              <p className="mt-2 text-sm leading-7 text-ink-500">
+                Review contact requests, property leads, sell-property submissions, and contract applications in one place.
+              </p>
+
+              <div className="mt-6">
+                {loading ? (
+                  <p className="text-sm text-ink-500">Loading leads...</p>
+                ) : (
+                  <InquiryTable inquiries={inquiries} editable onStatusChange={handleLeadStatus} />
+                )}
+              </div>
+            </section>
           </div>
         </div>
       </section>
-
-      <section className="section-shell pt-0">
-        <div className="card">
-          <h2 className="text-2xl font-semibold text-ink-800">Lead Management</h2>
-          <p className="mt-2 text-sm leading-7 text-ink-500">
-            Review contact requests, property leads, sell-property submissions, and contract applications in one place.
-          </p>
-
-          <div className="mt-6">
-            {loading ? (
-              <p className="text-sm text-ink-500">Loading leads...</p>
-            ) : (
-              <InquiryTable inquiries={inquiries} editable onStatusChange={handleLeadStatus} />
-            )}
-          </div>
-        </div>
-      </section>
-    </div>
+    </>
   );
 };
 

@@ -1,6 +1,6 @@
-# Mahadev Property
+# Sagar Infra
 
-Mahadev Property is a full-stack MERN real estate platform inspired by products like 99acres and MagicBricks.
+Sagar Infra is a full-stack MERN real estate platform inspired by products like 99acres and MagicBricks.
 
 It includes:
 
@@ -23,7 +23,7 @@ Extra features included:
 ## Project Structure
 
 ```text
-MAHADEV-PROPERTY/
+SAGAR-INFRA/
   client/
     app/
       components/
@@ -247,11 +247,11 @@ Open `server/.env` and update:
 
 ```env
 PORT=5000
-MONGODB_URI=mongodb://127.0.0.1:27017/mahadev_property
+MONGODB_URI=mongodb://127.0.0.1:27017/sagar_infra
 CLIENT_URL=http://localhost:5173
 JWT_SECRET=change_this_secret
 JWT_EXPIRES_IN=7d
-ADMIN_REGISTRATION_KEY=change_admin_key
+ADMIN_KEY=DEALER
 MAX_FILE_SIZE_MB=5
 ```
 
@@ -282,10 +282,10 @@ URLs:
 3. Copy both `.env.example` files.
 4. Add your MongoDB URI and JWT secret.
 5. Run `npm run dev`.
-6. Register a normal user account.
-7. Register an admin account using `ADMIN_REGISTRATION_KEY`.
-8. Log in as user to create properties.
-9. Log in as admin to approve and feature those properties.
+6. Register a normal user account if you want a customer-side login.
+7. Open `/admin/login` and sign in with `ADMIN_KEY`.
+8. Add or edit properties from the admin dashboard.
+9. Review live leads and manage featured listings.
 
 ## Deployment
 
@@ -307,8 +307,14 @@ Required environment variables:
 - `MONGODB_URI`
 - `JWT_SECRET`
 - `JWT_EXPIRES_IN=7d`
-- `ADMIN_REGISTRATION_KEY`
+- `ADMIN_KEY`
 - `CLIENT_URL=https://your-frontend-domain.vercel.app`
+- `FRONTEND_URL=https://your-frontend-domain.vercel.app`
+- `PUBLIC_SITE_URL=https://www.sagar-infra.in`
+- `CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
+- `CLOUDINARY_FOLDER=sagar-infra/properties`
 - `MAX_FILE_SIZE_MB=5`
 
 ### Backend or Full Stack on Railway
@@ -325,8 +331,14 @@ Recommended approach:
    - `MONGODB_URI`
    - `JWT_SECRET`
    - `JWT_EXPIRES_IN`
-   - `ADMIN_REGISTRATION_KEY`
+   - `ADMIN_KEY`
    - `CLIENT_URL`
+   - `FRONTEND_URL`
+   - `PUBLIC_SITE_URL`
+   - `CLOUDINARY_CLOUD_NAME`
+   - `CLOUDINARY_API_KEY`
+   - `CLOUDINARY_API_SECRET`
+   - `CLOUDINARY_FOLDER`
    - `MAX_FILE_SIZE_MB`
 5. Deploy the backend service.
 6. Deploy the frontend separately from `client` on Vercel or Railway static hosting.

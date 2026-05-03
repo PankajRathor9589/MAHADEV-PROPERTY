@@ -58,7 +58,7 @@ const buildPropertyFormData = (payload) => {
   const formData = new FormData();
 
   Object.entries(payload).forEach(([key, value]) => {
-    if (["images", "amenities", "retainedImages"].includes(key)) {
+    if (["images", "amenities", "retainedImages", "videos", "media", "videoFiles", "retainedVideos"].includes(key)) {
       return;
     }
 
@@ -75,6 +75,18 @@ const buildPropertyFormData = (payload) => {
     formData.append("retainedImages", JSON.stringify(payload.retainedImages));
   }
 
+  if (Array.isArray(payload.videos)) {
+    formData.append("videos", JSON.stringify(payload.videos));
+  }
+
+  if (Array.isArray(payload.retainedVideos)) {
+    formData.append("retainedVideos", JSON.stringify(payload.retainedVideos));
+  }
+
+  if (Array.isArray(payload.media)) {
+    formData.append("media", JSON.stringify(payload.media));
+  }
+
   if (Array.isArray(payload.images)) {
     payload.images.forEach((file) => {
       formData.append("images", file);
@@ -84,16 +96,85 @@ const buildPropertyFormData = (payload) => {
   return formData;
 };
 
-export const resolveImageUrl = (path) => {
+const applyCloudinaryTransform = (url, options = {}) => {
+  if (!/res\.cloudinary\.com/i.test(url) || !url.includes("/image/upload/")) {
+    return url;
+  }
+
+  const transforms = [
+    "f_auto",
+    "q_auto",
+    options.width ? `w_${options.width}` : null,
+    options.height ? `h_${options.height}` : null,
+    options.crop ? `c_${options.crop}` : null
+  ]
+    .filter(Boolean)
+    .join(",");
+
+  return url.replace("/image/upload/", `/image/upload/${transforms}/`);
+};
+
+const applyUnsplashTransform = (url, options = {}) => {
+  if (!/images\.unsplash\.com/i.test(url)) {
+    return url;
+  }
+
+  try {
+    const nextUrl = new URL(url);
+
+    nextUrl.searchParams.set("auto", "format");
+    nextUrl.searchParams.set("q", String(options.quality || nextUrl.searchParams.get("q") || 80));
+
+    if (options.width) {
+      nextUrl.searchParams.set("w", String(options.width));
+    }
+
+    if (options.height) {
+      nextUrl.searchParams.set("h", String(options.height));
+    }
+
+    if (options.crop === "fill") {
+      nextUrl.searchParams.set("fit", "crop");
+    }
+
+    return nextUrl.toString();
+  } catch (error) {
+    return url;
+  }
+};
+
+const applyImageTransform = (url, options = {}) => applyUnsplashTransform(applyCloudinaryTransform(url, options), options);
+
+export const resolveImageUrl = (path, options = {}) => {
   if (!path) {
     return "";
   }
 
-  if (path.startsWith("http://") || path.startsWith("https://")) {
-    return path;
+  if (
+    path.startsWith("http://") ||
+    path.startsWith("https://") ||
+    path.startsWith("blob:") ||
+    path.startsWith("data:")
+  ) {
+    return applyImageTransform(path, options);
   }
 
   return API_ORIGIN ? `${API_ORIGIN}${path}` : path;
+};
+
+export const buildResponsiveImageSrcSet = (path, widths = [], options = {}) => {
+  if (!path || !Array.isArray(widths) || widths.length === 0) {
+    return "";
+  }
+
+  const sources = [...new Set(widths.map((value) => Number(value)).filter((value) => Number.isFinite(value) && value > 0))]
+    .map((width) => {
+      const url = resolveImageUrl(path, { ...options, width });
+      return url ? `${url} ${width}w` : "";
+    })
+    .filter(Boolean);
+
+  return sources.length > 1 ? sources.join(", ") : "";
 };
 
 export const registerUser = async (payload) => {
@@ -215,4 +296,18 @@ export const updateAdminUser = async (userId, payload) => {
   requireApiBase();
   const data = await safeRequest(http.patch(`/admin/users/${userId}`, payload));
   return data.data;
+};
+
+export const uploadPropertyMedia = async (files = []) => {
+  requireApiBase();
+
+  if (!Array.isArray(files) || files.length === 0) {
+    return [];
+  }
+
+  const formData = new FormData();
+  files.forEach((file) => formData.append("files", file));
+
+  const data = await safeRequest(http.post("/upload/media", formData));
+  return data.items || data.data || [];
 };

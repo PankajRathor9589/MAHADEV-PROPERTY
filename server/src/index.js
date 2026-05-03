@@ -11,6 +11,7 @@ import authRoutes from "./routes/authRoutes.js";
 import favoriteRoutes from "./routes/favoriteRoutes.js";
 import inquiryRoutes from "./routes/inquiryRoutes.js";
 import propertyRoutes from "./routes/propertyRoutes.js";
+import seoRoutes from "./routes/seoRoutes.js";
 
 dotenv.config();
 
@@ -71,6 +72,7 @@ apiRouter.use("/property", propertyRoutes);
 apiRouter.use("/leads", inquiryRoutes);
 apiRouter.use("/favorites", favoriteRoutes);
 apiRouter.use("/admin", adminRoutes);
+apiRouter.use("/seo", seoRoutes);
 
 // Backward-compatible aliases for any older frontend code.
 apiRouter.use("/properties", propertyRoutes);

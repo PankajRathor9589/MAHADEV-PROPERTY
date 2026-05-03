@@ -1,7 +1,7 @@
 {
-  "name": "mahadev-property-backend",
+  "name": "sagar-infra-backend-legacy",
   "version": "1.0.0",
-  "description": "Backend API for Mahadev Property",
+  "description": "Legacy backend workspace for Sagar Infra",
   "main": "src/server.js",
   "type": "module",
   "scripts": {

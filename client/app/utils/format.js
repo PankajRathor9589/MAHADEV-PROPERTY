@@ -32,6 +32,140 @@ export const PROPERTY_CATEGORY_IMAGES = {
 
 export const PROPERTY_FALLBACK_IMAGE = PROPERTY_CATEGORY_IMAGES.Plot;
 
+const normalizeMediaUrl = (value = "") => String(value || "").trim();
+
+const slugifyMediaKey = (value = "") =>
+  String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const uniqueByComposite = (items = []) => {
+  const seen = new Set();
+
+  return items.filter((item) => {
+    const key = `${item.type || "image"}::${item.url}`;
+
+    if (!item.url || seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+};
+
+export const youtubeEmbedUrl = (url = "") => {
+  const normalizedUrl = normalizeMediaUrl(url);
+
+  if (!normalizedUrl) {
+    return "";
+  }
+
+  if (normalizedUrl.includes("/embed/")) {
+    return normalizedUrl;
+  }
+
+  const shortId = normalizedUrl.match(/youtu\.be\/([a-zA-Z0-9_-]{6,})/);
+  if (shortId?.[1]) {
+    return `https://www.youtube.com/embed/${shortId[1]}`;
+  }
+
+  const queryId = normalizedUrl.match(/[?&]v=([a-zA-Z0-9_-]{6,})/);
+  if (queryId?.[1]) {
+    return `https://www.youtube.com/embed/${queryId[1]}`;
+  }
+
+  const shortsId = normalizedUrl.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{6,})/);
+  if (shortsId?.[1]) {
+    return `https://www.youtube.com/embed/${shortsId[1]}`;
+  }
+
+  return "";
+};
+
+export const isYoutubeUrl = (url = "") => Boolean(youtubeEmbedUrl(url));
+
+export const normalizePropertyImageEntries = (property = {}) => {
+  const directImages = Array.isArray(property.images) ? property.images : [];
+  const mediaImages = Array.isArray(property.media)
+    ? property.media.filter((entry) => entry?.type === "image")
+    : [];
+  const singleImage = property.image ? [{ url: property.image, filename: "property-image" }] : [];
+
+  const normalized = [...directImages, ...mediaImages, ...singleImage]
+    .map((entry, index) => {
+      if (typeof entry === "string") {
+        return {
+          url: entry,
+          filename: `${slugifyMediaKey(property.title || "property")}-image-${index + 1}`
+        };
+      }
+
+      return {
+        url: normalizeMediaUrl(entry?.url || entry?.path || ""),
+        filename:
+          entry?.filename ||
+          `${slugifyMediaKey(property.title || "property")}-image-${index + 1}`
+      };
+    })
+    .filter((entry) => entry.url);
+
+  return uniqueByComposite(normalized.map((entry) => ({ ...entry, type: "image" }))).map(({ type, ...entry }) => entry);
+};
+
+export const normalizePropertyVideoEntries = (property = {}) => {
+  const directVideos = Array.isArray(property.videos) ? property.videos : [];
+  const mediaVideos = Array.isArray(property.media)
+    ? property.media.filter((entry) => entry?.type === "video" || entry?.type === "youtube")
+    : [];
+  const looseVideoFields = [property.videoTourUrl, property.videoUrl]
+    .filter(Boolean)
+    .map((url) => ({ type: "video", url }));
+  const youtubeFields = [property.youtubeUrl, property.youtubeLink]
+    .filter(Boolean)
+    .map((url) => ({ type: "youtube", url }));
+
+  const normalized = [...mediaVideos, ...directVideos, ...looseVideoFields, ...youtubeFields]
+    .map((entry, index) => {
+      if (typeof entry === "string") {
+        return {
+          type: isYoutubeUrl(entry) ? "youtube" : "video",
+          url: normalizeMediaUrl(entry),
+          label: `Media ${index + 1}`
+        };
+      }
+
+      const url = normalizeMediaUrl(entry?.url || entry?.path || "");
+      const type = entry?.type || (isYoutubeUrl(url) ? "youtube" : "video");
+
+      return {
+        type,
+        url,
+        label: entry?.label || (type === "youtube" ? "YouTube Tour" : `Video ${index + 1}`)
+      };
+    })
+    .filter((entry) => entry.url)
+    .map((entry) => ({
+      ...entry,
+      embedUrl: entry.type === "youtube" ? youtubeEmbedUrl(entry.url) : ""
+    }));
+
+  return uniqueByComposite(normalized);
+};
+
+export const hasPropertyVideo = (property = {}) => normalizePropertyVideoEntries(property).length > 0;
+
+export const getPropertyCoverImage = (property = {}) => {
+  const [firstImage] = normalizePropertyImageEntries(property);
+  return firstImage?.url || PROPERTY_CATEGORY_IMAGES[property.category] || PROPERTY_FALLBACK_IMAGE;
+};
+
+export const resolvePropertyPath = (property) => {
+  const identifier = property?.slug || property?._id;
+  return identifier ? `/properties/${identifier}` : "/properties";
+};
+
 export const formatCurrency = (value) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",

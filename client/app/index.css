@@ -4,9 +4,9 @@
 
 :root {
   font-family: "Manrope", sans-serif;
-  color: #f8fbff;
-  background: #050d1c;
-  color-scheme: dark;
+  color: #182230;
+  background: #f6f3ee;
+  color-scheme: light;
 }
 
 html {
@@ -19,10 +19,10 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at top left, rgba(212, 175, 55, 0.18), transparent 24%),
-    radial-gradient(circle at 84% 14%, rgba(53, 87, 141, 0.3), transparent 28%),
-    linear-gradient(180deg, #09152a 0%, #081120 42%, #050d1c 100%);
-  color: #f8fbff;
+    radial-gradient(circle at top left, rgba(212, 175, 55, 0.14), transparent 24%),
+    radial-gradient(circle at 86% 12%, rgba(225, 214, 194, 0.55), transparent 26%),
+    linear-gradient(180deg, #fbfaf7 0%, #f7f3ec 42%, #f3eee6 100%);
+  color: #182230;
   position: relative;
 }
 
@@ -32,11 +32,11 @@ body::before {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(circle at center, black 44%, transparent 92%);
-  opacity: 0.55;
+    linear-gradient(rgba(194, 166, 108, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(194, 166, 108, 0.08) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(circle at center, black 42%, transparent 90%);
+  opacity: 0.42;
 }
 
 * {
@@ -49,6 +49,11 @@ video,
 canvas {
   display: block;
   max-width: 100%;
+}
+
+img,
+video {
+  height: auto;
 }
 
 a {
@@ -64,8 +69,8 @@ textarea {
 }
 
 ::selection {
-  background: rgba(212, 175, 55, 0.28);
-  color: #081120;
+  background: rgba(212, 175, 55, 0.24);
+  color: #1b2942;
 }
 
 #root {
@@ -73,12 +78,12 @@ textarea {
 }
 
 [id] {
-  scroll-margin-top: 120px;
+  scroll-margin-top: 110px;
 }
 
 @layer base {
   body {
-    @apply bg-navy-950 text-white antialiased;
+    @apply bg-cream-100 text-ink-800 antialiased;
   }
 
   h1,
@@ -106,11 +111,11 @@ textarea {
 @keyframes softPulse {
   0%,
   100% {
-    box-shadow: 0 20px 44px rgba(37, 211, 102, 0.22);
+    box-shadow: 0 20px 44px rgba(37, 211, 102, 0.2);
   }
 
   50% {
-    box-shadow: 0 24px 52px rgba(37, 211, 102, 0.32);
+    box-shadow: 0 24px 52px rgba(37, 211, 102, 0.3);
   }
 }
 
@@ -118,12 +123,12 @@ textarea {
   0%,
   100% {
     transform: translateY(0px);
-    opacity: 0.66;
+    opacity: 0.55;
   }
 
   50% {
     transform: translateY(-14px);
-    opacity: 1;
+    opacity: 0.9;
   }
 }
 
@@ -132,19 +137,19 @@ textarea {
 }
 
 .glass-panel {
-  @apply rounded-[32px] border border-white/15 bg-navy-900/55 text-white shadow-glass backdrop-blur-2xl;
+  @apply rounded-[32px] border border-[#e4d7c2]/80 bg-white/80 text-ink-800 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-2xl;
 }
 
 .card {
-  @apply rounded-[30px] border border-white/55 bg-white/[0.9] p-5 text-ink-700 shadow-soft backdrop-blur-2xl md:p-6;
+  @apply rounded-[30px] border border-[#eadfcf] bg-white p-5 text-ink-700 shadow-[0_18px_48px_rgba(15,23,42,0.08)] md:p-6;
 }
 
 .card-hover {
-  @apply transition duration-500 hover:-translate-y-2 hover:shadow-panel;
+  @apply transition duration-500 hover:-translate-y-2 hover:shadow-[0_28px_70px_rgba(15,23,42,0.12)];
 }
 
 .input-field {
-  @apply w-full rounded-[20px] border border-navy-900/10 bg-white/90 px-4 py-3.5 text-sm text-ink-800 outline-none transition duration-300 placeholder:text-ink-300 focus:border-gold-500 focus:ring-4 focus:ring-gold-100;
+  @apply w-full rounded-[20px] border border-[#ded4c7] bg-white px-4 py-3.5 text-sm text-ink-800 outline-none transition duration-300 placeholder:text-ink-300 focus:border-gold-500 focus:ring-4 focus:ring-gold-100;
 }
 
 .textarea-field {
@@ -156,19 +161,19 @@ textarea {
 }
 
 .btn-primary {
-  @apply btn border border-gold-300 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-400 text-navy-950 shadow-glow hover:-translate-y-0.5 hover:shadow-[0_20px_55px_rgba(212,175,55,0.35)];
+  @apply btn border border-gold-300 bg-gradient-to-r from-[#e8c96a] via-gold-500 to-[#e2bc54] text-ink-900 shadow-[0_18px_45px_rgba(212,175,55,0.24)] hover:-translate-y-0.5 hover:shadow-[0_24px_58px_rgba(212,175,55,0.32)];
 }
 
 .btn-secondary {
-  @apply btn border border-navy-900/10 bg-white text-navy-900 shadow-[0_18px_40px_rgba(11,29,58,0.14)] hover:-translate-y-0.5 hover:border-gold-300 hover:text-gold-700;
+  @apply btn border border-[#dad0c2] bg-white text-ink-800 shadow-[0_16px_38px_rgba(15,23,42,0.08)] hover:-translate-y-0.5 hover:border-gold-300 hover:text-gold-700;
 }
 
 .btn-ghost {
-  @apply btn border border-white/20 bg-white/[0.06] text-white backdrop-blur-xl hover:-translate-y-0.5 hover:border-gold-300/70 hover:bg-white/[0.12];
+  @apply btn border border-[#ddd0bd] bg-[#f7f1e8]/80 text-ink-800 backdrop-blur-xl hover:-translate-y-0.5 hover:border-gold-300 hover:bg-white;
 }
 
 .btn-whatsapp {
-  @apply btn bg-[#25D366] text-white shadow-[0_18px_40px_rgba(37,211,102,0.28)] hover:-translate-y-0.5 hover:bg-[#1eb85b];
+  @apply btn bg-[#25D366] text-white shadow-[0_18px_40px_rgba(37,211,102,0.24)] hover:-translate-y-0.5 hover:bg-[#1eb85b];
 }
 
 .btn-danger {
@@ -185,12 +190,12 @@ textarea {
 }
 
 .section-title {
-  @apply font-display text-4xl font-semibold leading-[0.98] tracking-[-0.04em] text-white sm:text-5xl;
+  @apply font-display text-4xl font-semibold leading-[0.98] tracking-[-0.04em] text-ink-900 sm:text-5xl;
   text-wrap: balance;
 }
 
 .section-kicker {
-  @apply text-xs font-semibold uppercase tracking-[0.36em] text-gold-300;
+  @apply text-xs font-semibold uppercase tracking-[0.36em] text-gold-700;
 }
 
 .fade-up {
@@ -213,13 +218,13 @@ textarea {
 @layer utilities {
   .surface-grid {
     background-image:
-      linear-gradient(rgba(212, 175, 55, 0.07) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(212, 175, 55, 0.07) 1px, transparent 1px);
+      linear-gradient(rgba(212, 175, 55, 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212, 175, 55, 0.1) 1px, transparent 1px);
     background-size: 34px 34px;
   }
 
   .text-gradient-gold {
-    background: linear-gradient(135deg, #fff6d9 0%, #d4af37 55%, #fff3c1 100%);
+    background: linear-gradient(135deg, #9d7520 0%, #d4af37 55%, #f2dd9d 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;

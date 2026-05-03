@@ -17,13 +17,15 @@ services:
         value: https://your-frontend-domain.vercel.app
       - key: FRONTEND_URL
         value: https://your-frontend-domain.vercel.app
+      - key: PUBLIC_SITE_URL
+        value: https://www.sagar-infra.in
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
         sync: false
       - key: JWT_EXPIRES_IN
         value: 7d
-      - key: ADMIN_SECRET_KEY
+      - key: ADMIN_KEY
         sync: false
       - key: ADMIN_SESSION_NAME
         value: Sagar Infra Admin
@@ -31,5 +33,13 @@ services:
         value: admin.session@sagarinfra.local
       - key: ADMIN_SESSION_PHONE
         value: 7692016188
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: CLOUDINARY_FOLDER
+        value: sagar-infra/properties
       - key: MAX_FILE_SIZE_MB
         value: 5

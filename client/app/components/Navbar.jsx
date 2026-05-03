@@ -1,17 +1,11 @@
-import {
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  Phone,
-  X
-} from "lucide-react";
-import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { LayoutDashboard, LogOut, Menu, Phone, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import BrandMark from "./BrandMark.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { COMPANY_INFO } from "../data/siteContent.js";
 import { toPhoneHref } from "../utils/format.js";
+import BrandMark from "./BrandMark.jsx";
 
 const navigationLinks = [
   { label: "Home", href: "/", hash: "" },
@@ -33,7 +27,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 18);
+      setIsScrolled(window.scrollY > 16);
     };
 
     handleScroll();
@@ -50,8 +44,8 @@ const Navbar = () => {
   const navLinkClass = (active = false) =>
     `rounded-full px-4 py-2 text-sm font-semibold transition ${
       active
-        ? "bg-white/[0.12] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]"
-        : "text-white/78 hover:bg-white/[0.08] hover:text-white"
+        ? "bg-[#f2e7cf] text-ink-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
+        : "text-ink-600 hover:bg-white hover:text-ink-900"
     }`;
 
   return (
@@ -60,8 +54,8 @@ const Navbar = () => {
         layout
         className={`mx-auto flex w-full max-w-[1320px] items-center justify-between rounded-full border px-4 py-3 transition duration-500 sm:px-5 ${
           isScrolled
-            ? "border-white/16 bg-navy-950/74 shadow-glass backdrop-blur-2xl"
-            : "border-white/10 bg-white/[0.05] backdrop-blur-xl"
+            ? "border-[#e5d9c7] bg-white/88 shadow-[0_18px_50px_rgba(15,23,42,0.1)] backdrop-blur-2xl"
+            : "border-[#ece3d7] bg-[#fbf8f2]/84 shadow-[0_14px_34px_rgba(15,23,42,0.06)] backdrop-blur-xl"
         }`}
       >
         <Link to="/" className="min-w-0">
@@ -81,11 +75,7 @@ const Navbar = () => {
             }
 
             return (
-              <NavLink
-                key={item.label}
-                to={item.href}
-                className={({ isActive }) => navLinkClass(isActive)}
-              >
+              <NavLink key={item.label} to={item.href} className={({ isActive }) => navLinkClass(isActive)}>
                 {item.label}
               </NavLink>
             );
@@ -99,8 +89,8 @@ const Navbar = () => {
               className={({ isActive }) =>
                 `rounded-full border px-4 py-2 text-sm font-semibold transition ${
                   isActive
-                    ? "border-gold-400/70 bg-gold-400/15 text-gold-200"
-                    : "border-white/16 bg-white/[0.06] text-white/80 hover:border-gold-400/60 hover:text-white"
+                    ? "border-gold-300 bg-[#f7eedb] text-gold-700"
+                    : "border-[#e3d7c7] bg-white text-ink-700 hover:border-gold-300 hover:text-ink-900"
                 }`
               }
             >
@@ -109,6 +99,12 @@ const Navbar = () => {
                 Dashboard
               </span>
             </NavLink>
+          ) : null}
+
+          {!isAuthenticated ? (
+            <Link to="/admin/login" className="btn-ghost min-h-[46px] px-4 text-[13px]">
+              Admin Access
+            </Link>
           ) : null}
 
           {isAuthenticated ? (
@@ -127,7 +123,7 @@ const Navbar = () => {
         <div className="flex items-center gap-2 lg:hidden">
           <a
             href={toPhoneHref(COMPANY_INFO.phoneDisplay)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gold-300/40 bg-gold-400/15 text-gold-200 shadow-[0_12px_30px_rgba(212,175,55,0.18)]"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gold-300 bg-[#f7ecd7] text-gold-700 shadow-[0_12px_30px_rgba(212,175,55,0.18)]"
             aria-label="Call now"
           >
             <Phone size={18} />
@@ -136,7 +132,7 @@ const Navbar = () => {
           <button
             type="button"
             onClick={() => setMenuOpen((current) => !current)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-white/[0.06] text-white shadow-[0_14px_32px_rgba(5,13,28,0.22)] backdrop-blur-xl transition hover:bg-white/[0.1]"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#e6ddcf] bg-white text-ink-800 shadow-[0_14px_32px_rgba(15,23,42,0.08)] backdrop-blur-xl transition hover:bg-[#fbf8f1]"
             aria-label="Toggle navigation"
             aria-expanded={menuOpen}
           >
@@ -163,8 +159,8 @@ const Navbar = () => {
                       to={item.href}
                       className={`block rounded-[22px] px-4 py-3 text-sm font-semibold transition ${
                         location.pathname === "/" && location.hash === item.hash
-                          ? "bg-white/[0.12] text-white"
-                          : "bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white"
+                          ? "bg-[#f7ecd7] text-ink-900"
+                          : "bg-[#fbf8f1] text-ink-700 hover:bg-white hover:text-ink-900"
                       }`}
                     >
                       {item.label}
@@ -176,8 +172,8 @@ const Navbar = () => {
                       className={({ isActive }) =>
                         `block rounded-[22px] px-4 py-3 text-sm font-semibold transition ${
                           isActive
-                            ? "bg-white/[0.12] text-white"
-                            : "bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white"
+                            ? "bg-[#f7ecd7] text-ink-900"
+                            : "bg-[#fbf8f1] text-ink-700 hover:bg-white hover:text-ink-900"
                         }`
                       }
                     >
@@ -189,7 +185,7 @@ const Navbar = () => {
                 {isAuthenticated && isAdmin ? (
                   <NavLink
                     to="/admin"
-                    className="block rounded-[22px] bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white/80 transition hover:bg-white/[0.08] hover:text-white"
+                    className="block rounded-[22px] bg-[#fbf8f1] px-4 py-3 text-sm font-semibold text-ink-700 transition hover:bg-white hover:text-ink-900"
                   >
                     Dashboard
                   </NavLink>
@@ -208,7 +204,7 @@ const Navbar = () => {
                     Logout
                   </button>
                 ) : (
-                  <Link to="/login" className="btn-ghost w-full">
+                  <Link to="/admin/login" className="btn-ghost w-full">
                     Admin Access
                   </Link>
                 )}

@@ -1,8 +1,8 @@
-import { ArrowRight, CheckCircle2, PhoneCall } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowRight, CheckCircle2, MessageCircleMore, PhoneCall } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { COMPANY_INFO } from "../data/siteContent.js";
 import { submitLead } from "../services/api.js";
-import { toPhoneHref } from "../utils/format.js";
+import { toPhoneHref, toWhatsAppHref } from "../utils/format.js";
 
 const LeadCaptureForm = ({
   title,
@@ -44,6 +44,19 @@ const LeadCaptureForm = ({
     setForm((current) => ({ ...current, [name]: value }));
   };
 
+  const whatsappHref = useMemo(() => {
+    const lines = [
+      `Hi SAGAR INFRA, I want to submit a ${source.replace(/_/g, " ")} enquiry.`,
+      form.name ? `Name: ${form.name}` : "",
+      form.phone ? `Phone: ${form.phone}` : "",
+      form.location ? `Location: ${form.location}` : "",
+      form.serviceType ? `Requirement Type: ${form.serviceType}` : "",
+      form.requirement ? `Requirement: ${form.requirement}` : ""
+    ].filter(Boolean);
+
+    return toWhatsAppHref(COMPANY_INFO.whatsappNumber, lines.join("\n"));
+  }, [form.location, form.name, form.phone, form.requirement, form.serviceType, source]);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -76,8 +89,8 @@ const LeadCaptureForm = ({
   return (
     <form onSubmit={handleSubmit} className={`card ${compact ? "space-y-4" : "space-y-5"}`}>
       <div>
-        <p className="section-kicker">Lead Form</p>
-        <h3 className={`${compact ? "text-2xl" : "text-3xl"} mt-2 font-semibold text-ink-800`}>{title}</h3>
+        <p className="section-kicker">Inquiry Form</p>
+        <h3 className={`${compact ? "text-2xl" : "text-3xl"} mt-2 font-semibold text-ink-900`}>{title}</h3>
         {description ? <p className="mt-2 text-sm leading-7 text-ink-500">{description}</p> : null}
       </div>
 
@@ -148,15 +161,20 @@ const LeadCaptureForm = ({
         </p>
       ) : null}
 
-      <p className="text-xs leading-6 text-ink-400">
-        Your details are sent to the protected lead system for direct Sagar Infra follow-up.
-      </p>
+      <div className="rounded-[24px] border border-[#eee2d2] bg-[#faf6ef] px-4 py-4 text-xs leading-6 text-ink-500">
+        Your inquiry goes to the protected lead system and can also be continued instantly on WhatsApp for faster
+        response.
+      </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <button type="submit" className="btn-primary w-full sm:w-auto" disabled={submitting}>
           {submitting ? "Submitting..." : submitLabel}
           {!submitting ? <ArrowRight size={16} /> : null}
         </button>
+        <a href={whatsappHref} target="_blank" rel="noreferrer" className="btn-whatsapp w-full sm:w-auto">
+          <MessageCircleMore size={16} />
+          Send on WhatsApp
+        </a>
         <a href={toPhoneHref(COMPANY_INFO.phoneDisplay)} className="btn-secondary w-full sm:w-auto">
           <PhoneCall size={16} />
           Call {COMPANY_INFO.phoneDisplay}

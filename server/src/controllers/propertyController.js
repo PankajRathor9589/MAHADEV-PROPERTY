@@ -1,10 +1,9 @@
-import fs from "node:fs/promises";
-import path from "node:path";
+import { Types, isValidObjectId } from "mongoose";
 import Inquiry from "../models/Inquiry.js";
 import Property from "../models/Property.js";
 import User from "../models/User.js";
 import { AppError } from "../middleware/errorHandler.js";
-import { propertyUploadDir } from "../middleware/upload.js";
+import { removeStoredImages, storeUploadedImages } from "../utils/cloudinary.js";
 
 const hasKey = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
@@ -78,31 +77,6 @@ const parseRetainedImages = (value, fallback = []) => {
     }));
 };
 
-const normalizeUploadedImages = (files = []) =>
-  files.map((file) => ({
-    filename: file.filename,
-    url: `/uploads/properties/${file.filename}`
-  }));
-
-const removeFiles = async (filenames = []) => {
-  await Promise.all(
-    filenames.map(async (filename) => {
-      if (!filename) {
-        return;
-      }
-
-      const filePath = path.join(propertyUploadDir, filename);
-      try {
-        await fs.unlink(filePath);
-      } catch (error) {
-        if (error.code !== "ENOENT") {
-          console.error(`Failed to remove file ${filename}`, error);
-        }
-      }
-    })
-  );
-};
-
 const getSortOption = (value) => {
   const sortBy = String(value || "latest");
 
@@ -134,6 +108,17 @@ const normalizeCategory = (value, fallback = "Plot") => {
 
   return normalized || fallback;
 };
+
+const toSlug = (value = "property") =>
+  String(value)
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "property";
+
+const buildPropertySlug = (title, identifier) => `${toSlug(title)}-${String(identifier).slice(-6).toLowerCase()}`;
 
 const buildLocation = (input, current = {}) => {
   const currentCoordinates = current.coordinates || {};
@@ -209,6 +194,38 @@ const buildPayload = (input, current = {}, user) => ({
     : current.rejectionReason || ""
 });
 
+const validatePropertyPayload = (payload, { requireImages = false } = {}) => {
+  const errors = [];
+
+  if (!payload.title) {
+    errors.push("Title is required.");
+  } else if (payload.title.length < 4) {
+    errors.push("Title must be at least 4 characters.");
+  }
+
+  if (!payload.description) {
+    errors.push("Description is required.");
+  } else if (payload.description.length < 20) {
+    errors.push("Description must be at least 20 characters.");
+  }
+
+  if (!Number.isFinite(payload.price) || payload.price <= 0) {
+    errors.push("Price must be greater than 0.");
+  }
+
+  if (!payload.location?.address && !payload.location?.city) {
+    errors.push("Location is required.");
+  }
+
+  if (requireImages && (!Array.isArray(payload.images) || payload.images.length === 0)) {
+    errors.push("At least one property image is required.");
+  }
+
+  if (errors.length > 0) {
+    throw new AppError(400, "Validation failed.", errors);
+  }
+};
+
 const canManageProperty = (property, user) => {
   if (!user) {
     return false;
@@ -232,15 +249,30 @@ const canViewProperty = (property, user) => {
 const populatePropertyQuery = (query) =>
   query.populate("postedBy", "name email phone role isActive createdAt");
 
+const findPropertyQuery = (identifier) => {
+  if (isValidObjectId(identifier)) {
+    return { _id: identifier };
+  }
+
+  return { slug: String(identifier).trim().toLowerCase() };
+};
+
+const findProperty = (identifier) => Property.findOne(findPropertyQuery(identifier));
+
 export const getMyProperties = async (req, res, next) => {
   req.query.mine = "true";
   return getAllProperties(req, res, next);
 };
 
 export const createProperty = async (req, res, next) => {
+  let storedImages = [];
+
   try {
+    storedImages = await storeUploadedImages(req.files || []);
     const payload = buildPayload(req.body, {}, req.user);
-    payload.images = normalizeUploadedImages(req.files);
+    payload._id = new Types.ObjectId();
+    payload.slug = buildPropertySlug(payload.title, payload._id);
+    payload.images = storedImages;
     payload.postedBy = req.user._id;
 
     if (!payload.contactName) {
@@ -260,6 +292,8 @@ export const createProperty = async (req, res, next) => {
       : "approved";
     payload.rejectionReason = payload.approvalStatus === "rejected" ? payload.rejectionReason : "";
 
+    validatePropertyPayload(payload, { requireImages: true });
+
     const property = await Property.create(payload);
     const populatedProperty = await populatePropertyQuery(Property.findById(property._id));
 
@@ -269,7 +303,7 @@ export const createProperty = async (req, res, next) => {
       data: populatedProperty
     });
   } catch (error) {
-    await removeFiles((req.files || []).map((file) => file.filename));
+    await removeStoredImages(storedImages);
     return next(error);
   }
 };
@@ -403,7 +437,7 @@ export const getAllProperties = async (req, res, next) => {
 
 export const getPropertyById = async (req, res, next) => {
   try {
-    const property = await populatePropertyQuery(Property.findById(req.params.id));
+    const property = await populatePropertyQuery(Property.findOne(findPropertyQuery(req.params.id)));
 
     if (!property) {
       throw new AppError(404, "Property not found.");
@@ -428,8 +462,10 @@ export const getPropertyById = async (req, res, next) => {
 };
 
 export const updateProperty = async (req, res, next) => {
+  let storedImages = [];
+
   try {
-    const property = await Property.findById(req.params.id);
+    const property = await findProperty(req.params.id);
 
     if (!property) {
       throw new AppError(404, "Property not found.");
@@ -440,19 +476,16 @@ export const updateProperty = async (req, res, next) => {
     }
 
     const payload = buildPayload(req.body, property.toObject(), req.user);
-    const newImages = normalizeUploadedImages(req.files);
+    storedImages = await storeUploadedImages(req.files || []);
     const retainedImages = hasKey(req.body, "retainedImages")
       ? parseRetainedImages(req.body.retainedImages, property.images)
       : property.images;
+    const removedImages = property.images.filter(
+      (image) => !retainedImages.some((retained) => retained.filename === image.filename)
+    );
 
-    if (hasKey(req.body, "retainedImages")) {
-      const removedImages = property.images.filter(
-        (image) => !retainedImages.some((retained) => retained.filename === image.filename)
-      );
-      await removeFiles(removedImages.map((image) => image.filename));
-    }
-
-    payload.images = [...retainedImages, ...newImages];
+    payload.slug = property.slug || buildPropertySlug(payload.title, property._id);
+    payload.images = [...retainedImages, ...storedImages];
 
     if (!["pending", "approved", "rejected"].includes(payload.approvalStatus)) {
       payload.approvalStatus = property.approvalStatus;
@@ -461,30 +494,33 @@ export const updateProperty = async (req, res, next) => {
     payload.isFeatured = property.isFeatured;
     payload.featuredUntil = property.featuredUntil;
 
+    validatePropertyPayload(payload, { requireImages: true });
+
     const updatedProperty = await populatePropertyQuery(
-      Property.findByIdAndUpdate(req.params.id, payload, {
+      Property.findByIdAndUpdate(property._id, payload, {
         new: true,
         runValidators: true
       })
     );
 
+    if (hasKey(req.body, "retainedImages") && removedImages.length > 0) {
+      await removeStoredImages(removedImages);
+    }
+
     return res.json({
       success: true,
-      message:
-        req.user.role === "admin"
-          ? "Property updated successfully."
-          : "Property updated successfully.",
+      message: "Property updated successfully.",
       data: updatedProperty
     });
   } catch (error) {
-    await removeFiles((req.files || []).map((file) => file.filename));
+    await removeStoredImages(storedImages);
     return next(error);
   }
 };
 
 export const deleteProperty = async (req, res, next) => {
   try {
-    const property = await Property.findById(req.params.id);
+    const property = await findProperty(req.params.id);
 
     if (!property) {
       throw new AppError(404, "Property not found.");
@@ -494,7 +530,7 @@ export const deleteProperty = async (req, res, next) => {
       throw new AppError(403, "Only admins can delete properties.");
     }
 
-    await removeFiles(property.images.map((image) => image.filename));
+    await removeStoredImages(property.images);
     await Inquiry.deleteMany({ property: property._id });
     await User.updateMany({ favorites: property._id }, { $pull: { favorites: property._id } });
     await property.deleteOne();
@@ -516,7 +552,7 @@ export const updatePropertyApproval = async (req, res, next) => {
       throw new AppError(400, "approvalStatus must be approved, rejected, or pending.");
     }
 
-    const property = await Property.findById(req.params.id);
+    const property = await findProperty(req.params.id);
     if (!property) {
       throw new AppError(404, "Property not found.");
     }
@@ -541,7 +577,7 @@ export const updatePropertyApproval = async (req, res, next) => {
 
 export const updatePropertyFeatured = async (req, res, next) => {
   try {
-    const property = await Property.findById(req.params.id);
+    const property = await findProperty(req.params.id);
     if (!property) {
       throw new AppError(404, "Property not found.");
     }
