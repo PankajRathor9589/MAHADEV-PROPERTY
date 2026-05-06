@@ -1,7 +1,7 @@
 import { AppError } from "./errorHandler.js";
 
 export const validateAdminKey = (req, res, next) => {
-  const adminKey = String(req.body?.adminKey || "").trim();
+  const adminKey = String(req.body?.key || req.body?.adminKey || "").trim();
   const configuredAdminKey = String(process.env.ADMIN_KEY || process.env.ADMIN_SECRET_KEY || "").trim();
 
   if (!configuredAdminKey) {
@@ -13,7 +13,7 @@ export const validateAdminKey = (req, res, next) => {
   }
 
   if (adminKey !== configuredAdminKey) {
-    return res.status(403).json({ success: false, message: "Unauthorized" });
+    return next(new AppError(403, "Invalid admin key."));
   }
 
   return next();

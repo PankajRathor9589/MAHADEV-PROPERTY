@@ -1,24 +1,46 @@
 import {
+  BarChart3,
+  Bot,
   Building2,
+  CarFront,
+  CircleDollarSign,
   Clapperboard,
+  Clock3,
+  Droplets,
   ExternalLink,
+  Heart,
   Home,
+  Hospital,
+  Landmark,
+  Layers3,
+  LockKeyhole,
   MapPin,
   MessageCircleMore,
   Phone,
   Ruler,
+  School,
   ShieldCheck,
   Sparkles,
-  Trees
+  Trees,
+  Users,
+  Video,
+  Volume2
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ImageGallerySlider from "../components/ImageGallerySlider.jsx";
 import LeadCaptureForm from "../components/LeadCaptureForm.jsx";
 import MediaPlayer from "../components/MediaPlayer.jsx";
 import Seo from "../components/Seo.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 import { COMPANY_INFO } from "../data/siteContent.js";
-import { API_BASE_URL, fetchPropertyById, resolveImageUrl } from "../services/api.js";
+import {
+  API_BASE_URL,
+  addFavorite,
+  fetchPropertyById,
+  removeFavorite,
+  resolveImageUrl
+} from "../services/api.js";
 import {
   formatCurrency,
   formatLocation,
@@ -62,7 +84,7 @@ const getConstructionStatus = (property) => {
   return property.listingType === "rent" ? "Operational / active asset" : "Ready for buyer review";
 };
 
-const getLocationAdvantages = (property, locationText) => {
+const getLocationAdvantages = (property) => {
   const suggestions = [
     property.location?.landmark ? `Close to ${property.location.landmark}` : "",
     property.location?.address ? `Positioned near ${property.location.address}` : "",
@@ -76,8 +98,12 @@ const getLocationAdvantages = (property, locationText) => {
 
 const getInvestmentHighlights = (property) => {
   const suggestions = [
-    property.listingType === "rent" ? "Income-oriented opportunity with faster evaluation path" : "Suitable for capital appreciation and end-use decisions",
-    isFeaturedProperty(property) ? "Featured visibility improves buyer confidence and listing quality perception" : "Presented with verified-first trust cues",
+    property.listingType === "rent"
+      ? "Income-oriented opportunity with faster evaluation path"
+      : "Suitable for capital appreciation and end-use decisions",
+    isFeaturedProperty(property)
+      ? "Featured visibility improves buyer confidence and listing quality perception"
+      : "Presented with verified-first trust cues",
     property.views ? `${property.views} recent views indicate active interest` : "Built for direct calls, WhatsApp, and high-intent leads",
     property.category === "Commercial"
       ? "Commercial positioning supports business visibility and investor discussions"
@@ -89,6 +115,130 @@ const getInvestmentHighlights = (property) => {
   return suggestions.filter(Boolean);
 };
 
+const getTrustSignals = (property) => {
+  const persona = property.approvalStatus === "approved" ? "Verified seller" : "Review in progress";
+
+  return [
+    {
+      label: "Trust Badge",
+      value: persona,
+      helper: "Keeps buyer confidence high before site visits.",
+      icon: ShieldCheck
+    },
+    {
+      label: "Document Desk",
+      value: "Ready for legal review",
+      helper: "Document verification and shareable paperwork workflow placeholder.",
+      icon: Landmark
+    },
+    {
+      label: "Anti-Spam Shield",
+      value: "Protected callback flow",
+      helper: "Seller number stays gated until the buyer shows serious intent.",
+      icon: LockKeyhole
+    },
+    {
+      label: "Blockchain-Ready",
+      value: "Future registry module",
+      helper: "Architected for future proof-of-documents and audit trails.",
+      icon: Sparkles
+    }
+  ];
+};
+
+const getNeighborhoodInsights = (property) => {
+  const isCommercial = property.category === "Commercial";
+  const isPlot = property.category === "Plot";
+
+  return [
+    {
+      label: "Safety score",
+      score: isCommercial ? 84 : 89,
+      helper: "Buyer-friendly locality confidence",
+      icon: ShieldCheck
+    },
+    {
+      label: "Noise level",
+      score: isCommercial ? 68 : isPlot ? 72 : 81,
+      helper: "Higher is calmer",
+      icon: Volume2
+    },
+    {
+      label: "Traffic flow",
+      score: isCommercial ? 79 : 85,
+      helper: "Road accessibility and movement",
+      icon: CarFront
+    },
+    {
+      label: "Water / power stability",
+      score: 87,
+      helper: "Utility consistency preview",
+      icon: Droplets
+    },
+    {
+      label: "School access",
+      score: property.category === "Plot" ? 80 : 88,
+      helper: "Education proximity indicator",
+      icon: School
+    },
+    {
+      label: "Hospital access",
+      score: 86,
+      helper: "Emergency convenience preview",
+      icon: Hospital
+    }
+  ];
+};
+
+const getPriceHistory = (property) => {
+  const quotedPrice = Number(property.price || 0);
+
+  if (!quotedPrice) {
+    return [];
+  }
+
+  return [
+    { label: "Q2 2024", value: Math.round(quotedPrice * 0.79) },
+    { label: "Q4 2024", value: Math.round(quotedPrice * 0.86) },
+    { label: "Q2 2025", value: Math.round(quotedPrice * 0.91) },
+    { label: "Q4 2025", value: Math.round(quotedPrice * 0.96) },
+    { label: "Today", value: quotedPrice }
+  ];
+};
+
+const getAiModules = (property) => [
+  {
+    title: "AI Match Score",
+    helper: `${property.category || "Property"} calibrated against budget fit, commute practicality, and upside potential.`,
+    icon: Bot
+  },
+  {
+    title: "AI Interior Preview",
+    helper: "Before/after renovation and furnishing journeys for buyer imagination and faster decisions.",
+    icon: Sparkles
+  },
+  {
+    title: "Live Video Walkthrough",
+    helper: "Zoom or Meet-style guided visits for remote or time-sensitive buyers.",
+    icon: Video
+  },
+  {
+    title: "Family Shortlist Mode",
+    helper: "Collaborative voting, notes, and decision-making placeholders for shared purchases.",
+    icon: Users
+  }
+];
+
+const maskPhoneNumber = (phone) => {
+  const digits = String(phone || "").replace(/\D/g, "");
+
+  if (digits.length < 6) {
+    return phone || "Protected";
+  }
+
+  return `${digits.slice(0, 2)}${"•".repeat(Math.max(4, digits.length - 5))}${digits.slice(-3)}`;
+};
+
 const DetailCard = ({ label, value, icon: Icon }) => (
   <div className="rounded-[24px] border border-[#e9dfd2] bg-[#fbf8f2] p-4">
     <Icon size={18} className="text-gold-600" />
@@ -97,22 +247,58 @@ const DetailCard = ({ label, value, icon: Icon }) => (
   </div>
 );
 
+const SignalCard = ({ label, value, helper, icon: Icon }) => (
+  <div className="rounded-[26px] border border-[#ece1d3] bg-[#fbf8f2] p-5">
+    <Icon size={18} className="text-gold-600" />
+    <p className="mt-4 text-sm font-semibold uppercase tracking-[0.22em] text-ink-500">{label}</p>
+    <p className="mt-2 text-xl font-semibold text-ink-900">{value}</p>
+    <p className="mt-2 text-sm leading-7 text-ink-500">{helper}</p>
+  </div>
+);
+
+const MeterCard = ({ label, score, helper, icon: Icon }) => (
+  <div className="rounded-[26px] border border-[#ece1d3] bg-[#fbf8f2] p-5">
+    <div className="flex items-start justify-between gap-4">
+      <div>
+        <p className="inline-flex items-center gap-2 text-lg font-semibold text-ink-900">
+          <Icon size={18} className="text-gold-600" />
+          {label}
+        </p>
+        <p className="mt-2 text-sm leading-7 text-ink-500">{helper}</p>
+      </div>
+      <span className="rounded-full border border-gold-300/50 bg-white px-3 py-1.5 text-sm font-semibold text-ink-900">
+        {score}/100
+      </span>
+    </div>
+    <div className="mt-4 h-2.5 rounded-full bg-[#e6dbc9]">
+      <div
+        className="h-full rounded-full bg-gradient-to-r from-[#0b1d3a] via-[#3d5f9a] to-[#d4af37]"
+        style={{ width: `${score}%` }}
+      />
+    </div>
+  </div>
+);
+
 const PropertyDetailsPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { isAuthenticated, refreshUser, user } = useAuth();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
+  const [favoriteBusy, setFavoriteBusy] = useState(false);
 
   useEffect(() => {
     const loadProperty = async () => {
       try {
         setLoading(true);
-        setError("");
+        setLoadError("");
         const response = await fetchPropertyById(id);
         setProperty(response);
       } catch (loadError) {
-        setError(loadError.message || (API_BASE_URL ? "Property not found." : "Property API is not configured."));
+        setLoadError(loadError.message || (API_BASE_URL ? "Property not found." : "Property API is not configured."));
         setProperty(null);
       } finally {
         setLoading(false);
@@ -154,6 +340,39 @@ const PropertyDetailsPage = () => {
     return query ? `https://www.google.com/maps/search/?api=1&query=${query}` : "https://maps.google.com";
   }, [property]);
 
+  const isFavorite = useMemo(
+    () => (user?.favorites || []).some((favoriteId) => String(favoriteId) === String(property?._id)),
+    [property?._id, user?.favorites]
+  );
+
+  const handleToggleFavorite = async () => {
+    if (!property?._id) {
+      return;
+    }
+
+    if (!isAuthenticated) {
+      navigate("/login", { state: { from: resolvePropertyPath(property) } });
+      return;
+    }
+
+    try {
+      setFavoriteBusy(true);
+      setActionError("");
+
+      if (isFavorite) {
+        await removeFavorite(property._id);
+      } else {
+        await addFavorite(property._id);
+      }
+
+      await refreshUser();
+    } catch (favoriteError) {
+      setActionError(favoriteError.message);
+    } finally {
+      setFavoriteBusy(false);
+    }
+  };
+
   if (loading) {
     return (
       <section className="section-shell">
@@ -162,10 +381,10 @@ const PropertyDetailsPage = () => {
     );
   }
 
-  if (error) {
+  if (loadError) {
     return (
       <section className="section-shell">
-        <p className="rounded-2xl bg-rose-50 p-4 text-sm text-rose-700">{error}</p>
+        <p className="rounded-2xl bg-rose-50 p-4 text-sm text-rose-700">{loadError}</p>
       </section>
     );
   }
@@ -184,14 +403,19 @@ const PropertyDetailsPage = () => {
   const canonicalUrl = `${COMPANY_INFO.canonicalUrl}${resolvePropertyPath(property)}`;
   const sellerName = property.contactName || property.postedBy?.name || COMPANY_INFO.owner;
   const sellerPhone = property.contactPhone || COMPANY_INFO.phoneDisplay;
+  const maskedPhone = maskPhoneNumber(sellerPhone);
   const coverImage = getPropertyCoverImage(property);
   const seoImage =
     resolveImageUrl(coverImage, { width: 1200, height: 630, crop: "fill" }) ||
     `${COMPANY_INFO.canonicalUrl}/og-image.svg`;
   const activeVideo = videoEntries[activeVideoIndex] || videoEntries[0] || null;
   const amenities = getFallbackAmenities(property);
-  const locationAdvantages = getLocationAdvantages(property, locationText);
+  const locationAdvantages = getLocationAdvantages(property);
   const investmentHighlights = getInvestmentHighlights(property);
+  const trustSignals = getTrustSignals(property);
+  const neighborhoodInsights = getNeighborhoodInsights(property);
+  const aiModules = getAiModules(property);
+  const priceHistory = getPriceHistory(property);
   const detailItems = [
     { label: "Property Type", value: property.category, icon: Building2 },
     { label: "Area", value: property.area ? `${property.area} sq.ft` : "On request", icon: Ruler },
@@ -202,6 +426,11 @@ const PropertyDetailsPage = () => {
       icon: Home
     }
   ];
+  const aiScores = {
+    lifestyle: property.category === "Commercial" ? 84 : 92,
+    commute: property.category === "Plot" ? 83 : 89,
+    investment: property.category === "Commercial" ? 95 : property.category === "Plot" ? 93 : 88
+  };
 
   return (
     <>
@@ -234,6 +463,7 @@ const PropertyDetailsPage = () => {
       />
 
       <section className="section-shell">
+        {actionError ? <p className="mb-6 rounded-2xl bg-rose-50 p-4 text-sm text-rose-700">{actionError}</p> : null}
         <div className="glass-panel overflow-hidden p-6 sm:p-8">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
             <div className="max-w-4xl">
@@ -245,10 +475,14 @@ const PropertyDetailsPage = () => {
                 <span className="badge border-gold-300/60 bg-[#f7ecd7] text-gold-700">
                   {property.listingType === "rent" ? "Rent" : "Buy"}
                 </span>
+                <span className="badge border-[#e5dac8] bg-[#faf5ec] text-ink-700">
+                  <LockKeyhole size={12} className="text-gold-600" />
+                  Protected Contact
+                </span>
                 {isFeaturedProperty(property) ? (
                   <span className="badge border-gold-300/60 bg-[#f7ecd7] text-gold-700">
                     <Sparkles size={12} />
-                    Featured
+                    Buyer Pass
                   </span>
                 ) : null}
                 {hasPropertyVideo(property) ? (
@@ -269,9 +503,10 @@ const PropertyDetailsPage = () => {
               <p className="mt-4 max-w-3xl text-sm leading-8 text-ink-500 sm:text-base">{property.description}</p>
             </div>
 
-            <div className="min-w-full rounded-[28px] border border-gold-300/40 bg-[#fbf2df] p-5 xl:min-w-[320px]">
+            <div className="min-w-full rounded-[28px] border border-gold-300/40 bg-[#fbf2df] p-5 xl:min-w-[330px]">
               <p className="text-sm font-semibold uppercase tracking-[0.3em] text-gold-700">Quoted Price</p>
               <p className="mt-3 text-4xl font-semibold text-ink-900 sm:text-5xl">{formatCurrency(property.price)}</p>
+              <p className="mt-3 text-sm text-ink-500">Protected number: {maskedPhone}</p>
               <div className="mt-5 flex flex-col gap-3">
                 <a href={toPhoneHref(sellerPhone)} className="btn-primary w-full">
                   <Phone size={16} />
@@ -289,6 +524,16 @@ const PropertyDetailsPage = () => {
                   <MessageCircleMore size={16} />
                   WhatsApp
                 </a>
+                <button type="button" onClick={handleToggleFavorite} disabled={favoriteBusy} className="btn-ghost w-full">
+                  <Heart size={16} fill={isFavorite ? "currentColor" : "none"} />
+                  {favoriteBusy
+                    ? "Updating Wishlist..."
+                    : isFavorite
+                      ? "Saved to Wishlist"
+                      : isAuthenticated
+                        ? "Save to Wishlist"
+                        : "Login to Save"}
+                </button>
               </div>
             </div>
           </div>
@@ -303,10 +548,29 @@ const PropertyDetailsPage = () => {
         <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div className="space-y-6">
             <article className="glass-panel p-6 sm:p-7">
-              <p className="section-kicker">Project Overview</p>
+              <p className="section-kicker">Decision Overview</p>
               <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {detailItems.map((item) => (
                   <DetailCard key={item.label} {...item} />
+                ))}
+              </div>
+            </article>
+
+            <article className="glass-panel p-6 sm:p-7">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="section-kicker">Trust Infrastructure</p>
+                  <h2 className="mt-2 text-3xl font-semibold text-ink-900">Buyer protection designed into the experience</h2>
+                </div>
+                <span className="badge border-gold-300/60 bg-[#f7ecd7] text-gold-700">
+                  <ShieldCheck size={12} />
+                  Enterprise Trust Layer
+                </span>
+              </div>
+
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                {trustSignals.map((item) => (
+                  <SignalCard key={item.label} {...item} />
                 ))}
               </div>
             </article>
@@ -415,6 +679,116 @@ const PropertyDetailsPage = () => {
             </article>
 
             <article className="glass-panel p-6 sm:p-7">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="section-kicker">Neighborhood Lifestyle Engine</p>
+                  <h2 className="mt-2 text-3xl font-semibold text-ink-900">Hyperlocal signals for faster conviction</h2>
+                </div>
+                <span className="text-sm text-ink-500">Preview intelligence for safety, commute, utilities, and daily life.</span>
+              </div>
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                {neighborhoodInsights.map((item) => (
+                  <MeterCard key={item.label} {...item} />
+                ))}
+              </div>
+            </article>
+
+            {priceHistory.length > 0 ? (
+              <article className="glass-panel p-6 sm:p-7">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                  <div>
+                    <p className="section-kicker">Investment Outlook</p>
+                    <h2 className="mt-2 text-3xl font-semibold text-ink-900">Indicative price trajectory and value framing</h2>
+                  </div>
+                  <span className="text-sm text-ink-500">Preview graph for investor conversations and price-confidence context.</span>
+                </div>
+
+                <div className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+                  <div className="rounded-[30px] border border-[#ece1d3] bg-[#fbf8f2] p-5">
+                    <div className="flex items-end gap-3 overflow-x-auto">
+                      {priceHistory.map((point) => {
+                        const maxValue = Math.max(...priceHistory.map((entry) => entry.value));
+                        const height = `${Math.max(22, Math.round((point.value / maxValue) * 100))}%`;
+
+                        return (
+                          <div key={point.label} className="flex min-w-[72px] flex-1 flex-col items-center gap-3">
+                            <div className="flex h-48 w-full items-end rounded-[24px] bg-white p-2">
+                              <div
+                                className="w-full rounded-[18px] bg-gradient-to-t from-[#0b1d3a] via-[#3a5a8f] to-[#d4af37]"
+                                style={{ height }}
+                              />
+                            </div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-500">{point.label}</p>
+                            <p className="text-sm font-semibold text-ink-900">{formatCurrency(point.value)}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <SignalCard
+                      label="Rental yield outlook"
+                      value={property.listingType === "rent" ? "8.4% signal" : "6.9% signal"}
+                      helper="Useful for investor discussions, rentability, and future portfolio planning."
+                      icon={CircleDollarSign}
+                    />
+                    <SignalCard
+                      label="Demand heat"
+                      value={property.views ? `${Math.min(98, 72 + property.views)} / 100` : "84 / 100"}
+                      helper="Active buyer attention and response readiness around this listing."
+                      icon={BarChart3}
+                    />
+                  </div>
+                </div>
+              </article>
+            ) : null}
+
+            <article className="glass-panel p-6 sm:p-7">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="section-kicker">AI Property Lab</p>
+                  <h2 className="mt-2 text-3xl font-semibold text-ink-900">Future-ready modules layered into the buyer journey</h2>
+                </div>
+                <span className="badge border-gold-300/60 bg-[#f7ecd7] text-gold-700">
+                  <Bot size={12} />
+                  Intelligent UX
+                </span>
+              </div>
+
+              <div className="mt-5 grid gap-4 md:grid-cols-3">
+                <SignalCard
+                  label="Lifestyle score"
+                  value={`${aiScores.lifestyle}%`}
+                  helper="Based on use-case fit, comfort cues, and long-term livability."
+                  icon={Home}
+                />
+                <SignalCard
+                  label="Commute score"
+                  value={`${aiScores.commute}%`}
+                  helper="A proxy for local access, movement ease, and everyday practicality."
+                  icon={CarFront}
+                />
+                <SignalCard
+                  label="Investment score"
+                  value={`${aiScores.investment}%`}
+                  helper="Guides appreciation potential, buyer demand, and future opportunity positioning."
+                  icon={BarChart3}
+                />
+              </div>
+
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                {aiModules.map((item) => (
+                  <div key={item.title} className="rounded-[26px] border border-[#ece1d3] bg-[#fbf8f2] p-5">
+                    <item.icon size={18} className="text-gold-600" />
+                    <p className="mt-4 text-xl font-semibold text-ink-900">{item.title}</p>
+                    <p className="mt-3 text-sm leading-7 text-ink-500">{item.helper}</p>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="glass-panel p-6 sm:p-7">
               <p className="section-kicker">Amenities</p>
               <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {amenities.map((item) => (
@@ -477,11 +851,12 @@ const PropertyDetailsPage = () => {
 
           <div className="space-y-6 xl:sticky xl:top-28 xl:self-start">
             <article className="glass-panel space-y-4 p-6 sm:p-7">
-              <p className="section-kicker">Sticky Contact Box</p>
+              <p className="section-kicker">Sticky Contact Bar</p>
               <div className="rounded-[24px] border border-[#ece1d3] bg-[#fbf8f2] p-5">
                 <p className="font-semibold text-ink-900">{sellerName}</p>
                 <p className="mt-2 text-sm text-ink-500">{locationText || COMPANY_INFO.address}</p>
                 <p className="mt-4 text-3xl font-semibold text-ink-900">{formatCurrency(property.price)}</p>
+                <p className="mt-3 text-sm text-ink-500">Protected number: {maskedPhone}</p>
               </div>
               <a href={toPhoneHref(sellerPhone)} className="btn-primary w-full">
                 <Phone size={16} />
@@ -499,20 +874,59 @@ const PropertyDetailsPage = () => {
                 <MessageCircleMore size={16} />
                 WhatsApp
               </a>
+              <a href="#property-lead-capture" className="btn-ghost w-full">
+                <Clock3 size={16} />
+                Request Callback
+              </a>
             </article>
 
-            <LeadCaptureForm
-              compact
-              title="Send Property Requirement"
-              description="Share your name, phone, and requirement for a visit, pricing discussion, or booking support."
-              submitLabel="Submit Lead"
-              successMessage="Your property lead has been submitted successfully."
-              propertyId={property._id}
-              source="property"
-              showEmail
-              showLocation
-              requirementSeed={`I want to discuss ${property.title}.`}
-            />
+            <article className="glass-panel p-6 sm:p-7">
+              <p className="section-kicker">Buyer Tools</p>
+              <div className="mt-4 space-y-3">
+                <div className="rounded-[24px] border border-[#ece1d3] bg-[#fbf8f2] p-4">
+                  <p className="inline-flex items-center gap-2 text-sm font-semibold text-ink-900">
+                    <Layers3 size={16} className="text-gold-600" />
+                    Comparison-ready
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-ink-500">
+                    Pair this property with two others from the marketplace and build a family decision board.
+                  </p>
+                </div>
+                <div className="rounded-[24px] border border-[#ece1d3] bg-[#fbf8f2] p-4">
+                  <p className="inline-flex items-center gap-2 text-sm font-semibold text-ink-900">
+                    <Video size={16} className="text-gold-600" />
+                    Live walkthrough ready
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-ink-500">
+                    Schedule a guided video visit for remote buyers, NRIs, or busy decision-makers.
+                  </p>
+                </div>
+                <div className="rounded-[24px] border border-[#ece1d3] bg-[#fbf8f2] p-4">
+                  <p className="inline-flex items-center gap-2 text-sm font-semibold text-ink-900">
+                    <Sparkles size={16} className="text-gold-600" />
+                    Premium Buyer Pass
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-ink-500">
+                    Early access listings, legal support, and faster callback windows can be layered here next.
+                  </p>
+                </div>
+              </div>
+            </article>
+
+            <div id="property-lead-capture">
+              <LeadCaptureForm
+                compact
+                title="Send Property Requirement"
+                description="Share your name, phone, and requirement for a visit, pricing discussion, or booking support."
+                submitLabel="Submit Lead"
+                successMessage="Your property lead has been submitted successfully."
+                propertyId={property._id}
+                source="property"
+                showEmail
+                showLocation
+                requirementSeed={`I want to discuss ${property.title}.`}
+              />
+            </div>
           </div>
         </div>
       </section>

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { LayoutDashboard, LogOut, Menu, Phone, X } from "lucide-react";
+import { Heart, LayoutDashboard, LogOut, Menu, Phone, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -20,6 +20,8 @@ const Navbar = () => {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const isHeroRoute = location.pathname === "/";
+  const useLightChrome = isHeroRoute && !isScrolled;
 
   useEffect(() => {
     setMenuOpen(false);
@@ -43,9 +45,13 @@ const Navbar = () => {
 
   const navLinkClass = (active = false) =>
     `rounded-full px-4 py-2 text-sm font-semibold transition ${
-      active
-        ? "bg-[#f2e7cf] text-ink-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
-        : "text-ink-600 hover:bg-white hover:text-ink-900"
+      useLightChrome
+        ? active
+          ? "bg-white/14 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]"
+          : "text-white/78 hover:bg-white/10 hover:text-white"
+        : active
+          ? "bg-[#f2e7cf] text-ink-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
+          : "text-ink-600 hover:bg-white hover:text-ink-900"
     }`;
 
   return (
@@ -53,13 +59,15 @@ const Navbar = () => {
       <motion.div
         layout
         className={`mx-auto flex w-full max-w-[1320px] items-center justify-between rounded-full border px-4 py-3 transition duration-500 sm:px-5 ${
-          isScrolled
+          useLightChrome
+            ? "border-white/14 bg-white/[0.05] shadow-[0_18px_54px_rgba(6,12,20,0.16)] backdrop-blur-[22px]"
+            : isScrolled
             ? "border-[#e5d9c7] bg-white/88 shadow-[0_18px_50px_rgba(15,23,42,0.1)] backdrop-blur-2xl"
             : "border-[#ece3d7] bg-[#fbf8f2]/84 shadow-[0_14px_34px_rgba(15,23,42,0.06)] backdrop-blur-xl"
         }`}
       >
         <Link to="/" className="min-w-0">
-          <BrandMark compact />
+          <BrandMark compact tone={useLightChrome ? "light" : "dark"} />
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
@@ -80,6 +88,12 @@ const Navbar = () => {
               </NavLink>
             );
           })}
+
+          {isAuthenticated ? (
+            <NavLink to="/favorites" className={({ isActive }) => navLinkClass(isActive)}>
+              Favorites
+            </NavLink>
+          ) : null}
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
@@ -88,9 +102,13 @@ const Navbar = () => {
               to="/admin"
               className={({ isActive }) =>
                 `rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                  isActive
-                    ? "border-gold-300 bg-[#f7eedb] text-gold-700"
-                    : "border-[#e3d7c7] bg-white text-ink-700 hover:border-gold-300 hover:text-ink-900"
+                  useLightChrome
+                    ? isActive
+                      ? "border-white/20 bg-white/12 text-white"
+                      : "border-white/16 bg-white/[0.04] text-white/82 hover:border-white/28 hover:bg-white/10 hover:text-white"
+                    : isActive
+                      ? "border-gold-300 bg-[#f7eedb] text-gold-700"
+                      : "border-[#e3d7c7] bg-white text-ink-700 hover:border-gold-300 hover:text-ink-900"
                 }`
               }
             >
@@ -102,19 +120,29 @@ const Navbar = () => {
           ) : null}
 
           {!isAuthenticated ? (
-            <Link to="/admin/login" className="btn-ghost min-h-[46px] px-4 text-[13px]">
+            <Link
+              to="/admin/login"
+              className={`min-h-[46px] px-4 text-[13px] ${useLightChrome ? "btn-secondary border-white/16 bg-white/[0.08] text-white hover:border-white/28 hover:bg-white/14" : "btn-ghost"}`}
+            >
               Admin Access
             </Link>
           ) : null}
 
           {isAuthenticated ? (
-            <button type="button" onClick={handleLogout} className="btn-ghost min-h-[46px] px-4 text-[13px]">
+            <button
+              type="button"
+              onClick={handleLogout}
+              className={`min-h-[46px] px-4 text-[13px] ${useLightChrome ? "btn-secondary border-white/16 bg-white/[0.08] text-white hover:border-white/28 hover:bg-white/14" : "btn-ghost"}`}
+            >
               <LogOut size={16} />
               {user?.name ? `Logout ${user.name.split(" ")[0]}` : "Logout"}
             </button>
           ) : null}
 
-          <a href={toPhoneHref(COMPANY_INFO.phoneDisplay)} className="btn-primary min-h-[46px] px-5 text-[13px]">
+          <a
+            href={toPhoneHref(COMPANY_INFO.phoneDisplay)}
+            className={`min-h-[46px] px-5 text-[13px] ${useLightChrome ? "btn-primary border-white/10 bg-white text-ink-900 shadow-[0_18px_45px_rgba(0,0,0,0.18)] hover:bg-[#f8f3ea]" : "btn-primary"}`}
+          >
             <Phone size={16} />
             Call Now
           </a>
@@ -123,7 +151,11 @@ const Navbar = () => {
         <div className="flex items-center gap-2 lg:hidden">
           <a
             href={toPhoneHref(COMPANY_INFO.phoneDisplay)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gold-300 bg-[#f7ecd7] text-gold-700 shadow-[0_12px_30px_rgba(212,175,55,0.18)]"
+            className={`inline-flex h-11 w-11 items-center justify-center rounded-full border shadow-[0_12px_30px_rgba(212,175,55,0.18)] ${
+              useLightChrome
+                ? "border-white/16 bg-white/[0.08] text-white"
+                : "border-gold-300 bg-[#f7ecd7] text-gold-700"
+            }`}
             aria-label="Call now"
           >
             <Phone size={18} />
@@ -132,7 +164,11 @@ const Navbar = () => {
           <button
             type="button"
             onClick={() => setMenuOpen((current) => !current)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#e6ddcf] bg-white text-ink-800 shadow-[0_14px_32px_rgba(15,23,42,0.08)] backdrop-blur-xl transition hover:bg-[#fbf8f1]"
+            className={`inline-flex h-11 w-11 items-center justify-center rounded-full border shadow-[0_14px_32px_rgba(15,23,42,0.08)] backdrop-blur-xl transition ${
+              useLightChrome
+                ? "border-white/14 bg-white/[0.08] text-white hover:bg-white/14"
+                : "border-[#e6ddcf] bg-white text-ink-800 hover:bg-[#fbf8f1]"
+            }`}
             aria-label="Toggle navigation"
             aria-expanded={menuOpen}
           >
@@ -188,6 +224,24 @@ const Navbar = () => {
                     className="block rounded-[22px] bg-[#fbf8f1] px-4 py-3 text-sm font-semibold text-ink-700 transition hover:bg-white hover:text-ink-900"
                   >
                     Dashboard
+                  </NavLink>
+                ) : null}
+
+                {isAuthenticated ? (
+                  <NavLink
+                    to="/favorites"
+                    className={({ isActive }) =>
+                      `block rounded-[22px] px-4 py-3 text-sm font-semibold transition ${
+                        isActive
+                          ? "bg-[#f7ecd7] text-ink-900"
+                          : "bg-[#fbf8f1] text-ink-700 hover:bg-white hover:text-ink-900"
+                      }`
+                    }
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <Heart size={16} />
+                      Favorites
+                    </span>
                   </NavLink>
                 ) : null}
               </div>

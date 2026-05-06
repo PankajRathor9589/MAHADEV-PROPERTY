@@ -170,7 +170,8 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
       images: newImages,
       retainedImages: existingImages,
       videoFiles: newVideos,
-      retainedVideos: existingVideos.filter((entry) => entry.type === "video").map((entry) => entry.url)
+      retainedVideos: existingVideos.filter((entry) => entry.type === "video").map((entry) => entry.url),
+      retainedVideoMedia: existingVideos.filter((entry) => entry.type === "video")
     });
 
     if (!initialProperty) {

@@ -12,21 +12,38 @@ import favoriteRoutes from "./routes/favoriteRoutes.js";
 import inquiryRoutes from "./routes/inquiryRoutes.js";
 import propertyRoutes from "./routes/propertyRoutes.js";
 import seoRoutes from "./routes/seoRoutes.js";
-
-dotenv.config();
+import uploadRoutes from "./routes/uploadRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+dotenv.config({ path: path.resolve(__dirname, "../.env"), override: true });
+
 const uploadsDir = path.resolve(__dirname, "../../uploads");
 const port = Number(process.env.PORT || 5000);
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
+const configuredOrigins = [
   process.env.CLIENT_URL,
   process.env.FRONTEND_URL,
-  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null
-].filter(Boolean);
+  process.env.PUBLIC_SITE_URL,
+  process.env.CORS_ORIGINS,
+  process.env.ALLOWED_ORIGINS
+]
+  .filter(Boolean)
+  .flatMap((value) => String(value).split(","))
+  .map((value) => value.trim())
+  .filter(Boolean);
+
+const allowedOrigins = new Set([
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:4173",
+  "http://127.0.0.1:4173",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+  ...configuredOrigins
+].filter(Boolean));
 
 const app = express();
 app.disable("x-powered-by");
@@ -34,7 +51,7 @@ app.set("trust proxy", 1);
 
 const corsOptions = {
   origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.has(origin)) {
       return callback(null, true);
     }
 
@@ -54,10 +71,8 @@ app.use(morgan("dev"));
 app.use("/uploads", express.static(uploadsDir));
 
 app.get("/", (req, res) => {
-  res.send("Sagar Infra API is running \u{1F680}");
+  res.send("Server running \u{1F680}");
 });
-
-const apiRouter = express.Router();
 
 app.get("/api/health", (req, res) => {
   res.json({
@@ -67,18 +82,17 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-apiRouter.use("/auth", authRoutes);
-apiRouter.use("/property", propertyRoutes);
-apiRouter.use("/leads", inquiryRoutes);
-apiRouter.use("/favorites", favoriteRoutes);
-apiRouter.use("/admin", adminRoutes);
-apiRouter.use("/seo", seoRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/property", propertyRoutes);
+app.use("/api/leads", inquiryRoutes);
+app.use("/api/favorites", favoriteRoutes);
+app.use("/api/seo", seoRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // Backward-compatible aliases for any older frontend code.
-apiRouter.use("/properties", propertyRoutes);
-apiRouter.use("/inquiries", inquiryRoutes);
-
-app.use("/api", apiRouter);
+app.use("/api/properties", propertyRoutes);
+app.use("/api/inquiries", inquiryRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
@@ -87,7 +101,7 @@ const startServer = async () => {
   try {
     console.log("Starting Sagar Infra API...");
     console.log(`Configured port: ${port}`);
-    console.log(`Allowed frontend origins: ${allowedOrigins.join(", ")}`);
+    console.log(`Allowed frontend origins: ${Array.from(allowedOrigins).join(", ")}`);
 
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET is required in environment variables.");

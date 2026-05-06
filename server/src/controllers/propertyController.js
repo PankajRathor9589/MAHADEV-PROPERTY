@@ -3,7 +3,7 @@ import Inquiry from "../models/Inquiry.js";
 import Property from "../models/Property.js";
 import User from "../models/User.js";
 import { AppError } from "../middleware/errorHandler.js";
-import { removeStoredImages, storeUploadedImages } from "../utils/cloudinary.js";
+import { removeStoredAssets, removeStoredImages, storeUploadedImages } from "../utils/cloudinary.js";
 
 const hasKey = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
@@ -51,6 +51,8 @@ const parseArrayInput = (value, fallback = []) => {
   return fallback;
 };
 
+const uniqueStrings = (values = []) => [...new Set(values.map((item) => String(item || "").trim()).filter(Boolean))];
+
 const parseRetainedImages = (value, fallback = []) => {
   if (value === undefined || value === null || value === "") {
     return fallback;
@@ -75,6 +77,37 @@ const parseRetainedImages = (value, fallback = []) => {
       filename: String(item.filename),
       url: String(item.url)
     }));
+};
+
+const parseMediaInput = (value, fallback = []) => {
+  if (value === undefined || value === null || value === "") {
+    return fallback;
+  }
+
+  let parsedValue = value;
+  if (typeof value === "string") {
+    try {
+      parsedValue = JSON.parse(value);
+    } catch (error) {
+      return fallback;
+    }
+  }
+
+  if (!Array.isArray(parsedValue)) {
+    return fallback;
+  }
+
+  return parsedValue
+    .filter((item) => item && typeof item === "object")
+    .map((item) => ({
+      type: ["image", "video", "youtube"].includes(String(item.type || "").trim())
+        ? String(item.type).trim()
+        : "image",
+      url: String(item.url || item.path || "").trim(),
+      filename: String(item.filename || "").trim(),
+      label: String(item.label || "").trim()
+    }))
+    .filter((item) => item.url);
 };
 
 const getSortOption = (value) => {
@@ -174,6 +207,15 @@ const buildPayload = (input, current = {}, user) => ({
   amenities: hasKey(input, "amenities")
     ? parseArrayInput(input.amenities, current.amenities || [])
     : current.amenities || [],
+  videos: hasKey(input, "videos")
+    ? uniqueStrings(parseArrayInput(input.videos, current.videos || []))
+    : current.videos || [],
+  youtubeUrl: hasKey(input, "youtubeUrl")
+    ? String(input.youtubeUrl || "").trim()
+    : current.youtubeUrl || "",
+  videoTourUrl: hasKey(input, "videoTourUrl")
+    ? String(input.videoTourUrl || "").trim()
+    : current.videoTourUrl || "",
   location: buildLocation(input, current.location || {}),
   contactName: hasKey(input, "contactName")
     ? String(input.contactName || "").trim()
@@ -193,6 +235,51 @@ const buildPayload = (input, current = {}, user) => ({
     ? String(input.rejectionReason || "").trim()
     : current.rejectionReason || ""
 });
+
+const buildMediaEntries = ({ images = [], videos = [], youtubeUrl = "", requestedMedia = [] }) => {
+  const requestedVideoByUrl = new Map(
+    requestedMedia
+      .filter((item) => item.type === "video" && item.url)
+      .map((item) => [item.url, item])
+  );
+  const requestedYoutubeByUrl = new Map(
+    requestedMedia
+      .filter((item) => item.type === "youtube" && item.url)
+      .map((item) => [item.url, item])
+  );
+  const resolvedYoutubeUrl = youtubeUrl || requestedMedia.find((item) => item.type === "youtube")?.url || "";
+
+  return [
+    ...images
+      .filter((item) => item?.url)
+      .map((item) => ({
+        type: "image",
+        url: String(item.url),
+        filename: String(item.filename || ""),
+        label: ""
+      })),
+    ...uniqueStrings(videos).map((url, index) => {
+      const requestedItem = requestedVideoByUrl.get(url);
+
+      return {
+        type: "video",
+        url,
+        filename: String(requestedItem?.filename || ""),
+        label: String(requestedItem?.label || `Video ${index + 1}`)
+      };
+    }),
+    ...(resolvedYoutubeUrl
+      ? [
+          {
+            type: "youtube",
+            url: resolvedYoutubeUrl,
+            filename: "",
+            label: String(requestedYoutubeByUrl.get(resolvedYoutubeUrl)?.label || "YouTube Tour")
+          }
+        ]
+      : [])
+  ];
+};
 
 const validatePropertyPayload = (payload, { requireImages = false } = {}) => {
   const errors = [];
@@ -270,9 +357,18 @@ export const createProperty = async (req, res, next) => {
   try {
     storedImages = await storeUploadedImages(req.files || []);
     const payload = buildPayload(req.body, {}, req.user);
+    const requestedMedia = hasKey(req.body, "media") ? parseMediaInput(req.body.media, []) : [];
     payload._id = new Types.ObjectId();
     payload.slug = buildPropertySlug(payload.title, payload._id);
     payload.images = storedImages;
+    payload.videos = uniqueStrings([...payload.videos, payload.videoTourUrl]);
+    payload.videoTourUrl = payload.videoTourUrl || payload.videos[0] || "";
+    payload.media = buildMediaEntries({
+      images: payload.images,
+      videos: payload.videos,
+      youtubeUrl: payload.youtubeUrl,
+      requestedMedia
+    });
     payload.postedBy = req.user._id;
 
     if (!payload.contactName) {
@@ -476,16 +572,42 @@ export const updateProperty = async (req, res, next) => {
     }
 
     const payload = buildPayload(req.body, property.toObject(), req.user);
+    const requestedMedia = hasKey(req.body, "media")
+      ? parseMediaInput(req.body.media, property.media || [])
+      : property.media || [];
     storedImages = await storeUploadedImages(req.files || []);
     const retainedImages = hasKey(req.body, "retainedImages")
       ? parseRetainedImages(req.body.retainedImages, property.images)
       : property.images;
+    const retainedVideos = hasKey(req.body, "retainedVideos")
+      ? uniqueStrings(parseArrayInput(req.body.retainedVideos, property.videos || []))
+      : property.videos || [];
     const removedImages = property.images.filter(
       (image) => !retainedImages.some((retained) => retained.filename === image.filename)
     );
+    const removedVideoAssets = property.media?.length
+      ? property.media
+          .filter((item) => item.type === "video" && !retainedVideos.includes(item.url))
+          .map((item) => ({
+            url: item.url,
+            filename: item.filename,
+            type: "video"
+          }))
+      : (property.videos || []).filter((url) => !retainedVideos.includes(url)).map((url) => ({ url, type: "video" }));
 
     payload.slug = property.slug || buildPropertySlug(payload.title, property._id);
     payload.images = [...retainedImages, ...storedImages];
+    payload.videos = uniqueStrings([
+      ...(hasKey(req.body, "videos") ? parseArrayInput(req.body.videos, retainedVideos) : retainedVideos),
+      payload.videoTourUrl
+    ]);
+    payload.videoTourUrl = payload.videoTourUrl || payload.videos[0] || "";
+    payload.media = buildMediaEntries({
+      images: payload.images,
+      videos: payload.videos,
+      youtubeUrl: payload.youtubeUrl,
+      requestedMedia
+    });
 
     if (!["pending", "approved", "rejected"].includes(payload.approvalStatus)) {
       payload.approvalStatus = property.approvalStatus;
@@ -505,6 +627,10 @@ export const updateProperty = async (req, res, next) => {
 
     if (hasKey(req.body, "retainedImages") && removedImages.length > 0) {
       await removeStoredImages(removedImages);
+    }
+
+    if (hasKey(req.body, "retainedVideos") && removedVideoAssets.length > 0) {
+      await removeStoredAssets(removedVideoAssets);
     }
 
     return res.json({
@@ -530,7 +656,18 @@ export const deleteProperty = async (req, res, next) => {
       throw new AppError(403, "Only admins can delete properties.");
     }
 
-    await removeStoredImages(property.images);
+    await removeStoredAssets([
+      ...property.images.map((image) => ({ ...image, type: "image" })),
+      ...(property.media?.length
+        ? property.media
+            .filter((item) => item.type === "video")
+            .map((item) => ({
+              url: item.url,
+              filename: item.filename,
+              type: "video"
+            }))
+        : (property.videos || []).map((url) => ({ url, type: "video" })))
+    ]);
     await Inquiry.deleteMany({ property: property._id });
     await User.updateMany({ favorites: property._id }, { $pull: { favorites: property._id } });
     await property.deleteOne();

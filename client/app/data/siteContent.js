@@ -2,9 +2,11 @@ export const COMPANY_INFO = {
   name: "SAGAR INFRA",
   owner: "Prashant Rathor",
   tagline: "Building Trust. Creating Futures.",
-  heroHeadline: "Trusted Property Dealer in Sagar MP",
-  heroSubheadline: "Premium Plots, Homes & Commercial Spaces",
-  serviceLine: "Builder-grade presentation, direct owner guidance, and verified opportunities across Sagar.",
+  heroHeadline: "Luxury Property Investments in Sagar MP",
+  heroSubheadline:
+    "Verified plots, villas, commercial spaces, and investment-ready properties designed for modern buyers.",
+  serviceLine:
+    "A futuristic search, trust, and decision experience for premium real estate buyers, families, and investors.",
   location: "Sagar, Madhya Pradesh",
   city: "Sagar",
   state: "Madhya Pradesh",
@@ -16,11 +18,12 @@ export const COMPANY_INFO = {
     "Hi SAGAR INFRA, I want to discuss a premium property opportunity in Sagar.",
   ownerImage: "/owner.jpg",
   heroImage:
-    "https://images.unsplash.com/photo-1460317442991-0ec209397118?auto=format&fit=crop&w=1800&q=80",
-  heroVideo: "https://cdn.coverr.co/videos/coverr-modern-apartment-building-5176/1080p.mp4",
+    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1800&q=80",
+  heroVideo: "",
   canonicalUrl: "https://www.sagar-infra.in",
-  metaTitle: "Sagar Infra \u2013 Premium Plots, Homes & Commercial Spaces",
-  metaDescription: "Discover premium plots, homes, and commercial spaces with Sagar Infra in Sagar MP.",
+  metaTitle: "Sagar Infra \u2013 Luxury Property Investments in Sagar MP",
+  metaDescription:
+    "Discover verified plots, villas, commercial spaces, and investment-ready properties with Sagar Infra in Sagar MP.",
   metaKeywords:
     "Sagar Infra, premium property dealer Sagar, plots in Sagar MP, homes in Sagar, commercial property Sagar, Prashant Rathor"
 };

@@ -1,14 +1,17 @@
 import { Router } from "express";
+import { adminLogin } from "../controllers/authController.js";
 import {
   getAdminAnalytics,
   getAdminProperties,
   getUsers,
   updateUser
 } from "../controllers/adminController.js";
+import { validateAdminKey } from "../middleware/adminKeyAuth.js";
 import { protect, requireAdminAccess } from "../middleware/auth.js";
 
 const router = Router();
 
+router.post("/login", validateAdminKey, adminLogin);
 router.use(protect, requireAdminAccess);
 router.get("/analytics", getAdminAnalytics);
 router.get("/properties", getAdminProperties);

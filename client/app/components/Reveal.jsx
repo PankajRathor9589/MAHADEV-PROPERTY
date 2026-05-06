@@ -11,7 +11,8 @@ const Reveal = ({
   delay = 0,
   y = 32,
   scale = 1,
-  amount = 0.2
+  amount = 0.2,
+  ...rest
 }) => {
   const initial = {
     opacity: 0,
@@ -21,6 +22,7 @@ const Reveal = ({
 
   return (
     <motion.div
+      {...rest}
       className={className}
       initial={initial}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}

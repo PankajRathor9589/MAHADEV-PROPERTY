@@ -142,6 +142,7 @@ export const normalizePropertyVideoEntries = (property = {}) => {
       return {
         type,
         url,
+        filename: entry?.filename || "",
         label: entry?.label || (type === "youtube" ? "YouTube Tour" : `Video ${index + 1}`)
       };
     })

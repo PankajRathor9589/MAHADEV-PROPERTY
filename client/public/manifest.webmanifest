@@ -1,0 +1,24 @@
+{
+  "name": "Sagar Infra",
+  "short_name": "Sagar Infra",
+  "description": "India's intelligent luxury real estate ecosystem for direct-owner discovery, verified experts, and premium property journeys.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07111E",
+  "theme_color": "#07111E",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/og-image.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/og-image.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

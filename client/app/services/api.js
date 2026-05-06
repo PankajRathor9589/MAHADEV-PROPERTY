@@ -1,13 +1,28 @@
 import axios from "axios";
 
-export const API = import.meta.env.VITE_API_URL;
-export const API_BASE_URL = String(API || "").trim().replace(/\/$/, "");
+const normalizeApiBaseUrl = (value = "") => {
+  const trimmedValue = String(value || "").trim().replace(/\/$/, "");
+
+  if (!trimmedValue) {
+    return "";
+  }
+
+  if (trimmedValue === "/api" || /\/api$/i.test(trimmedValue)) {
+    return trimmedValue;
+  }
+
+  return `${trimmedValue}/api`;
+};
+
+const defaultApiBaseUrl = import.meta.env.DEV ? "/api" : "";
+
+export const API = normalizeApiBaseUrl(import.meta.env.VITE_API_URL || defaultApiBaseUrl);
+export const API_BASE_URL = API;
 export const API_ORIGIN = API_BASE_URL ? API_BASE_URL.replace(/\/api\/?$/, "") : "";
 
 const hasApiBase = Boolean(API_BASE_URL);
 const defaultApiMessage =
-  "API is not configured for this deployment. Set VITE_API_URL to enable login, admin, property, and lead features.";
-const wakeMessage = "Server waking up, please wait...";
+  "API is not configured for this deployment. Set VITE_API_URL to enable login, admin, property, favorites, and lead features.";
 
 const http = axios.create({
   baseURL: API_BASE_URL || undefined,
@@ -33,8 +48,12 @@ http.interceptors.request.use((config) => {
 });
 
 const parseError = (error) => {
-  if (!error?.response || error?.code === "ERR_NETWORK" || [502, 503, 504].includes(error?.response?.status)) {
-    return wakeMessage;
+  if (!error?.response || error?.code === "ERR_NETWORK") {
+    return "Unable to reach the server. Check that the backend is running and the API URL is correct.";
+  }
+
+  if ([502, 503, 504].includes(error?.response?.status)) {
+    return "The server is temporarily unavailable. Please try again in a moment.";
   }
 
   return (
@@ -58,7 +77,11 @@ const buildPropertyFormData = (payload) => {
   const formData = new FormData();
 
   Object.entries(payload).forEach(([key, value]) => {
-    if (["images", "amenities", "retainedImages", "videos", "media", "videoFiles", "retainedVideos"].includes(key)) {
+    if (
+      ["images", "amenities", "retainedImages", "videos", "media", "videoFiles", "retainedVideos", "retainedVideoMedia"].includes(
+        key
+      )
+    ) {
       return;
     }
 
@@ -189,7 +212,7 @@ export const loginUser = async (payload) => {
 
 export const loginAdminUser = async (payload) => {
   requireApiBase();
-  return safeRequest(http.post("/auth/admin/login", payload));
+  return safeRequest(http.post("/admin/login", payload));
 };
 
 export const fetchMe = async () => {
@@ -269,6 +292,21 @@ export const submitLead = async (payload) => {
 export const fetchInquiries = async (params = {}) => {
   requireApiBase();
   return safeRequest(http.get("/leads", { params }));
+};
+
+export const fetchFavorites = async () => {
+  requireApiBase();
+  return safeRequest(http.get("/favorites"));
+};
+
+export const addFavorite = async (propertyId) => {
+  requireApiBase();
+  return safeRequest(http.post(`/favorites/${propertyId}`));
+};
+
+export const removeFavorite = async (propertyId) => {
+  requireApiBase();
+  return safeRequest(http.delete(`/favorites/${propertyId}`));
 };
 
 export const updateInquiryStatus = async (id, status) => {

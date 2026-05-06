@@ -9,7 +9,7 @@ const AdminLoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { loginAsAdmin, loading } = useAuth();
-  const [adminKey, setAdminKey] = useState("");
+  const [key, setKey] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = async (event) => {
@@ -17,7 +17,7 @@ const AdminLoginPage = () => {
 
     try {
       setError("");
-      await loginAsAdmin({ adminKey });
+      await loginAsAdmin({ key });
       navigate(location.state?.from || "/admin", { replace: true });
     } catch (loginError) {
       setError(loginError.message);
@@ -49,9 +49,9 @@ const AdminLoginPage = () => {
             <input
               className="input-field"
               type="password"
-              name="adminKey"
-              value={adminKey}
-              onChange={(event) => setAdminKey(event.target.value)}
+              name="key"
+              value={key}
+              onChange={(event) => setKey(event.target.value)}
               placeholder="Enter admin key"
               required
             />

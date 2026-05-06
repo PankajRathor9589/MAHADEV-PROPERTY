@@ -17,6 +17,20 @@ const imageSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const mediaSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      enum: ["image", "video", "youtube"],
+      required: true
+    },
+    url: { type: String, required: true },
+    filename: { type: String, default: "" },
+    label: { type: String, default: "" }
+  },
+  { _id: false }
+);
+
 const locationSchema = new mongoose.Schema(
   {
     city: { type: String, trim: true, default: "" },
@@ -54,6 +68,10 @@ const propertySchema = new mongoose.Schema(
     amenities: { type: [String], default: [] },
     location: locationSchema,
     images: { type: [imageSchema], default: [] },
+    videos: { type: [String], default: [] },
+    media: { type: [mediaSchema], default: [] },
+    youtubeUrl: { type: String, trim: true, default: "" },
+    videoTourUrl: { type: String, trim: true, default: "" },
     contactName: { type: String, trim: true, default: "" },
     contactEmail: { type: String, trim: true, lowercase: true, default: "" },
     contactPhone: { type: String, trim: true, default: "" },
