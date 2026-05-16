@@ -228,6 +228,14 @@ const buildPayload = (input, current = {}, user) => ({
   contactPhone: hasKey(input, "contactPhone")
     ? String(input.contactPhone || "").trim()
     : current.contactPhone || user?.phone || process.env.ADMIN_SESSION_PHONE || "7692016188",
+  isFeatured: hasKey(input, "isFeatured")
+    ? input.isFeatured === true || input.isFeatured === "true"
+    : current.isFeatured || false,
+  featuredUntil: hasKey(input, "featuredUntil")
+    ? input.featuredUntil
+      ? new Date(input.featuredUntil)
+      : null
+    : current.featuredUntil || null,
   approvalStatus: hasKey(input, "approvalStatus")
     ? String(input.approvalStatus || "").trim().toLowerCase()
     : current.approvalStatus || "approved",
@@ -612,9 +620,6 @@ export const updateProperty = async (req, res, next) => {
     if (!["pending", "approved", "rejected"].includes(payload.approvalStatus)) {
       payload.approvalStatus = property.approvalStatus;
     }
-
-    payload.isFeatured = property.isFeatured;
-    payload.featuredUntil = property.featuredUntil;
 
     validatePropertyPayload(payload, { requireImages: true });
 

@@ -15,6 +15,7 @@ import {
   MapPin,
   MessageCircleMore,
   Mic,
+  Phone,
   PlayCircle,
   Search,
   ShieldCheck,
@@ -190,6 +191,110 @@ const buyerPassNotes = [
   "Early access premium buyer pass for faster shortlist visibility."
 ];
 
+const intelligenceLayerCards = [
+  {
+    title: "Predictive Pricing",
+    description: "AI-assisted price outlook cards can show likely 2 to 3 year appreciation trends for plots, homes, and commercial pockets.",
+    badge: "2-3 Year Outlook",
+    icon: TrendingUp
+  },
+  {
+    title: "Lifestyle Matching",
+    description: "Shortlist properties by calm streets, family comfort, commute time, school access, and investment fit instead of only price filters.",
+    badge: "Smart Match",
+    icon: Bot
+  },
+  {
+    title: "Voice Search for India",
+    description: "Mixed Hindi-English queries like 'Makronia me plot dikhaiye' or '2 BHK near Civil Line' feel natural on mobile-first browsing.",
+    badge: "Voice Ready",
+    icon: Mic
+  },
+  {
+    title: "Virtual Assistant",
+    description: "A digital receptionist layer can answer school, road, builder, and site-visit questions instantly before a call even starts.",
+    badge: "Concierge",
+    icon: MessageCircleMore
+  }
+];
+
+const trustStudioCards = [
+  {
+    title: "Verified Review Community",
+    description: "Resident-led reviews, locality satisfaction notes, and buyer visit feedback create stronger trust than polished marketing copy alone.",
+    badge: "Resident Signals",
+    icon: Users
+  },
+  {
+    title: "Luminosity Reports",
+    description: "Sunlight, ventilation, airflow, and everyday comfort can be surfaced as simple home-readiness scores on premium listings.",
+    badge: "Light + Air",
+    icon: Sparkles
+  },
+  {
+    title: "Legal Trust Checker",
+    description: "RERA, document readiness, land-history notes, and dispute-risk summaries help local families feel safer before token discussions.",
+    badge: "Trust Score",
+    icon: ShieldCheck
+  }
+];
+
+const revenueEngineCards = [
+  {
+    title: "Property Management SaaS",
+    description: "Landlords can track rent collection, maintenance requests, and tenant paperwork from one controlled owner dashboard.",
+    icon: Building2
+  },
+  {
+    title: "Partner Services",
+    description: "Home loans, insurance, painting, interiors, and movers create commission-ready service revenue around every lead.",
+    icon: Home
+  },
+  {
+    title: "Professional Showcase",
+    description: "Drone shoots, premium photography, and 3D tours can be sold as an upgrade to brokers, builders, and serious sellers.",
+    icon: Video
+  }
+];
+
+const localSeoZones = [
+  { label: "Plots in Makronia", href: "/properties?location=Makronia&type=Plot" },
+  { label: "Family homes in Civil Line", href: "/properties?location=Civil%20Line&type=House" },
+  { label: "Commercial property in Tili Road", href: "/properties?location=Tili%20Road&type=Commercial" },
+  { label: "Investment property in Sagar Cantt", href: "/properties?location=Sagar%20Cantt" },
+  { label: "Plots near Khurai Road", href: "/properties?location=Khurai%20Road&type=Plot" },
+  { label: "Shops in Station Road", href: "/properties?location=Station%20Road&type=Commercial" }
+];
+
+const faqItems = [
+  {
+    question: "Do you deal in plots, homes, and commercial property in Sagar MP?",
+    answer: "Yes. Sagar Infra focuses on plots, family homes, shops, office-ready assets, and local investment opportunities across Sagar and nearby areas."
+  },
+  {
+    question: "Can I book a site visit on WhatsApp?",
+    answer: "Yes. Buyers can use WhatsApp or call directly to book a site visit, request live availability, or get quick price guidance."
+  },
+  {
+    question: "Do you help middle-class families choose local areas?",
+    answer: "Yes. The website and consultation flow are designed to help families compare location comfort, road access, school reach, and future value."
+  },
+  {
+    question: "How do you build trust before the visit?",
+    answer: "We use verified listing cues, local-area context, protected lead handling, and fast direct contact with Prashant Rathor."
+  },
+  {
+    question: "Which areas do you cover in and around Sagar?",
+    answer: "We cover Sagar city and nearby localities including Makronia, Civil Line, Tili Road, Station Road, Khurai Road, and other growth zones based on live inventory."
+  }
+];
+
+const popupBenefits = [
+  "Get live price guidance before you travel.",
+  "Book a site visit without waiting for a long callback chain.",
+  "Talk directly to a local property expert in Sagar MP."
+];
+
 const comparisonCriteria = [
   { label: "AI Match", getValue: (property) => `${getMatchScore(property)}%` },
   { label: "Price", getValue: (property) => formatCurrency(property.price) },
@@ -356,8 +461,11 @@ const HomePage = () => {
   );
   const [compareList, setCompareList] = useState([]);
   const [compareMessage, setCompareMessage] = useState("");
-  const [voiceStatus, setVoiceStatus] = useState("Voice search beta is ready for devices that support browser speech input.");
+  const [voiceStatus, setVoiceStatus] = useState(
+    "Voice search beta is ready for supported browsers. Try Hindi or English requests for plots, homes, or commercial property."
+  );
   const [listening, setListening] = useState(false);
+  const [showLeadPrompt, setShowLeadPrompt] = useState(false);
   const [searchForm, setSearchForm] = useState({
     query: "",
     location: "",
@@ -416,6 +524,26 @@ const HomePage = () => {
     loadProperties();
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    try {
+      if (window.sessionStorage.getItem("sagar-infra-lead-prompt-dismissed") === "1") {
+        return undefined;
+      }
+    } catch {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      setShowLeadPrompt(true);
+    }, 14000);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
   const filteredLocationSuggestions = useMemo(() => {
     if (!searchForm.location.trim()) {
       return smartLocalities.slice(0, 4);
@@ -427,6 +555,45 @@ const HomePage = () => {
   }, [searchForm.location]);
 
   const emiSummary = useMemo(() => calculateEmi(emiForm), [emiForm]);
+  const homeStructuredData = useMemo(
+    () => ({
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "LocalBusiness",
+          name: COMPANY_INFO.name,
+          telephone: `+${COMPANY_INFO.phoneIntl}`,
+          url: COMPANY_INFO.canonicalUrl,
+          areaServed: [COMPANY_INFO.city, COMPANY_INFO.state],
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: COMPANY_INFO.city,
+            addressRegion: COMPANY_INFO.state,
+            addressCountry: "IN"
+          }
+        },
+        {
+          "@type": "RealEstateAgent",
+          name: COMPANY_INFO.name,
+          url: COMPANY_INFO.canonicalUrl,
+          areaServed: [COMPANY_INFO.city, COMPANY_INFO.state],
+          telephone: `+${COMPANY_INFO.phoneIntl}`
+        },
+        {
+          "@type": "FAQPage",
+          mainEntity: faqItems.map((item) => ({
+            "@type": "Question",
+            name: item.question,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: item.answer
+            }
+          }))
+        }
+      ]
+    }),
+    []
+  );
 
   const handleSearchChange = (event) => {
     const { name, value } = event.target;
@@ -452,6 +619,20 @@ const HomePage = () => {
 
   const handleBudgetSelection = (value) => {
     setSearchForm((current) => ({ ...current, budget: current.budget === value ? "" : value }));
+  };
+
+  const dismissLeadPrompt = () => {
+    setShowLeadPrompt(false);
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      window.sessionStorage.setItem("sagar-infra-lead-prompt-dismissed", "1");
+    } catch {
+      return;
+    }
   };
 
   const handleSearchSubmit = (event) => {
@@ -494,7 +675,9 @@ const HomePage = () => {
     const SpeechRecognitionApi = window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognitionApi) {
-      setVoiceStatus("Voice search is not available on this browser yet. You can still use the natural language search field.");
+      setVoiceStatus(
+        "Voice search is not available on this browser yet. You can still use the natural language search field."
+      );
       return;
     }
 
@@ -505,7 +688,7 @@ const HomePage = () => {
     recognition.maxAlternatives = 1;
 
     setListening(true);
-    setVoiceStatus("Listening for your property search request...");
+    setVoiceStatus("Listening for your Hindi or English property request...");
 
     recognition.onresult = (event) => {
       const transcript = event.results?.[0]?.[0]?.transcript || "";
@@ -564,14 +747,7 @@ const HomePage = () => {
         canonical={COMPANY_INFO.canonicalUrl}
         image={`${COMPANY_INFO.canonicalUrl}/og-image.svg`}
         keywords={COMPANY_INFO.metaKeywords}
-        structuredData={{
-          "@context": "https://schema.org",
-          "@type": "LocalBusiness",
-          name: COMPANY_INFO.name,
-          telephone: `+${COMPANY_INFO.phoneIntl}`,
-          url: COMPANY_INFO.canonicalUrl,
-          areaServed: COMPANY_INFO.location
-        }}
+        structuredData={homeStructuredData}
       />
 
       <section className="relative isolate -mt-[5.8rem] min-h-[100svh] overflow-hidden pt-[5.8rem]">
@@ -601,7 +777,7 @@ const HomePage = () => {
             <Reveal className="max-w-[min(58rem,100%)]" delay={0.04} y={18}>
               <span className="luxury-kicker inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/[0.08] px-4 py-2 font-semibold text-white/82 backdrop-blur-xl">
                 <Sparkles size={14} className="text-gold-300" />
-                Futuristic Property Intelligence
+                Verified Local Property Intelligence
               </span>
               <h1 className="hero-display mt-6 max-w-5xl text-white">{COMPANY_INFO.heroHeadline}</h1>
               <p className="hero-subtitle mt-6 max-w-3xl text-white/82">{COMPANY_INFO.heroSubheadline}</p>
@@ -630,6 +806,10 @@ const HomePage = () => {
                   WhatsApp Concierge
                 </a>
               </div>
+
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-white/72">
+                Call or WhatsApp Prashant Rathor now for live prices, local guidance, and same-day site-visit coordination across Sagar MP.
+              </p>
 
               <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {HERO_STATS.map((item, index) => (
@@ -720,7 +900,7 @@ const HomePage = () => {
                           name="query"
                           value={searchForm.query}
                           onChange={handleSearchChange}
-                          placeholder='Try "3BHK flat in Noida under 1 Cr" or "villa in Sagar with low traffic"'
+                          placeholder='Try "2 BHK in Civil Line under 50 lakh" or "Makronia me plot dikhaiye"'
                         />
                       </div>
 

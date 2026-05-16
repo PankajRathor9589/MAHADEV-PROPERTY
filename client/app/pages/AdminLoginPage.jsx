@@ -1,4 +1,4 @@
-import { ShieldCheck } from "lucide-react";
+import { LockKeyhole, ShieldCheck, UserRound } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Seo from "../components/Seo.jsx";
@@ -9,15 +9,23 @@ const AdminLoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { loginAsAdmin, loading } = useAuth();
-  const [key, setKey] = useState("");
+  const [credentials, setCredentials] = useState({
+    username: "",
+    password: ""
+  });
   const [error, setError] = useState("");
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setCredentials((current) => ({ ...current, [name]: value }));
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     try {
       setError("");
-      await loginAsAdmin({ key });
+      await loginAsAdmin(credentials);
       navigate(location.state?.from || "/admin", { replace: true });
     } catch (loginError) {
       setError(loginError.message);
@@ -33,26 +41,48 @@ const AdminLoginPage = () => {
         robots="noindex, nofollow"
       />
 
-      <div className="mx-auto max-w-xl rounded-[32px] border border-[#eadfcf] bg-white p-7 shadow-[0_20px_58px_rgba(15,23,42,0.08)] sm:p-9">
-        <span className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-gold-300 bg-[#f7ecd7] text-gold-700">
+      <div className="relative mx-auto max-w-xl overflow-hidden rounded-[32px] border border-gold-300/30 bg-[#07111e] p-7 text-white shadow-[0_30px_100px_rgba(4,10,18,0.34)] sm:p-9">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.18),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0))]" />
+        <span className="relative inline-flex h-14 w-14 items-center justify-center rounded-full border border-gold-300 bg-gold-300/15 text-gold-200">
           <ShieldCheck size={24} />
         </span>
-        <p className="section-kicker mt-6">Admin Access</p>
-        <h1 className="mt-3 text-4xl font-semibold text-ink-900">Unlock the owner dashboard</h1>
-        <p className="mt-4 text-sm leading-8 text-ink-500 sm:text-base">
-          Enter the secure admin key to manage live property inventory, update listings, and review incoming leads.
+        <p className="luxury-kicker relative mt-6 text-gold-200">Secure Admin Access</p>
+        <h1 className="relative mt-3 text-4xl font-semibold text-white">Sagar Infra property command</h1>
+        <p className="relative mt-4 text-sm leading-8 text-white/68 sm:text-base">
+          Sign in with your admin username and password to publish live listings, edit property details, manage images, and review leads.
         </p>
 
-        <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+        <form className="relative mt-8 space-y-4" onSubmit={handleSubmit}>
           <label className="space-y-2">
-            <span className="text-sm font-semibold text-ink-700">Admin Key</span>
+            <span className="inline-flex items-center gap-2 text-sm font-semibold text-white/82">
+              <UserRound size={15} className="text-gold-200" />
+              Username
+            </span>
             <input
-              className="input-field"
+              className="input-field border-white/10 bg-white/10 text-white placeholder:text-white/38 focus:border-gold-300 focus:ring-gold-300/20"
+              type="text"
+              name="username"
+              value={credentials.username}
+              onChange={handleChange}
+              placeholder="Enter admin username"
+              autoComplete="username"
+              required
+            />
+          </label>
+
+          <label className="space-y-2">
+            <span className="inline-flex items-center gap-2 text-sm font-semibold text-white/82">
+              <LockKeyhole size={15} className="text-gold-200" />
+              Password
+            </span>
+            <input
+              className="input-field border-white/10 bg-white/10 text-white placeholder:text-white/38 focus:border-gold-300 focus:ring-gold-300/20"
               type="password"
-              name="key"
-              value={key}
-              onChange={(event) => setKey(event.target.value)}
-              placeholder="Enter admin key"
+              name="password"
+              value={credentials.password}
+              onChange={handleChange}
+              placeholder="Enter admin password"
+              autoComplete="current-password"
               required
             />
           </label>
@@ -60,13 +90,13 @@ const AdminLoginPage = () => {
           {error ? <p className="rounded-2xl bg-rose-50 p-3 text-sm text-rose-700">{error}</p> : null}
 
           <button className="btn-primary w-full" disabled={loading}>
-            {loading ? "Verifying key..." : "Continue to Dashboard"}
+            {loading ? "Verifying access..." : "Open Admin Dashboard"}
           </button>
         </form>
 
-        <p className="mt-6 text-sm text-ink-500">
+        <p className="relative mt-6 text-sm text-white/58">
           Need standard account access instead?{" "}
-          <Link className="font-semibold text-gold-700 underline underline-offset-4" to="/login">
+          <Link className="font-semibold text-gold-200 underline underline-offset-4" to="/login">
             User login
           </Link>
         </p>

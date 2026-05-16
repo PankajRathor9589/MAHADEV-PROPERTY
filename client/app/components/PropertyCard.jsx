@@ -1,5 +1,7 @@
 import {
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   Clapperboard,
   Crown,
   Layers3,
@@ -10,6 +12,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { COMPANY_INFO } from "../data/siteContent.js";
 import {
@@ -18,6 +21,7 @@ import {
   getPropertyCoverImage,
   hasPropertyVideo,
   isFeaturedProperty,
+  normalizePropertyImageEntries,
   PROPERTY_CATEGORY_IMAGES,
   PROPERTY_FALLBACK_IMAGE,
   resolvePropertyPath,
@@ -73,7 +77,12 @@ const getListingPersona = (property) => {
 };
 
 const PropertyCard = ({ property, onCompare, compareActive = false }) => {
-  const imageUrl = getPropertyCoverImage(property) || PROPERTY_CATEGORY_IMAGES[property.category] || PROPERTY_FALLBACK_IMAGE;
+  const galleryImages = useMemo(() => {
+    const images = normalizePropertyImageEntries(property).map((image) => image.url);
+    return images.length ? images : [getPropertyCoverImage(property) || PROPERTY_CATEGORY_IMAGES[property.category] || PROPERTY_FALLBACK_IMAGE];
+  }, [property]);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const imageUrl = galleryImages[activeImageIndex] || galleryImages[0];
   const locationText = formatLocation(property.location, true) || COMPANY_INFO.location;
   const isVerified = property.approvalStatus === "approved" || property.isShowcase;
   const isShowcase = Boolean(property.isShowcase);
@@ -85,6 +94,17 @@ const PropertyCard = ({ property, onCompare, compareActive = false }) => {
   const actionGridClass = onCompare ? "grid-cols-2 md:grid-cols-4" : "grid-cols-2 md:grid-cols-3";
   const persona = getListingPersona(property);
   const PersonaIcon = persona.icon;
+  const hasGallerySlider = galleryImages.length > 1;
+
+  useEffect(() => {
+    setActiveImageIndex(0);
+  }, [property?._id, property?.slug]);
+
+  const moveImage = (event, direction) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setActiveImageIndex((current) => (current + direction + galleryImages.length) % galleryImages.length);
+  };
 
   return (
     <motion.article
@@ -105,6 +125,37 @@ const PropertyCard = ({ property, onCompare, compareActive = false }) => {
             transformOptions={{ height: 1200, crop: "fill" }}
           />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,12,20,0.06)_0%,rgba(10,18,28,0.15)_32%,rgba(9,15,24,0.72)_100%)]" />
+
+          {hasGallerySlider ? (
+            <>
+              <button
+                type="button"
+                aria-label="Previous property image"
+                onClick={(event) => moveImage(event, -1)}
+                className="absolute left-4 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/18 bg-[#07111e]/62 text-white backdrop-blur-xl transition hover:bg-[#07111e]/82"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                type="button"
+                aria-label="Next property image"
+                onClick={(event) => moveImage(event, 1)}
+                className="absolute right-4 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/18 bg-[#07111e]/62 text-white backdrop-blur-xl transition hover:bg-[#07111e]/82"
+              >
+                <ChevronRight size={18} />
+              </button>
+              <div className="absolute bottom-[9.25rem] left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
+                {galleryImages.slice(0, 6).map((item, index) => (
+                  <span
+                    key={`${item}-${index}`}
+                    className={`h-1.5 rounded-full transition-all ${
+                      index === activeImageIndex ? "w-6 bg-gold-300" : "w-1.5 bg-white/58"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          ) : null}
 
           <div className="absolute left-4 right-4 top-4 flex items-start justify-between gap-4">
             <div className="flex flex-wrap gap-2">

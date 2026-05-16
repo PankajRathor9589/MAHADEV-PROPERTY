@@ -82,8 +82,33 @@ export const login = async (req, res, next) => {
 
 export const adminLogin = async (req, res, next) => {
   try {
-    const user = await ensureAdminSessionUser();
-    const token = jwt.sign({ id: user._id, role: "admin", authType: "admin_key" }, process.env.JWT_SECRET, {
+    const username = String(req.body?.username || req.body?.email || "").trim().toLowerCase();
+    const password = String(req.body?.password || "").trim();
+    const configuredUsername = String(
+      process.env.ADMIN_USERNAME || process.env.ADMIN_EMAIL || process.env.ADMIN_SESSION_EMAIL || ""
+    )
+      .trim()
+      .toLowerCase();
+    const configuredPassword = String(process.env.ADMIN_PASSWORD || "").trim();
+
+    if (!configuredUsername || !configuredPassword) {
+      throw new AppError(500, "ADMIN_USERNAME and ADMIN_PASSWORD must be configured.");
+    }
+
+    if (!username || !password) {
+      throw new AppError(400, "Admin username and password are required.");
+    }
+
+    if (username !== configuredUsername && username !== String(process.env.ADMIN_SESSION_EMAIL || "").trim().toLowerCase()) {
+      throw new AppError(401, "Invalid admin username or password.");
+    }
+
+    if (password !== configuredPassword) {
+      throw new AppError(401, "Invalid admin username or password.");
+    }
+
+    const user = await ensureAdminSessionUser({ password: configuredPassword });
+    const token = jwt.sign({ id: user._id, role: "admin", authType: "admin_password" }, process.env.JWT_SECRET, {
       expiresIn: process.env.ADMIN_SESSION_EXPIRES_IN || "8h"
     });
 

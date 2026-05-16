@@ -1,13 +1,18 @@
-import crypto from "node:crypto";
 import User from "../models/User.js";
 import { AppError } from "../middleware/errorHandler.js";
 
-export const ensureAdminSessionUser = async () => {
+export const ensureAdminSessionUser = async ({ password } = {}) => {
   const sessionEmail = String(process.env.ADMIN_SESSION_EMAIL || "admin.session@sagarinfra.local")
     .trim()
     .toLowerCase();
   const sessionName = String(process.env.ADMIN_SESSION_NAME || "Sagar Infra Admin").trim();
   const sessionPhone = String(process.env.ADMIN_SESSION_PHONE || "7692016188").trim();
+  const sessionPassword = String(password || process.env.ADMIN_PASSWORD || "").trim();
+
+  if (!sessionPassword || sessionPassword.length < 6) {
+    throw new AppError(500, "ADMIN_PASSWORD must be configured with at least 6 characters.");
+  }
+
   const existingUser = await User.findOne({ email: sessionEmail }).select("+password");
 
   if (existingUser) {
@@ -27,6 +32,12 @@ export const ensureAdminSessionUser = async () => {
       shouldSave = true;
     }
 
+    const passwordMatches = await existingUser.matchPassword(sessionPassword);
+    if (!passwordMatches) {
+      existingUser.password = sessionPassword;
+      shouldSave = true;
+    }
+
     if (shouldSave) {
       await existingUser.save();
     }
@@ -38,7 +49,7 @@ export const ensureAdminSessionUser = async () => {
     name: sessionName,
     email: sessionEmail,
     phone: sessionPhone,
-    password: crypto.randomBytes(32).toString("hex"),
+    password: sessionPassword,
     role: "admin",
     isActive: true
   });

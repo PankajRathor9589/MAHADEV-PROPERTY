@@ -162,8 +162,8 @@ const LeadCaptureForm = ({
       ) : null}
 
       <div className="rounded-[24px] border border-[#eee2d2] bg-[#faf6ef] px-4 py-4 text-xs leading-6 text-ink-500">
-        Your inquiry goes to the protected lead system and can also be continued instantly on WhatsApp for faster
-        response.
+        Your inquiry goes to the protected lead system. For the fastest response, use WhatsApp or call directly to
+        move faster toward site visits, pricing guidance, or a same-day callback.
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">

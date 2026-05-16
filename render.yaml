@@ -25,7 +25,9 @@ services:
         sync: false
       - key: JWT_EXPIRES_IN
         value: 7d
-      - key: ADMIN_KEY
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
         sync: false
       - key: ADMIN_SESSION_NAME
         value: Sagar Infra Admin

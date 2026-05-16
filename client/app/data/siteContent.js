@@ -1,12 +1,12 @@
 export const COMPANY_INFO = {
   name: "SAGAR INFRA",
   owner: "Prashant Rathor",
-  tagline: "Building Trust. Creating Futures.",
-  heroHeadline: "Luxury Property Investments in Sagar MP",
+  tagline: "Verified Property Guidance for Sagar, Madhya Pradesh.",
+  heroHeadline: "Verified Plots, Homes & Commercial Property in Sagar MP",
   heroSubheadline:
-    "Verified plots, villas, commercial spaces, and investment-ready properties designed for modern buyers.",
+    "Book site visits, compare verified options, and speak directly with a local property expert on WhatsApp within 30 seconds.",
   serviceLine:
-    "A futuristic search, trust, and decision experience for premium real estate buyers, families, and investors.",
+    "Premium property search, investor-grade trust signals, and direct support for plot buyers, home buyers, and commercial investors in Madhya Pradesh.",
   location: "Sagar, Madhya Pradesh",
   city: "Sagar",
   state: "Madhya Pradesh",
@@ -21,18 +21,18 @@ export const COMPANY_INFO = {
     "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1800&q=80",
   heroVideo: "",
   canonicalUrl: "https://www.sagar-infra.in",
-  metaTitle: "Sagar Infra \u2013 Luxury Property Investments in Sagar MP",
+  metaTitle: "Property Dealer in Sagar MP | Plots, Homes & Commercial Property | Sagar Infra",
   metaDescription:
-    "Discover verified plots, villas, commercial spaces, and investment-ready properties with Sagar Infra in Sagar MP.",
+    "Buy verified plots, homes, shops and commercial property in Sagar, Madhya Pradesh. Call or WhatsApp Sagar Infra to book a site visit and get local property guidance.",
   metaKeywords:
-    "Sagar Infra, premium property dealer Sagar, plots in Sagar MP, homes in Sagar, commercial property Sagar, Prashant Rathor"
+    "property dealer in Sagar MP, plots in Sagar Madhya Pradesh, house for sale in Sagar, commercial property Sagar, shop for sale Sagar, real estate agent Sagar, plot consultant Sagar, Prashant Rathor"
 };
 
 export const HERO_STATS = [
-  { value: "Verified", label: "Properties positioned with stronger trust signals" },
-  { value: "Investor Ready", label: "Premium options for buyers, builders, and contractors" },
+  { value: "Verified", label: "Property options presented with stronger trust and detail" },
+  { value: "Local Expert", label: "Grounded guidance for Sagar, Makronia, Civil Line, and nearby zones" },
   { value: "Owner Direct", label: "Fast coordination with Prashant Rathor" },
-  { value: "Responsive", label: "High-conversion experience across every screen" }
+  { value: "30 Sec CTA", label: "WhatsApp, call, and site-visit actions built for quick response" }
 ];
 
 export const CATEGORY_CARDS = [
@@ -126,9 +126,9 @@ export const CONTRACT_SERVICE_OPTIONS = [
 ];
 
 export const TRUST_DESCRIPTIONS = [
-  "Verified properties with direct owner-level clarity.",
-  "Trusted by clients for transparent guidance and faster site visits.",
-  "Responsive lead flow connected to calls and WhatsApp."
+  "Verified properties with clearer pricing and local-area guidance.",
+  "Trusted support for plot buyers, families, and commercial investors.",
+  "Fast call and WhatsApp responses designed to move buyers quickly to site visits."
 ];
 
 export const SERVICE_PILLARS = [
@@ -219,7 +219,7 @@ export const MARKET_HIGHLIGHTS = [
   },
   {
     title: "Lead-Ready UX",
-    description: "Sticky call actions, WhatsApp integration, and a faster inquiry flow turn browsing into conversations."
+    description: "Sticky call actions, WhatsApp integration, site-visit prompts, and faster inquiry flow turn browsing into conversations."
   }
 ];
 

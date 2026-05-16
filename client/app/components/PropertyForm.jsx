@@ -28,7 +28,8 @@ const baseForm = {
   amenitiesText: "",
   description: "",
   youtubeUrl: "",
-  videoTourUrl: ""
+  videoTourUrl: "",
+  isFeatured: false
 };
 
 const mapPropertyToForm = (property) => {
@@ -55,7 +56,8 @@ const mapPropertyToForm = (property) => {
     amenitiesText: Array.isArray(property.amenities) ? property.amenities.join(", ") : "",
     description: property.description || "",
     youtubeUrl: property.youtubeUrl || "",
-    videoTourUrl: property.videoTourUrl || ""
+    videoTourUrl: property.videoTourUrl || "",
+    isFeatured: Boolean(property.isFeatured)
   };
 };
 
@@ -104,8 +106,8 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
   }, [imagePreviews, videoPreviews]);
 
   const handleChange = (event) => {
-    const { name, value } = event.target;
-    setForm((current) => ({ ...current, [name]: value }));
+    const { checked, name, type, value } = event.target;
+    setForm((current) => ({ ...current, [name]: type === "checkbox" ? checked : value }));
   };
 
   const handleImageSelect = (event) => {
@@ -186,6 +188,7 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
   const summary = [
     { label: "Listing type", value: form.listingType === "rent" ? "Rent" : "Sale" },
     { label: "Property type", value: form.type || "Plot" },
+    { label: "Featured tag", value: form.isFeatured ? "Featured" : "Standard" },
     { label: "Gallery", value: `${totalGalleryCount} image(s)` },
     { label: "Video", value: `${existingVideos.length + newVideos.length} media item(s)` },
     { label: "Area", value: form.area ? `${form.area} sq.ft` : "Pending" },
@@ -263,6 +266,20 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
               <label className="space-y-2">
                 <span className="text-sm font-semibold text-ink-700">Area (sq.ft)</span>
                 <input className="input-field" type="number" min="0" name="area" value={form.area} onChange={handleChange} />
+              </label>
+
+              <label className="flex min-h-[54px] items-center gap-3 rounded-[20px] border border-[#ded4c7] bg-white px-4 py-3.5">
+                <input
+                  type="checkbox"
+                  name="isFeatured"
+                  checked={form.isFeatured}
+                  onChange={handleChange}
+                  className="h-5 w-5 rounded border-[#ded4c7] accent-[#d4af37]"
+                />
+                <span>
+                  <span className="block text-sm font-semibold text-ink-700">Featured Tag</span>
+                  <span className="block text-xs text-ink-500">Show in premium featured sections</span>
+                </span>
               </label>
 
               <label className="space-y-2">

@@ -12,7 +12,7 @@ const WhatsAppFloat = () => {
       aria-label="Chat on WhatsApp"
     >
       <MessageCircleMore size={18} />
-      <span className="hidden sm:inline">WhatsApp Concierge</span>
+      <span className="hidden sm:inline">WhatsApp in 30 Sec</span>
     </a>
   );
 };
