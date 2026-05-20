@@ -26,6 +26,9 @@ export const errorHandler = (error, req, res, next) => {
   if (error.name === "MulterError") {
     statusCode = 400;
     message = error.message;
+  } else if (/Only image|Only image or video|file files are allowed/i.test(error.message || "")) {
+    statusCode = 400;
+    message = error.message;
   } else if (error.type === "entity.parse.failed" || error instanceof SyntaxError) {
     statusCode = 400;
     message = "Invalid JSON payload.";

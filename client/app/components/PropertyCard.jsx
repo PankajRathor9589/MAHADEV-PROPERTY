@@ -110,10 +110,10 @@ const PropertyCard = ({ property, onCompare, compareActive = false }) => {
     <motion.article
       whileHover={{ y: -10 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      className="group relative flex h-full flex-col overflow-hidden rounded-[36px] border border-[#e7dccb] bg-white/[0.96] shadow-[0_28px_70px_rgba(8,16,28,0.1)] transition duration-500 hover:border-gold-300 hover:shadow-[0_34px_94px_rgba(8,16,28,0.16)]"
+      className="group relative flex h-full min-h-[720px] flex-col overflow-hidden rounded-[34px] border border-white/10 bg-[#0B1220] shadow-[0_28px_80px_rgba(3,7,17,0.28)] transition duration-500 hover:border-gold-300/60 hover:shadow-[0_38px_110px_rgba(3,7,17,0.38)]"
     >
       <Link to={destination} className="block">
-        <div className="relative aspect-[4/4.25] overflow-hidden bg-[#f4efe7]">
+        <div className="relative aspect-[4/5] overflow-hidden bg-[#07111e]">
           <ResponsiveImage
             src={imageUrl}
             alt={property.title}
@@ -124,7 +124,8 @@ const PropertyCard = ({ property, onCompare, compareActive = false }) => {
             widths={[480, 720, 960, 1280]}
             transformOptions={{ height: 1200, crop: "fill" }}
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,12,20,0.06)_0%,rgba(10,18,28,0.15)_32%,rgba(9,15,24,0.72)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,12,20,0.02)_0%,rgba(10,18,28,0.16)_36%,rgba(3,7,17,0.86)_100%)]" />
+          <div className="absolute inset-0 opacity-0 transition duration-700 group-hover:opacity-100 bg-[linear-gradient(120deg,rgba(212,175,55,0.16),transparent_42%,rgba(255,255,255,0.08))]" />
 
           {hasGallerySlider ? (
             <>
@@ -180,7 +181,7 @@ const PropertyCard = ({ property, onCompare, compareActive = false }) => {
             </div>
           </div>
 
-          <div className="absolute inset-x-4 bottom-4 rounded-[30px] border border-white/16 bg-white/12 p-5 text-white shadow-[0_22px_50px_rgba(0,0,0,0.16)] backdrop-blur-[20px]">
+          <div className="absolute inset-x-4 bottom-4 rounded-[28px] border border-white/16 bg-[#07111e]/36 p-5 text-white shadow-[0_22px_60px_rgba(0,0,0,0.24)] backdrop-blur-[22px]">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <h3 className="line-clamp-2 text-[clamp(1.65rem,2vw,2.3rem)] font-semibold leading-[0.95] text-white">
@@ -191,53 +192,66 @@ const PropertyCard = ({ property, onCompare, compareActive = false }) => {
                   <span className="line-clamp-1">{locationText}</span>
                 </p>
               </div>
-              <div className="shrink-0 rounded-[22px] border border-white/14 bg-[#f8efdc] px-3.5 py-3 text-right text-ink-900">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gold-700">Quoted Price</p>
-                <p className="mt-1 text-base font-semibold">{formatCurrency(property.price)}</p>
+              <div className="shrink-0 rounded-[22px] border border-gold-300/30 bg-[#D4AF37] px-3.5 py-3 text-right text-[#050816]">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#3a2a07]">Quoted Price</p>
+                <p className="mt-1 text-base font-semibold text-[#050816]">{formatCurrency(property.price)}</p>
               </div>
             </div>
           </div>
         </div>
       </Link>
 
-      <div className="flex flex-1 flex-col gap-5 p-5">
+      <a
+        href={toWhatsAppHref(
+          property.contactPhone || COMPANY_INFO.whatsappNumber,
+          `Hi SAGAR INFRA, I want details about ${property.title} in ${locationText}.`
+        )}
+        target="_blank"
+        rel="noreferrer"
+        className="absolute right-5 top-[20.5rem] z-20 hidden h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_18px_40px_rgba(37,211,102,0.34)] transition hover:-translate-y-1 sm:flex xl:top-[22rem]"
+        aria-label={`WhatsApp Sagar Infra about ${property.title}`}
+      >
+        <MessageCircleMore size={19} />
+      </a>
+
+      <div className="flex flex-1 flex-col gap-5 bg-[#0B1220] p-5 sm:p-6">
         <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-[22px] border border-[#ece2d3] bg-[#fbf8f2] px-3 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-gold-700">Layout</p>
-            <p className="mt-2 text-sm font-semibold text-ink-900">{formatBedrooms(property)}</p>
+          <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-3 py-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#F6D776]">Layout</p>
+            <p className="mt-2 text-sm font-semibold text-white">{formatBedrooms(property)}</p>
           </div>
-          <div className="rounded-[22px] border border-[#ece2d3] bg-[#fbf8f2] px-3 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-gold-700">Area</p>
-            <p className="mt-2 text-sm font-semibold text-ink-900">{formatAreaLabel(property)}</p>
+          <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-3 py-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#F6D776]">Area</p>
+            <p className="mt-2 text-sm font-semibold text-white">{formatAreaLabel(property)}</p>
           </div>
-          <div className="rounded-[22px] border border-[#ece2d3] bg-[#fbf8f2] px-3 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-gold-700">Mode</p>
-            <p className="mt-2 text-sm font-semibold text-ink-900">{property.listingType === "rent" ? "Rent" : "Buy"}</p>
+          <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-3 py-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#F6D776]">Mode</p>
+            <p className="mt-2 text-sm font-semibold text-white">{property.listingType === "rent" ? "Rent" : "Buy"}</p>
           </div>
         </div>
 
-        <p className="line-clamp-2 text-sm leading-7 text-ink-500">
+        <p className="line-clamp-2 text-sm leading-7 text-slate-400">
           {property.description || "Premium listing presented by SAGAR INFRA with investor-grade detail and a faster decision flow."}
         </p>
 
-        <div className="rounded-[26px] border border-[#ece1d0] bg-[#fbf8f2] p-4">
-          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-ink-500">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[11px] text-ink-700">
+        <div className="rounded-[26px] border border-white/10 bg-white/[0.04] p-4">
+          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#050816] px-3 py-1.5 text-[11px] text-slate-200">
               <PersonaIcon size={13} className="text-gold-600" />
               {persona.label}
             </span>
-            <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[11px] text-ink-700">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#050816] px-3 py-1.5 text-[11px] text-slate-200">
               <Layers3 size={13} className="text-gold-600" />
               {persona.helper}
             </span>
-            <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[11px] text-ink-700">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#050816] px-3 py-1.5 text-[11px] text-slate-200">
               <Sparkles size={13} className="text-gold-600" />
               {isFeatured ? "Featured Visibility" : "Number protected until request"}
             </span>
           </div>
         </div>
 
-        <div className={`grid gap-2.5 ${actionGridClass}`}>
+        <div className={`mt-auto grid gap-2.5 ${actionGridClass}`}>
           <a href={toPhoneHref(property.contactPhone || COMPANY_INFO.phoneDisplay)} className="btn-secondary min-h-[48px] w-full px-3.5">
             <Phone size={15} />
             Call

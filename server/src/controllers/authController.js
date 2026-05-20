@@ -89,10 +89,10 @@ export const adminLogin = async (req, res, next) => {
     )
       .trim()
       .toLowerCase();
-    const configuredPassword = String(process.env.ADMIN_PASSWORD || "").trim();
+    const configuredPassword = String(process.env.ADMIN_PASSWORD || process.env.ADMIN_KEY || "").trim();
 
     if (!configuredUsername || !configuredPassword) {
-      throw new AppError(500, "ADMIN_USERNAME and ADMIN_PASSWORD must be configured.");
+      throw new AppError(500, "ADMIN_USERNAME and ADMIN_PASSWORD or ADMIN_KEY must be configured.");
     }
 
     if (!username || !password) {

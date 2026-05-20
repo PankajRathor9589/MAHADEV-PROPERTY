@@ -25,23 +25,7 @@ const BrandMark = ({
               : "bg-[radial-gradient(circle_at_top,_rgba(212,175,55,0.18),_transparent_58%)]"
           }`}
         />
-        <svg viewBox="0 0 64 64" className="relative h-8 w-8 text-gold-500" fill="none" aria-hidden="true">
-          <path
-            d="M12 26 32 12l20 14"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="3"
-          />
-          <path
-            d="M18 26h28v24a2 2 0 0 1-2 2H20a2 2 0 0 1-2-2V26Z"
-            fill={isLight ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.82)"}
-            stroke={isLight ? "rgba(255,255,255,0.94)" : "rgba(49,69,101,0.68)"}
-            strokeWidth="2.5"
-          />
-          <path d="M26 50V36h12v14" stroke="currentColor" strokeLinecap="round" strokeWidth="3" />
-          <path d="M24 30v8M32 30v8M40 30v8" stroke="currentColor" strokeLinecap="round" strokeWidth="2.6" />
-        </svg>
+        <img src="/logo.png" alt="Sagar Infra logo" className="relative h-full w-full object-contain p-1.5" />
       </span>
 
       {showWordmark ? (

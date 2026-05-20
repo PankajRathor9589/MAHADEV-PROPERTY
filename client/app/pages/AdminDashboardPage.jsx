@@ -412,11 +412,11 @@ const AdminDashboardPage = () => {
       <section className="section-shell">
         <div className="grid gap-6 xl:grid-cols-[290px_minmax(0,1fr)]">
           <aside className="xl:sticky xl:top-28 xl:self-start">
-            <div className="rounded-[32px] border border-[#eadfcf] bg-white p-5 shadow-[0_20px_58px_rgba(15,23,42,0.08)]">
+            <div className="rounded-[32px] border border-[#172235] bg-[#07111e] p-5 text-white shadow-[0_24px_78px_rgba(3,7,17,0.22)]">
               <div>
-                <p className="section-kicker">Admin Control</p>
-                <h1 className="mt-2 text-3xl font-semibold text-ink-900">Luxury proptech operating system</h1>
-                <p className="mt-3 text-sm leading-7 text-ink-500">
+                <p className="section-kicker text-gold-200">Admin Control</p>
+                <h1 className="mt-2 text-3xl font-semibold text-white">Luxury proptech operating system</h1>
+                <p className="mt-3 text-sm leading-7 text-white/62">
                   Manage the existing backend workflow while shaping Sagar Infra into a direct-owner marketplace and verified-expert SaaS ecosystem.
                 </p>
               </div>
@@ -429,7 +429,7 @@ const AdminDashboardPage = () => {
                     <a
                       key={item.id}
                       href={`#${item.id}`}
-                      className="flex items-center gap-3 rounded-[22px] border border-[#ece2d4] bg-[#fbf8f2] px-4 py-3 text-sm font-semibold text-ink-700 transition hover:border-gold-300 hover:bg-white"
+                      className="flex items-center gap-3 rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold text-white/72 transition hover:border-gold-300/60 hover:bg-white/10 hover:text-white"
                     >
                       <Icon size={16} className="text-gold-600" />
                       {item.label}

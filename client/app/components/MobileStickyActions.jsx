@@ -5,8 +5,8 @@ import { toPhoneHref, toWhatsAppHref } from "../utils/format.js";
 const MobileStickyActions = () => {
   return (
     <div className="fixed inset-x-3 bottom-3 z-40 md:hidden">
-      <div className="grid grid-cols-3 gap-2 rounded-[26px] border border-[#e5d7bf] bg-white/90 p-2 shadow-[0_20px_50px_rgba(15,23,42,0.16)] backdrop-blur-xl">
-        <a href={toPhoneHref(COMPANY_INFO.phoneDisplay)} className="btn-secondary min-h-[50px] px-3 text-xs">
+      <div className="grid grid-cols-3 gap-2 rounded-[28px] border border-white/14 bg-[#06101d]/88 p-2 shadow-[0_22px_70px_rgba(3,7,17,0.42)] backdrop-blur-2xl">
+        <a href={toPhoneHref(COMPANY_INFO.phoneDisplay)} className="btn-secondary min-h-[50px] border-white/12 bg-white/10 px-3 text-xs text-white hover:bg-white/16 hover:text-white">
           <PhoneCall size={16} />
           Call
         </a>
@@ -17,7 +17,7 @@ const MobileStickyActions = () => {
           )}
           target="_blank"
           rel="noreferrer"
-          className="btn-ghost min-h-[50px] px-3 text-xs"
+          className="btn-ghost min-h-[50px] border-white/12 bg-white/10 px-3 text-xs text-white hover:bg-white/16 hover:text-white"
         >
           <Home size={16} />
           Visit

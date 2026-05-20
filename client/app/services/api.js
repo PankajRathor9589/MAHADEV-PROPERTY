@@ -14,7 +14,7 @@ const normalizeApiBaseUrl = (value = "") => {
   return `${trimmedValue}/api`;
 };
 
-const defaultApiBaseUrl = import.meta.env.DEV ? "/api" : "";
+const defaultApiBaseUrl = import.meta.env.DEV ? "/api" : "https://mahadev-property-api.onrender.com/api";
 
 export const API = normalizeApiBaseUrl(import.meta.env.VITE_API_URL || defaultApiBaseUrl);
 export const API_BASE_URL = API;
@@ -236,6 +236,15 @@ export const fetchProperties = async (params = {}) => {
   }
 
   return safeRequest(http.get("/property", { params }));
+};
+
+export const fetchPropertySuggestions = async (params = {}) => {
+  if (!hasApiBase) {
+    return [];
+  }
+
+  const data = await safeRequest(http.get("/property/suggestions/search", { params }));
+  return data.data || [];
 };
 
 export const fetchPropertyById = async (id) => {

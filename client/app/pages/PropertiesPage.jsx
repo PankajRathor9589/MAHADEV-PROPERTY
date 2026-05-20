@@ -21,7 +21,7 @@ import PropertyCard from "../components/PropertyCard.jsx";
 import Reveal from "../components/Reveal.jsx";
 import Seo from "../components/Seo.jsx";
 import { COMPANY_INFO } from "../data/siteContent.js";
-import { API_BASE_URL, fetchProperties } from "../services/api.js";
+import { API_BASE_URL, fetchProperties, fetchPropertySuggestions } from "../services/api.js";
 import {
   formatCurrency,
   hasPropertyVideo,
@@ -114,6 +114,7 @@ const PropertiesPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [dataSource, setDataSource] = useState(API_BASE_URL ? "live" : "unavailable");
+  const [suggestions, setSuggestions] = useState([]);
 
   useEffect(() => {
     const nextFilters = { ...initialFilters };
@@ -174,6 +175,26 @@ const PropertiesPage = () => {
 
     loadProperties();
   }, [searchParams]);
+
+  useEffect(() => {
+    const query = [filters.search, filters.location].filter(Boolean).join(" ").trim();
+
+    if (!query || query.length < 2) {
+      setSuggestions([]);
+      return undefined;
+    }
+
+    const timer = window.setTimeout(async () => {
+      try {
+        const nextSuggestions = await fetchPropertySuggestions({ q: query, limit: 6 });
+        setSuggestions(nextSuggestions);
+      } catch {
+        setSuggestions([]);
+      }
+    }, 260);
+
+    return () => window.clearTimeout(timer);
+  }, [filters.location, filters.search]);
 
   const activeFilterCount = useMemo(() => {
     return Object.entries(filters).filter(([key, value]) => {
@@ -514,6 +535,27 @@ const PropertiesPage = () => {
                   </button>
                 ))}
               </div>
+
+              {suggestions.length > 0 ? (
+                <div className="mt-5 flex flex-wrap gap-2" aria-label="Search suggestions">
+                  {suggestions.map((suggestion) => (
+                    <button
+                      key={suggestion.id || suggestion.label}
+                      type="button"
+                      onClick={() => {
+                        setFilters((current) => ({
+                          ...current,
+                          search: suggestion.label || current.search,
+                          location: suggestion.location?.split(",")[0] || current.location
+                        }));
+                      }}
+                      className="search-chip border-gold-300/70 bg-[#fff8e6]"
+                    >
+                      {suggestion.label}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
 
               <div className="mt-5 grid gap-3 lg:grid-cols-3">
                 <div className="rounded-[26px] border border-[#ece2d4] bg-[#fbf8f2] p-4">

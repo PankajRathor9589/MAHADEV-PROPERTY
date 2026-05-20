@@ -23,7 +23,8 @@ import {
   Star,
   TrendingUp,
   Users,
-  Video
+  Video,
+  X
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
@@ -67,10 +68,10 @@ const smartLocalities = [
 ];
 
 const aiSearchSuggestions = [
-  "3BHK villa near Civil Line under 1.5 Cr",
-  "Commercial property on Tili Road for rental yield",
-  "Plot in Makronia with future appreciation",
-  "Family home in Sagar with low-traffic locality"
+  "Luxury villa in Dubai",
+  "3BHK in Gurgaon under 2 Cr",
+  "No brokerage office space",
+  "Plot in Makronia with future appreciation"
 ];
 
 const futureExperienceCards = [
@@ -745,12 +746,12 @@ const HomePage = () => {
         title={COMPANY_INFO.metaTitle}
         description={COMPANY_INFO.metaDescription}
         canonical={COMPANY_INFO.canonicalUrl}
-        image={`${COMPANY_INFO.canonicalUrl}/og-image.svg`}
+        image={`${COMPANY_INFO.canonicalUrl}/logo.png`}
         keywords={COMPANY_INFO.metaKeywords}
         structuredData={homeStructuredData}
       />
 
-      <section className="relative isolate -mt-[5.8rem] min-h-[100svh] overflow-hidden pt-[5.8rem]">
+      <section id="home" className="relative isolate -mt-[5.8rem] min-h-[100svh] overflow-hidden bg-[#030711] pt-[5.8rem]">
         <div className="absolute inset-0">
           <div className="hero-media-pan absolute inset-0">
             <ResponsiveImage
@@ -765,27 +766,40 @@ const HomePage = () => {
               transformOptions={{ quality: 84 }}
             />
           </div>
-          <div className="absolute inset-0 bg-[linear-gradient(112deg,rgba(4,9,18,0.94)_10%,rgba(4,9,18,0.6)_42%,rgba(7,17,29,0.34)_100%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(212,175,55,0.2),transparent_28%),radial-gradient(circle_at_82%_14%,rgba(103,136,192,0.18),transparent_22%)]" />
-          <div className="absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:78px_78px] [mask-image:linear-gradient(180deg,black,rgba(0,0,0,0.18))]" />
-          <div className="floating-glow absolute -left-10 top-20 h-56 w-56 rounded-full bg-gold-400/15 blur-3xl" />
-          <div className="floating-glow absolute bottom-16 right-0 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute inset-0 bg-[linear-gradient(112deg,rgba(2,6,13,0.96)_0%,rgba(4,9,18,0.78)_38%,rgba(7,17,29,0.46)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,13,0.08)_0%,rgba(2,6,13,0.2)_52%,rgba(2,6,13,0.92)_100%)]" />
+          <div className="absolute inset-0 opacity-35 [background-image:linear-gradient(rgba(255,255,255,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.055)_1px,transparent_1px)] [background-size:88px_88px] [mask-image:linear-gradient(180deg,black,rgba(0,0,0,0.12))]" />
+          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#030711] to-transparent" />
         </div>
 
-        <div className="relative mx-auto flex min-h-[calc(100svh-5.8rem)] w-full max-w-[1480px] items-end px-4 pb-[clamp(4.75rem,9vw,8rem)] pt-[clamp(7rem,12vw,10.5rem)] sm:px-6 lg:px-8">
-          <div className="grid w-full gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(18rem,0.92fr)] lg:items-end">
-            <Reveal className="max-w-[min(58rem,100%)]" delay={0.04} y={18}>
+        <div className="relative mx-auto flex min-h-[calc(100svh-5.8rem)] w-full max-w-[1440px] items-center px-5 pb-[clamp(6rem,9vw,8rem)] pt-[clamp(8rem,12vw,11rem)] sm:px-8 lg:px-10">
+          <div className="w-full">
+            <Reveal className="mx-auto max-w-[66rem] text-center" delay={0.04} y={18}>
               <span className="luxury-kicker inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/[0.08] px-4 py-2 font-semibold text-white/82 backdrop-blur-xl">
                 <Sparkles size={14} className="text-gold-300" />
-                Verified Local Property Intelligence
+                Luxury Proptech Intelligence
               </span>
-              <h1 className="hero-display mt-6 max-w-5xl text-white">{COMPANY_INFO.heroHeadline}</h1>
-              <p className="hero-subtitle mt-6 max-w-3xl text-white/82">{COMPANY_INFO.heroSubheadline}</p>
-              <p className="mt-5 max-w-3xl text-sm leading-8 text-white/68 sm:text-base">
+              <motion.h1
+                initial={{ opacity: 0, y: 28, filter: "blur(10px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+                className="hero-display mx-auto mt-7 max-w-6xl text-white"
+              >
+                Sagar Infra turns real estate search into a private investment experience.
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.16, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                className="hero-subtitle mx-auto mt-6 max-w-4xl text-white/82"
+              >
+                Verified plots, homes, commercial assets, and premium site-visit coordination for buyers who expect clarity before they commit.
+              </motion.p>
+              <p className="mx-auto mt-5 max-w-3xl text-sm leading-8 text-white/68 sm:text-base">
                 {COMPANY_INFO.serviceLine}
               </p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
                 <Link to="/properties" className="btn-primary w-full sm:w-auto">
                   Explore Properties
                   <ArrowRight size={16} />
@@ -807,22 +821,30 @@ const HomePage = () => {
                 </a>
               </div>
 
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-white/72">
+              <p className="mx-auto mt-4 max-w-3xl text-sm leading-7 text-white/72">
                 Call or WhatsApp Prashant Rathor now for live prices, local guidance, and same-day site-visit coordination across Sagar MP.
               </p>
 
-              <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="mx-auto mt-12 grid max-w-5xl gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {HERO_STATS.map((item, index) => (
                   <Reveal key={item.label} delay={0.08 + index * 0.04} y={20}>
-                    <div className="rounded-[26px] border border-white/14 bg-white/[0.08] p-4 text-white shadow-[0_18px_40px_rgba(4,10,18,0.16)] backdrop-blur-[18px]">
-                      <p className="text-sm font-semibold uppercase tracking-[0.24em] text-gold-200">{item.value}</p>
+                    <div className="h-full rounded-[26px] border border-white/14 bg-white/[0.08] p-5 text-white shadow-[0_18px_40px_rgba(4,10,18,0.16)] backdrop-blur-[18px]">
+                      <motion.p
+                        initial={{ opacity: 0, y: 8 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.45, delay: index * 0.04 }}
+                        className="text-sm font-semibold uppercase tracking-[0.24em] text-gold-200"
+                      >
+                        {item.value}
+                      </motion.p>
                       <p className="mt-2 text-sm leading-6 text-white/78">{item.label}</p>
                     </div>
                   </Reveal>
                 ))}
               </div>
 
-              <div className="mt-7 flex flex-wrap gap-3">
+              <div className="mx-auto mt-7 flex max-w-5xl flex-wrap justify-center gap-3">
                 {TRUST_DESCRIPTIONS.map((item) => (
                   <span
                     key={item}
@@ -834,73 +856,43 @@ const HomePage = () => {
                 ))}
               </div>
             </Reveal>
+          </div>
 
-            <Reveal className="hidden lg:block lg:justify-self-end" delay={0.14} y={28}>
-              <div className="flex max-w-[25rem] flex-col gap-4">
-                <motion.div
-                  whileHover={{ y: -4 }}
-                  className="rounded-[30px] border border-white/14 bg-white/[0.08] p-5 text-white shadow-[0_22px_52px_rgba(4,10,18,0.18)] backdrop-blur-[22px]"
-                >
-                  <p className="section-kicker text-gold-200">Investor Console</p>
-                  <h2 className="mt-3 text-3xl font-semibold leading-[0.96] text-white">
-                    Premium search, privacy, and shortlist cues
-                  </h2>
-                  <p className="mt-4 text-sm leading-7 text-white/74">
-                    Search with natural language, filter like a pro, and build a family-ready shortlist without losing speed.
-                  </p>
-                </motion.div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <motion.div
-                    whileHover={{ y: -4 }}
-                    className="rounded-[28px] border border-white/14 bg-[#08111d]/58 p-5 text-white shadow-[0_18px_46px_rgba(4,10,18,0.18)] backdrop-blur-xl"
-                  >
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-gold-200">Buyer Pass</p>
-                    <p className="mt-3 text-2xl font-semibold">Invite-first premium inventory</p>
-                  </motion.div>
-                  <motion.div
-                    whileHover={{ y: -4 }}
-                    className="rounded-[28px] border border-white/14 bg-white/[0.08] p-5 text-white shadow-[0_18px_46px_rgba(4,10,18,0.16)] backdrop-blur-xl"
-                  >
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-gold-200">Privacy Layer</p>
-                    <p className="mt-3 text-2xl font-semibold">Serious intent before number reveal</p>
-                  </motion.div>
-                </div>
-              </div>
-            </Reveal>
+          <div className="absolute bottom-5 left-1/2 hidden -translate-x-1/2 items-center gap-3 text-xs font-semibold uppercase tracking-[0.28em] text-white/58 md:flex">
+            <span className="h-px w-12 bg-white/25" />
+            Scroll for curated inventory
+            <span className="h-px w-12 bg-white/25" />
           </div>
         </div>
       </section>
 
       <section className="relative z-20 -mt-[clamp(4.5rem,8vw,6.25rem)]">
         <div className="section-shell pt-0">
-          <div className="search-floating-shell">
-            <div className="grid gap-8 xl:grid-cols-[minmax(0,1.25fr)_minmax(18rem,0.75fr)]">
+          <div className="search-floating-shell mx-auto max-w-[1180px]">
+            <div className="grid gap-8">
               <div>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
+                <div className="mx-auto max-w-4xl text-center">
                     <p className="section-kicker">Floating AI Search</p>
-                    <h2 className="section-title-luxury mt-3 text-ink-900">
+                    <h2 className="section-title-luxury mx-auto mt-3 max-w-4xl">
                       Search like you talk. Filter like an investor.
                     </h2>
-                  </div>
-                  <span className="inline-flex items-center gap-2 rounded-full border border-[#ddd1be] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-ink-700">
+                  <span className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white">
                     <Bot size={14} className="text-gold-600" />
                     AI suggestions
                   </span>
                 </div>
 
-                <form className="mt-6 space-y-4" onSubmit={handleSearchSubmit}>
-                  <div className="rounded-[30px] border border-[#ece1d0] bg-white p-3 shadow-[0_18px_42px_rgba(8,16,28,0.06)]">
+                <form className="mt-8 space-y-5" onSubmit={handleSearchSubmit}>
+                  <div className="rounded-[30px] border border-white/10 bg-white/[0.05] p-3 shadow-[0_18px_42px_rgba(8,16,28,0.22)]">
                     <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
                       <div className="relative flex-1">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-ink-400" size={20} />
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-[#f6d776]" size={20} />
                         <input
-                          className="w-full rounded-[24px] border-0 bg-[#f7f3ec] py-5 pl-14 pr-4 text-base text-ink-900 outline-none ring-0 placeholder:text-ink-400 focus:bg-white"
+                          className="w-full rounded-[24px] border border-white/10 bg-[#0B1220] py-5 pl-14 pr-4 text-base text-white outline-none ring-0 placeholder:text-slate-500 transition focus:border-gold-300/70 focus:shadow-[0_0_0_4px_rgba(212,175,55,0.14)]"
                           name="query"
                           value={searchForm.query}
                           onChange={handleSearchChange}
-                          placeholder='Try "2 BHK in Civil Line under 50 lakh" or "Makronia me plot dikhaiye"'
+                          placeholder='Try "Luxury villa in Dubai", "3BHK in Gurgaon under 2 Cr", or "No brokerage office space"'
                         />
                       </div>
 
@@ -921,9 +913,9 @@ const HomePage = () => {
                     </div>
                   </div>
 
-                  <div className="grid gap-4 xl:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)]">
-                    <div className="rounded-[28px] border border-[#ece1d0] bg-[#fbf8f2] p-5">
-                      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto]">
+                  <div className="grid gap-5 xl:grid-cols-2">
+                    <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5 sm:p-6">
+                      <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
                           <label className="text-xs font-semibold uppercase tracking-[0.22em] text-ink-500">
                             Location Autocomplete
@@ -940,7 +932,7 @@ const HomePage = () => {
                           <label className="text-xs font-semibold uppercase tracking-[0.22em] text-ink-500">
                             Search Memory
                           </label>
-                          <div className="rounded-[22px] border border-[#e9dece] bg-white px-4 py-3 text-sm text-ink-600">
+                          <div className="min-h-[52px] rounded-[22px] border border-white/10 bg-[#0B1220] px-4 py-3 text-sm text-slate-400">
                             {searchSummaryLabel}
                           </div>
                         </div>
@@ -980,7 +972,7 @@ const HomePage = () => {
                       </div>
                     </div>
 
-                    <div className="rounded-[28px] border border-[#ece1d0] bg-[#fbf8f2] p-5">
+                    <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5 sm:p-6">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-ink-500">
                           Property Type Filters
@@ -1019,14 +1011,14 @@ const HomePage = () => {
                 </form>
               </div>
 
-              <div className="rounded-[34px] border border-white/8 bg-[#08111d] p-6 text-white shadow-[0_26px_80px_rgba(6,12,20,0.24)]">
+              <div className="rounded-[34px] border border-white/8 bg-[#0B1220] p-6 text-white shadow-[0_26px_80px_rgba(6,12,20,0.24)] sm:p-7">
                 <p className="section-kicker text-gold-200">AI Copilot</p>
-                <h3 className="mt-3 text-[clamp(2rem,3vw,3rem)] font-semibold leading-[0.94] text-white">
+                <h3 className="mt-3 text-[clamp(2rem,3vw,3rem)] font-semibold leading-[0.96] text-white">
                   Search cockpit built for premium buyers
                 </h3>
                 <p className="mt-4 text-sm leading-7 text-white/70">{voiceStatus}</p>
 
-                <div className="mt-6 space-y-3">
+                <div className="mt-6 grid gap-3 md:grid-cols-3">
                   {[
                     "Natural language input understands budget and property type cues.",
                     "Voice search beta can capture live buyer intent on supported browsers.",
@@ -1131,9 +1123,9 @@ const HomePage = () => {
         {loadingProperties ? (
           <FeaturedPropertySkeletons />
         ) : featuredProperties.length > 0 ? (
-          <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-8 flex snap-x gap-5 overflow-x-auto pb-4 md:grid md:snap-none md:grid-cols-2 md:overflow-visible md:pb-0 xl:grid-cols-3">
             {featuredProperties.map((property, index) => (
-              <Reveal key={property._id || property.slug || property.title} delay={index * 0.05}>
+              <Reveal key={property._id || property.slug || property.title} delay={index * 0.05} className="min-w-[86vw] snap-center md:min-w-0">
                 <PropertyCard
                   property={property}
                   onCompare={handleCompareToggle}
@@ -1558,6 +1550,59 @@ const HomePage = () => {
           </Reveal>
         </div>
       </section>
+
+      {showLeadPrompt ? (
+        <div className="fixed inset-x-4 bottom-24 z-50 mx-auto max-w-lg md:bottom-8 md:left-auto md:right-8">
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="overflow-hidden rounded-[30px] border border-white/14 bg-[#06101d]/92 p-5 text-white shadow-[0_28px_90px_rgba(3,7,17,0.48)] backdrop-blur-2xl"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="section-kicker text-gold-200">Private Concierge</p>
+                <h3 className="mt-2 text-3xl font-semibold leading-[0.96] text-white">Want a premium shortlist?</h3>
+              </div>
+              <button
+                type="button"
+                aria-label="Close premium concierge prompt"
+                onClick={dismissLeadPrompt}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/8 text-white/80"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-2">
+              {popupBenefits.map((item) => (
+                <p key={item} className="rounded-[20px] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-white/76">
+                  {item}
+                </p>
+              ))}
+            </div>
+
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              <a
+                href={toWhatsAppHref(COMPANY_INFO.whatsappNumber, "Hi Sagar Infra, please create a premium property shortlist for me.")}
+                target="_blank"
+                rel="noreferrer"
+                className="btn-whatsapp min-h-[48px]"
+              >
+                <MessageCircleMore size={16} />
+                WhatsApp
+              </a>
+              <a
+                href="#consultation"
+                onClick={dismissLeadPrompt}
+                className="btn-secondary min-h-[48px] border-white/14 bg-white/10 text-white hover:bg-white/16 hover:text-white"
+              >
+                Inquiry
+                <ArrowRight size={16} />
+              </a>
+            </div>
+          </motion.div>
+        </div>
+      ) : null}
     </>
   );
 };

@@ -5,6 +5,7 @@ import {
   deleteProperty,
   getAllProperties,
   getMyProperties,
+  getPropertySuggestions,
   getPropertyById,
   updateProperty,
   updatePropertyApproval,
@@ -16,6 +17,7 @@ import { uploadPropertyImages } from "../middleware/upload.js";
 const router = Router();
 
 router.get("/", optionalAuth, getAllProperties);
+router.get("/suggestions/search", optionalAuth, getPropertySuggestions);
 router.get("/mine", protect, requireAdminAccess, getMyProperties);
 router.get("/:id", optionalAuth, getPropertyById);
 router.post("/:id/inquiries", optionalAuth, createInquiry);

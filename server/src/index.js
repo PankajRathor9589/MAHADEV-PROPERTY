@@ -137,6 +137,8 @@ import { fileURLToPath } from "node:url";
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 import morgan from "morgan";
 
 import connectDB from "./config/db.js";
@@ -150,6 +152,7 @@ import inquiryRoutes from "./routes/inquiryRoutes.js";
 import propertyRoutes from "./routes/propertyRoutes.js";
 import seoRoutes from "./routes/seoRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
+import { mongoSanitize, securityHeaders } from "./middleware/security.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -254,12 +257,30 @@ app.use(cors(corsOptions));
 
 app.options("*", cors(corsOptions));
 
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: false
+  })
+);
+app.use(securityHeaders);
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: Number(process.env.RATE_LIMIT_MAX || 500),
+    standardHeaders: "draft-7",
+    legacyHeaders: false
+  })
+);
+
 app.use(express.json({ limit: "10mb" }));
 
 app.use(express.urlencoded({
   extended: true,
   limit: "10mb"
 }));
+
+app.use(mongoSanitize);
 
 app.use(morgan("dev"));
 

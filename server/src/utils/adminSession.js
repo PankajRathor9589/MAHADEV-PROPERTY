@@ -7,10 +7,10 @@ export const ensureAdminSessionUser = async ({ password } = {}) => {
     .toLowerCase();
   const sessionName = String(process.env.ADMIN_SESSION_NAME || "Sagar Infra Admin").trim();
   const sessionPhone = String(process.env.ADMIN_SESSION_PHONE || "7692016188").trim();
-  const sessionPassword = String(password || process.env.ADMIN_PASSWORD || "").trim();
+  const sessionPassword = String(password || process.env.ADMIN_PASSWORD || process.env.ADMIN_KEY || "").trim();
 
   if (!sessionPassword || sessionPassword.length < 6) {
-    throw new AppError(500, "ADMIN_PASSWORD must be configured with at least 6 characters.");
+    throw new AppError(500, "ADMIN_PASSWORD or ADMIN_KEY must be configured with at least 6 characters.");
   }
 
   const existingUser = await User.findOne({ email: sessionEmail }).select("+password");

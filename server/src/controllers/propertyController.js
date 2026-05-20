@@ -7,6 +7,8 @@ import { removeStoredAssets, removeStoredImages, storeUploadedImages } from "../
 
 const hasKey = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
+const escapeRegex = (value = "") => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 const toNumber = (value, fallback = 0) => {
   if (value === null || value === undefined || value === "") {
     return fallback;
@@ -416,6 +418,8 @@ export const getAllProperties = async (req, res, next) => {
   try {
     const {
       search,
+      q,
+      keyword,
       location,
       city,
       state,
@@ -446,11 +450,11 @@ export const getAllProperties = async (req, res, next) => {
     }
 
     if (city) {
-      filters["location.city"] = new RegExp(String(city).trim(), "i");
+      filters["location.city"] = new RegExp(escapeRegex(String(city).trim()), "i");
     }
 
     if (state) {
-      filters["location.state"] = new RegExp(String(state).trim(), "i");
+      filters["location.state"] = new RegExp(escapeRegex(String(state).trim()), "i");
     }
 
     if (listingType) {
@@ -484,7 +488,7 @@ export const getAllProperties = async (req, res, next) => {
     }
 
     if (location) {
-      const locationRegex = new RegExp(String(location).trim(), "i");
+      const locationRegex = new RegExp(escapeRegex(String(location).trim()), "i");
       andFilters.push({
         $or: [
           { "location.city": locationRegex },
@@ -495,8 +499,10 @@ export const getAllProperties = async (req, res, next) => {
       });
     }
 
-    if (search) {
-      const searchRegex = new RegExp(String(search).trim(), "i");
+    const resolvedSearch = search || q || keyword;
+
+    if (resolvedSearch) {
+      const searchRegex = new RegExp(escapeRegex(String(resolvedSearch).trim()), "i");
       andFilters.push({
         $or: [
           { title: searchRegex },
@@ -533,6 +539,44 @@ export const getAllProperties = async (req, res, next) => {
         total,
         pages: Math.ceil(total / pageSize)
       }
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getPropertySuggestions = async (req, res, next) => {
+  try {
+    const query = String(req.query.q || req.query.search || "").trim();
+    const limit = Math.min(10, Math.max(1, Number(req.query.limit) || 8));
+    const filters = { approvalStatus: "approved" };
+
+    if (query) {
+      const regex = new RegExp(escapeRegex(query), "i");
+      filters.$or = [
+        { title: regex },
+        { category: regex },
+        { "location.city": regex },
+        { "location.address": regex },
+        { "location.landmark": regex }
+      ];
+    }
+
+    const properties = await Property.find(filters)
+      .select("title slug category location price")
+      .sort({ isFeatured: -1, createdAt: -1 })
+      .limit(limit)
+      .lean();
+
+    return res.json({
+      success: true,
+      data: properties.map((property) => ({
+        id: property.slug || property._id,
+        label: property.title,
+        type: property.category || "Property",
+        location: [property.location?.city, property.location?.state].filter(Boolean).join(", "),
+        price: property.price
+      }))
     });
   } catch (error) {
     return next(error);
