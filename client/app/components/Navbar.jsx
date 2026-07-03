@@ -10,8 +10,10 @@ import BrandMark from "./BrandMark.jsx";
 const navigationLinks = [
   { label: "Home", href: "/", hash: "" },
   { label: "Properties", href: "/properties", hash: "" },
-  { label: "Services", href: "/#services", hash: "#services" },
-  { label: "Contact", href: "/#contact", hash: "#contact" }
+  { label: "About", href: "/about", hash: "" },
+  { label: "Services", href: "/property-management", hash: "" },
+  { label: "Blog", href: "/blog", hash: "" },
+  { label: "Contact", href: "/contact", hash: "" }
 ];
 
 const Navbar = () => {
@@ -44,7 +46,7 @@ const Navbar = () => {
   };
 
   const navLinkClass = (active = false) =>
-    `rounded-full px-4 py-2 text-sm font-semibold transition ${
+    `rounded-full px-4 py-2 text-sm font-semibold transition duration-300 ${
       useLightChrome
         ? active
           ? "bg-white/14 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]"
@@ -55,10 +57,10 @@ const Navbar = () => {
     }`;
 
   return (
-    <header className="sticky top-0 z-50 px-4 pt-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 px-3 pt-3 sm:px-6 sm:pt-4 lg:px-8">
       <motion.div
         layout
-        className={`mx-auto flex w-full max-w-[1320px] items-center justify-between rounded-full border px-4 py-3 transition duration-500 sm:px-5 ${
+        className={`mx-auto flex w-full max-w-[1320px] items-center justify-between gap-3 rounded-[28px] border px-3 py-3 transition duration-500 sm:rounded-full sm:px-5 ${
           useLightChrome
             ? "border-white/14 bg-white/[0.05] shadow-[0_18px_54px_rgba(6,12,20,0.16)] backdrop-blur-[22px]"
             : isScrolled
@@ -66,7 +68,7 @@ const Navbar = () => {
             : "border-[#ece3d7] bg-[#fbf8f2]/84 shadow-[0_14px_34px_rgba(15,23,42,0.06)] backdrop-blur-xl"
         }`}
       >
-        <Link to="/" className="min-w-0">
+        <Link to="/" className="min-w-0 shrink">
           <BrandMark compact tone={useLightChrome ? "light" : "dark"} />
         </Link>
 
@@ -186,17 +188,17 @@ const Navbar = () => {
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="mx-auto mt-3 w-full max-w-[1320px] lg:hidden"
           >
-            <div className="glass-panel overflow-hidden p-4">
+            <div className="glass-panel overflow-hidden p-3 sm:p-4">
               <div className="space-y-2">
                 {navigationLinks.map((item) =>
                   item.hash ? (
                     <Link
                       key={item.label}
                       to={item.href}
-                      className={`block rounded-[22px] px-4 py-3 text-sm font-semibold transition ${
+                      className={`block rounded-[22px] border px-4 py-3 text-sm font-semibold transition duration-300 ${
                         location.pathname === "/" && location.hash === item.hash
-                          ? "bg-[#f7ecd7] text-ink-900"
-                          : "bg-[#fbf8f1] text-ink-700 hover:bg-white hover:text-ink-900"
+                          ? "border-gold-300/60 bg-[#C89B3C] text-white shadow-[0_14px_34px_rgba(200,155,60,0.18)]"
+                          : "border-[#e5e7eb] bg-white text-ink-700 hover:border-gold-300 hover:bg-[#fafafa] hover:text-ink-900"
                       }`}
                     >
                       {item.label}
@@ -206,10 +208,10 @@ const Navbar = () => {
                       key={item.label}
                       to={item.href}
                       className={({ isActive }) =>
-                        `block rounded-[22px] px-4 py-3 text-sm font-semibold transition ${
+                        `block rounded-[22px] border px-4 py-3 text-sm font-semibold transition duration-300 ${
                           isActive
-                            ? "bg-[#f7ecd7] text-ink-900"
-                            : "bg-[#fbf8f1] text-ink-700 hover:bg-white hover:text-ink-900"
+                            ? "border-gold-300/60 bg-[#C89B3C] text-white shadow-[0_14px_34px_rgba(200,155,60,0.18)]"
+                            : "border-[#e5e7eb] bg-white text-ink-700 hover:border-gold-300 hover:bg-[#fafafa] hover:text-ink-900"
                         }`
                       }
                     >
@@ -221,7 +223,13 @@ const Navbar = () => {
                 {isAuthenticated && isAdmin ? (
                   <NavLink
                     to="/admin"
-                    className="block rounded-[22px] bg-[#fbf8f1] px-4 py-3 text-sm font-semibold text-ink-700 transition hover:bg-white hover:text-ink-900"
+                    className={({ isActive }) =>
+                      `block rounded-[22px] border px-4 py-3 text-sm font-semibold transition duration-300 ${
+                        isActive
+                          ? "border-gold-300/60 bg-[#C89B3C] text-white"
+                          : "border-[#e5e7eb] bg-white text-ink-700 hover:border-gold-300 hover:bg-[#fafafa] hover:text-ink-900"
+                      }`
+                    }
                   >
                     Dashboard
                   </NavLink>
@@ -233,8 +241,8 @@ const Navbar = () => {
                     className={({ isActive }) =>
                       `block rounded-[22px] px-4 py-3 text-sm font-semibold transition ${
                         isActive
-                          ? "bg-[#f7ecd7] text-ink-900"
-                          : "bg-[#fbf8f1] text-ink-700 hover:bg-white hover:text-ink-900"
+                          ? "bg-[#C89B3C] text-white"
+                          : "border border-[#e5e7eb] bg-white text-ink-700 hover:border-gold-300 hover:bg-[#fafafa] hover:text-ink-900"
                       }`
                     }
                   >

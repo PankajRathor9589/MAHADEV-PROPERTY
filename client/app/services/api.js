@@ -253,6 +253,15 @@ export const fetchPropertyById = async (id) => {
   return data.data;
 };
 
+export const fetchSimilarProperties = async (id, params = {}) => {
+  if (!hasApiBase || !id) {
+    return [];
+  }
+
+  const data = await safeRequest(http.get(`/property/${id}/similar`, { params }));
+  return data.data || [];
+};
+
 export const createProperty = async (payload) => {
   requireApiBase();
   const data = await safeRequest(http.post("/property", buildPropertyFormData(payload)));

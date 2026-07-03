@@ -8,6 +8,7 @@ import {
   MapPin,
   MessageCircleMore,
   Phone,
+  Share2,
   ShieldCheck,
   Sparkles
 } from "lucide-react";
@@ -18,7 +19,9 @@ import { COMPANY_INFO } from "../data/siteContent.js";
 import {
   formatCurrency,
   formatLocation,
+  getInvestmentScore,
   getPropertyCoverImage,
+  getTrustScore,
   hasPropertyVideo,
   isFeaturedProperty,
   normalizePropertyImageEntries,
@@ -91,7 +94,9 @@ const PropertyCard = ({ property, onCompare, compareActive = false }) => {
   const hasVideo = hasPropertyVideo(property);
   const detailLabel = isShowcase ? "Showcase" : "Details";
   const matchScore = getMatchScore(property);
-  const actionGridClass = onCompare ? "grid-cols-2 md:grid-cols-4" : "grid-cols-2 md:grid-cols-3";
+  const trustScore = getTrustScore(property);
+  const investmentScore = getInvestmentScore(property);
+  const actionGridClass = onCompare ? "min-[420px]:grid-cols-2 md:grid-cols-5" : "min-[420px]:grid-cols-2 md:grid-cols-4";
   const persona = getListingPersona(property);
   const PersonaIcon = persona.icon;
   const hasGallerySlider = galleryImages.length > 1;
@@ -106,18 +111,36 @@ const PropertyCard = ({ property, onCompare, compareActive = false }) => {
     setActiveImageIndex((current) => (current + direction + galleryImages.length) % galleryImages.length);
   };
 
+  const shareProperty = async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const shareUrl = `${window.location.origin}${destination}`;
+
+    if (navigator.share) {
+      await navigator.share({
+        title: property.title,
+        text: `View ${property.title} on Sagar Infra`,
+        url: shareUrl
+      });
+      return;
+    }
+
+    await navigator.clipboard?.writeText(shareUrl);
+  };
+
   return (
     <motion.article
       whileHover={{ y: -10 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      className="group relative flex h-full min-h-[720px] flex-col overflow-hidden rounded-[34px] border border-white/10 bg-[#0B1220] shadow-[0_28px_80px_rgba(3,7,17,0.28)] transition duration-500 hover:border-gold-300/60 hover:shadow-[0_38px_110px_rgba(3,7,17,0.38)]"
+      className="property-card group relative flex h-full flex-col overflow-hidden rounded-[28px] border border-white/10 bg-[#0B1220] shadow-[0_28px_80px_rgba(3,7,17,0.28)] transition duration-500 hover:border-gold-300/60 hover:shadow-[0_38px_110px_rgba(3,7,17,0.38)] focus-within:border-gold-300/70 focus-within:shadow-[0_38px_110px_rgba(3,7,17,0.38)] sm:rounded-[34px]"
     >
       <Link to={destination} className="block">
-        <div className="relative aspect-[4/5] overflow-hidden bg-[#07111e]">
+        <div className="property-media image-hover-zoom relative overflow-hidden bg-[#07111e]">
           <ResponsiveImage
             src={imageUrl}
             alt={property.title}
-            className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
+            className="property-image h-full w-full object-cover"
             loading="lazy"
             decoding="async"
             sizes="(min-width: 1280px) 30vw, (min-width: 768px) 46vw, 100vw"
@@ -145,7 +168,7 @@ const PropertyCard = ({ property, onCompare, compareActive = false }) => {
               >
                 <ChevronRight size={18} />
               </button>
-              <div className="absolute bottom-[9.25rem] left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
+              <div className="absolute bottom-[8.6rem] left-1/2 z-10 flex -translate-x-1/2 gap-1.5 sm:bottom-[9.25rem]">
                 {galleryImages.slice(0, 6).map((item, index) => (
                   <span
                     key={`${item}-${index}`}
@@ -158,7 +181,7 @@ const PropertyCard = ({ property, onCompare, compareActive = false }) => {
             </>
           ) : null}
 
-          <div className="absolute left-4 right-4 top-4 flex items-start justify-between gap-4">
+          <div className="absolute left-3 right-3 top-3 flex items-start justify-between gap-3 sm:left-4 sm:right-4 sm:top-4 sm:gap-4">
             <div className="flex flex-wrap gap-2">
               <span className="badge border-white/16 bg-[#08111d]/54 text-white backdrop-blur-xl">
                 {isShowcase ? <Sparkles size={13} className="text-gold-300" /> : <ShieldCheck size={13} className="text-gold-300" />}
@@ -175,16 +198,16 @@ const PropertyCard = ({ property, onCompare, compareActive = false }) => {
               ) : null}
             </div>
 
-            <div className="rounded-[24px] border border-white/14 bg-[#07111e]/62 px-4 py-3 text-white shadow-[0_18px_44px_rgba(4,10,18,0.3)] backdrop-blur-xl">
+            <div className="rounded-[20px] border border-white/14 bg-[#07111e]/62 px-3 py-2 text-white shadow-[0_18px_44px_rgba(4,10,18,0.3)] backdrop-blur-xl sm:rounded-[24px] sm:px-4 sm:py-3">
               <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/65">AI Match</p>
-              <p className="mt-1 text-2xl font-semibold leading-none text-white">{matchScore}%</p>
+              <p className="mt-1 text-xl font-semibold leading-none text-white sm:text-2xl">{matchScore}%</p>
             </div>
           </div>
 
-          <div className="absolute inset-x-4 bottom-4 rounded-[28px] border border-white/16 bg-[#07111e]/36 p-5 text-white shadow-[0_22px_60px_rgba(0,0,0,0.24)] backdrop-blur-[22px]">
-            <div className="flex items-start justify-between gap-4">
+          <div className="absolute inset-x-3 bottom-3 rounded-[24px] border border-white/16 bg-[#07111e]/44 p-4 text-white shadow-[0_22px_60px_rgba(0,0,0,0.24)] backdrop-blur-[22px] sm:inset-x-4 sm:bottom-4 sm:rounded-[28px] sm:p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <div className="min-w-0">
-                <h3 className="line-clamp-2 text-[clamp(1.65rem,2vw,2.3rem)] font-semibold leading-[0.95] text-white">
+                <h3 className="line-clamp-2 text-[clamp(1.45rem,6vw,2.3rem)] font-semibold leading-[0.98] text-white sm:leading-[0.95]">
                   {property.title}
                 </h3>
                 <p className="mt-3 inline-flex max-w-full items-center gap-2 text-sm text-white/78">
@@ -192,9 +215,9 @@ const PropertyCard = ({ property, onCompare, compareActive = false }) => {
                   <span className="line-clamp-1">{locationText}</span>
                 </p>
               </div>
-              <div className="shrink-0 rounded-[22px] border border-gold-300/30 bg-[#D4AF37] px-3.5 py-3 text-right text-[#050816]">
+              <div className="w-full rounded-[20px] border border-gold-300/30 bg-[#D4AF37] px-3.5 py-3 text-left text-[#050816] sm:w-auto sm:shrink-0 sm:rounded-[22px] sm:text-right">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#3a2a07]">Quoted Price</p>
-                <p className="mt-1 text-base font-semibold text-[#050816]">{formatCurrency(property.price)}</p>
+                <p className="mt-1 text-sm font-semibold text-[#050816] sm:text-base">{formatCurrency(property.price)}</p>
               </div>
             </div>
           </div>
@@ -214,8 +237,8 @@ const PropertyCard = ({ property, onCompare, compareActive = false }) => {
         <MessageCircleMore size={19} />
       </a>
 
-      <div className="flex flex-1 flex-col gap-5 bg-[#0B1220] p-5 sm:p-6">
-        <div className="grid grid-cols-3 gap-3">
+      <div className="flex flex-1 flex-col gap-5 bg-[#0B1220] p-4 sm:p-6">
+        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-3">
           <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-3 py-3">
             <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#F6D776]">Layout</p>
             <p className="mt-2 text-sm font-semibold text-white">{formatBedrooms(property)}</p>
@@ -236,6 +259,14 @@ const PropertyCard = ({ property, onCompare, compareActive = false }) => {
 
         <div className="rounded-[26px] border border-white/10 bg-white/[0.04] p-4">
           <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+            <span className="inline-flex items-center gap-2 rounded-full border border-gold-300/40 bg-[#050816] px-3 py-1.5 text-[11px] text-slate-200">
+              <ShieldCheck size={13} className="text-gold-600" />
+              Trust {trustScore}/100
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-gold-300/40 bg-[#050816] px-3 py-1.5 text-[11px] text-slate-200">
+              <Sparkles size={13} className="text-gold-600" />
+              Invest {investmentScore}/100
+            </span>
             <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#050816] px-3 py-1.5 text-[11px] text-slate-200">
               <PersonaIcon size={13} className="text-gold-600" />
               {persona.label}
@@ -251,7 +282,7 @@ const PropertyCard = ({ property, onCompare, compareActive = false }) => {
           </div>
         </div>
 
-        <div className={`mt-auto grid gap-2.5 ${actionGridClass}`}>
+        <div className={`mt-auto grid grid-cols-1 gap-2.5 ${actionGridClass}`}>
           <a href={toPhoneHref(property.contactPhone || COMPANY_INFO.phoneDisplay)} className="btn-secondary min-h-[48px] w-full px-3.5">
             <Phone size={15} />
             Call
@@ -280,6 +311,11 @@ const PropertyCard = ({ property, onCompare, compareActive = false }) => {
               {compareActive ? "Comparing" : "Compare"}
             </button>
           ) : null}
+
+          <button type="button" onClick={shareProperty} className="btn-ghost min-h-[48px] w-full px-3.5">
+            <Share2 size={15} />
+            Share
+          </button>
 
           <Link to={destination} className="btn-primary min-h-[48px] w-full px-3.5">
             {detailLabel}

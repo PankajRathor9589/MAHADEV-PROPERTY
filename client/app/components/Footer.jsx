@@ -11,6 +11,53 @@ const localityLinks = [
   { label: "Investment property in Sagar", href: "/properties?location=Sagar" }
 ];
 
+const footerGroups = [
+  {
+    title: "Platform",
+    links: [
+      ["About", "/about"],
+      ["Team", "/team"],
+      ["Careers", "/careers"],
+      ["Testimonials", "/testimonials"],
+      ["FAQ", "/faq"],
+      ["Blog", "/blog"]
+    ]
+  },
+  {
+    title: "Properties",
+    links: [
+      ["Residential", "/residential"],
+      ["Commercial", "/commercial"],
+      ["Plots", "/plots"],
+      ["Villas", "/villas"],
+      ["Apartments", "/apartments"],
+      ["New Launches", "/new-launches"]
+    ]
+  },
+  {
+    title: "Services",
+    links: [
+      ["Sell Property", "/sell-property"],
+      ["Rent Property", "/rent-property"],
+      ["Property Management", "/property-management"],
+      ["Legal Services", "/legal-services"],
+      ["Home Loan", "/home-loan"],
+      ["Interior Design", "/interior-design"]
+    ]
+  },
+  {
+    title: "Tools",
+    links: [
+      ["EMI Calculator", "/emi-calculator"],
+      ["Stamp Duty", "/stamp-duty-calculator"],
+      ["Compare", "/compare-property"],
+      ["Saved Property", "/saved-property"],
+      ["Buyer Dashboard", "/buyer-dashboard"],
+      ["Privacy Policy", "/privacy-policy"]
+    ]
+  }
+];
+
 const Footer = () => {
   return (
     <footer className="section-shell pb-32 pt-6 md:pb-12">
@@ -35,28 +82,19 @@ const Footer = () => {
               ))}
             </div>
 
-            <div className="mt-8 grid gap-5 sm:grid-cols-2">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.34em] text-gold-700">Quick Links</p>
-                <div className="mt-4 grid gap-3 text-sm text-ink-600">
-                  <Link className="transition hover:text-ink-900" to="/">
-                    Home
-                  </Link>
-                  <Link className="transition hover:text-ink-900" to="/properties">
-                    Properties
-                  </Link>
-                  <Link className="transition hover:text-ink-900" to="/#services">
-                    Services
-                  </Link>
-                  <Link className="transition hover:text-ink-900" to="/#contact">
-                    Contact
-                  </Link>
-                  <Link className="transition hover:text-ink-900" to="/#consultation">
-                    Book Site Visit
-                  </Link>
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-5">
+              {footerGroups.map((group) => (
+                <div key={group.title}>
+                  <p className="text-xs font-semibold uppercase tracking-[0.34em] text-gold-700">{group.title}</p>
+                  <div className="mt-4 grid gap-3 text-sm text-ink-600">
+                    {group.links.map(([label, href]) => (
+                      <Link key={href} className="transition hover:text-ink-900" to={href}>
+                        {label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
-
+              ))}
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.34em] text-gold-700">Contact</p>
                 <div className="mt-4 space-y-3 text-sm text-ink-600">

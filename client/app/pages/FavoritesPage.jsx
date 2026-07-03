@@ -78,7 +78,7 @@ const FavoritesPage = () => {
 
         {!loading ? (
           favorites.length > 0 ? (
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,21rem),1fr))] gap-5">
               {favorites.map((property) => (
                 <div key={property._id} className="space-y-3">
                   <PropertyCard property={property} />

@@ -240,3 +240,42 @@ export const isFeaturedProperty = (property) => {
 
   return new Date(property.featuredUntil).getTime() >= Date.now();
 };
+
+export const getTrustScore = (property = {}) => {
+  const verification = property.verification || {};
+  const baseScore = property.approvalStatus === "approved" ? 54 : 42;
+  const score =
+    baseScore +
+    (verification.ownerVerified ? 14 : 0) +
+    (verification.documentsVerified ? 14 : 0) +
+    (verification.locationVerified ? 10 : 0) +
+    (verification.marketVerified ? 8 : 0);
+
+  return Math.min(100, score);
+};
+
+export const getInvestmentScore = (property = {}) => {
+  const priceSignal = property.price ? 18 : 8;
+  const areaSignal = property.area ? Math.min(16, Math.max(8, Math.round(property.area / 180))) : 8;
+  const demandSignal = Math.min(24, Math.round((property.views || 0) / 3));
+  const assetSignal = ["Plot", "Commercial", "Villa"].includes(property.category) ? 18 : 12;
+  const verifiedSignal = getTrustScore(property) >= 80 ? 14 : 8;
+  const featuredSignal = isFeaturedProperty(property) ? 10 : 5;
+
+  return Math.min(100, priceSignal + areaSignal + demandSignal + assetSignal + verifiedSignal + featuredSignal);
+};
+
+export const getListingQualityScore = (property = {}) => {
+  const checks = [
+    property.title,
+    property.description && property.description.length >= 80,
+    property.price > 0,
+    property.area > 0,
+    formatLocation(property.location).length > 0,
+    normalizePropertyImageEntries(property).length >= 3,
+    property.amenities?.length >= 3,
+    hasPropertyVideo(property)
+  ];
+
+  return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+};

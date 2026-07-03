@@ -19,6 +19,7 @@ import {
   Phone,
   Ruler,
   School,
+  Share2,
   ShieldCheck,
   Sparkles,
   Trees,
@@ -31,6 +32,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import ImageGallerySlider from "../components/ImageGallerySlider.jsx";
 import LeadCaptureForm from "../components/LeadCaptureForm.jsx";
 import MediaPlayer from "../components/MediaPlayer.jsx";
+import PropertyCard from "../components/PropertyCard.jsx";
 import Seo from "../components/Seo.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { COMPANY_INFO } from "../data/siteContent.js";
@@ -38,6 +40,7 @@ import {
   API_BASE_URL,
   addFavorite,
   fetchPropertyById,
+  fetchSimilarProperties,
   removeFavorite,
   resolveImageUrl
 } from "../services/api.js";
@@ -45,8 +48,10 @@ import {
   formatCurrency,
   formatLocation,
   getCoordinates,
+  getInvestmentScore,
   getMapQuery,
   getPropertyCoverImage,
+  getTrustScore,
   hasPropertyVideo,
   isFeaturedProperty,
   normalizePropertyImageEntries,
@@ -287,6 +292,7 @@ const PropertyDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
+  const [similarProperties, setSimilarProperties] = useState([]);
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
   const [favoriteBusy, setFavoriteBusy] = useState(false);
 
@@ -310,6 +316,24 @@ const PropertyDetailsPage = () => {
 
   useEffect(() => {
     setActiveVideoIndex(0);
+  }, [property?._id, property?.slug]);
+
+  useEffect(() => {
+    const loadSimilarProperties = async () => {
+      if (!property?._id && !property?.slug) {
+        setSimilarProperties([]);
+        return;
+      }
+
+      try {
+        const items = await fetchSimilarProperties(property.slug || property._id, { limit: 3 });
+        setSimilarProperties(items);
+      } catch {
+        setSimilarProperties([]);
+      }
+    };
+
+    loadSimilarProperties();
   }, [property?._id, property?.slug]);
 
   const mapSrc = useMemo(() => {
@@ -373,6 +397,21 @@ const PropertyDetailsPage = () => {
     }
   };
 
+  const handleShare = async () => {
+    const shareUrl = window.location.href;
+
+    if (navigator.share) {
+      await navigator.share({
+        title: property.title,
+        text: `View ${property.title} on Sagar Infra`,
+        url: shareUrl
+      });
+      return;
+    }
+
+    await navigator.clipboard?.writeText(shareUrl);
+  };
+
   if (loading) {
     return (
       <section className="section-shell">
@@ -431,6 +470,8 @@ const PropertyDetailsPage = () => {
     commute: property.category === "Plot" ? 83 : 89,
     investment: property.category === "Commercial" ? 95 : property.category === "Plot" ? 93 : 88
   };
+  const trustScore = getTrustScore(property);
+  const investmentScore = getInvestmentScore(property);
 
   return (
     <>
@@ -534,6 +575,10 @@ const PropertyDetailsPage = () => {
                         ? "Save to Wishlist"
                         : "Login to Save"}
                 </button>
+                <button type="button" onClick={handleShare} className="btn-ghost w-full">
+                  <Share2 size={16} />
+                  Share Property
+                </button>
               </div>
             </div>
           </div>
@@ -549,10 +594,22 @@ const PropertyDetailsPage = () => {
           <div className="space-y-6">
             <article className="glass-panel p-6 sm:p-7">
               <p className="section-kicker">Decision Overview</p>
-              <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {detailItems.map((item) => (
-                  <DetailCard key={item.label} {...item} />
-                ))}
+                <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                  {detailItems.map((item) => (
+                    <DetailCard key={item.label} {...item} />
+                  ))}
+                </div>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-[26px] border border-gold-300/40 bg-[#fbf2df] p-5">
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-gold-700">Property Trust Score</p>
+                  <p className="mt-2 text-4xl font-semibold text-ink-900">{trustScore}/100</p>
+                  <p className="mt-2 text-sm leading-7 text-ink-500">Owner, document, location, and market verification signals.</p>
+                </div>
+                <div className="rounded-[26px] border border-gold-300/40 bg-[#fbf2df] p-5">
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-gold-700">Investment Score</p>
+                  <p className="mt-2 text-4xl font-semibold text-ink-900">{investmentScore}/100</p>
+                  <p className="mt-2 text-sm leading-7 text-ink-500">Demand, asset type, trust, area, and visibility indicators.</p>
+                </div>
               </div>
             </article>
 
@@ -930,6 +987,22 @@ const PropertyDetailsPage = () => {
           </div>
         </div>
       </section>
+
+      {similarProperties.length > 0 ? (
+        <section className="section-shell pt-0">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="section-kicker">Similar Properties</p>
+              <h2 className="section-title mt-2 text-ink-900">More premium options near this match</h2>
+            </div>
+          </div>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,21rem),1fr))] gap-5">
+            {similarProperties.map((item) => (
+              <PropertyCard key={item._id || item.slug || item.title} property={item} />
+            ))}
+          </div>
+        </section>
+      ) : null}
     </>
   );
 };

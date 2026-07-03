@@ -206,6 +206,32 @@ const buildPayload = (input, current = {}, user) => ({
     ? toNumber(input.bathrooms, current.bathrooms || 0)
     : current.bathrooms || 0,
   area: hasKey(input, "area") ? toNumber(input.area, current.area ?? 0) : current.area ?? 0,
+  furnishing: hasKey(input, "furnishing")
+    ? String(input.furnishing || "").trim().toLowerCase()
+    : current.furnishing || "",
+  propertyAge: hasKey(input, "propertyAge")
+    ? String(input.propertyAge || "").trim().toLowerCase()
+    : current.propertyAge || "",
+  possession: hasKey(input, "possession")
+    ? String(input.possession || "").trim().toLowerCase()
+    : current.possession || "",
+  postedByType: hasKey(input, "postedByType")
+    ? String(input.postedByType || "").trim().toLowerCase()
+    : current.postedByType || "",
+  verification: {
+    ownerVerified: hasKey(input, "ownerVerified")
+      ? input.ownerVerified === true || input.ownerVerified === "true"
+      : current.verification?.ownerVerified || false,
+    documentsVerified: hasKey(input, "documentsVerified")
+      ? input.documentsVerified === true || input.documentsVerified === "true"
+      : current.verification?.documentsVerified || false,
+    locationVerified: hasKey(input, "locationVerified")
+      ? input.locationVerified === true || input.locationVerified === "true"
+      : current.verification?.locationVerified || false,
+    marketVerified: hasKey(input, "marketVerified")
+      ? input.marketVerified === true || input.marketVerified === "true"
+      : current.verification?.marketVerified || false
+  },
   amenities: hasKey(input, "amenities")
     ? parseArrayInput(input.amenities, current.amenities || [])
     : current.amenities || [],
@@ -428,7 +454,16 @@ export const getAllProperties = async (req, res, next) => {
       category,
       minPrice,
       maxPrice,
+      minArea,
+      maxArea,
       bedrooms,
+      furnishing,
+      propertyAge,
+      possession,
+      postedBy,
+      postedByType,
+      amenity,
+      verifiedOnly,
       featured,
       sort = "latest",
       mine,
@@ -478,6 +513,42 @@ export const getAllProperties = async (req, res, next) => {
 
     if (bedrooms) {
       filters.bedrooms = { $gte: Number(bedrooms) };
+    }
+
+    if (minArea || maxArea) {
+      filters.area = {};
+      if (minArea) {
+        filters.area.$gte = Number(minArea);
+      }
+      if (maxArea) {
+        filters.area.$lte = Number(maxArea);
+      }
+    }
+
+    if (furnishing) {
+      filters.furnishing = String(furnishing).trim().toLowerCase();
+    }
+
+    if (propertyAge) {
+      filters.propertyAge = String(propertyAge).trim().toLowerCase();
+    }
+
+    if (possession) {
+      filters.possession = String(possession).trim().toLowerCase();
+    }
+
+    const resolvedPostedByType = postedByType || postedBy;
+    if (resolvedPostedByType) {
+      filters.postedByType = String(resolvedPostedByType).trim().toLowerCase();
+    }
+
+    if (amenity) {
+      filters.amenities = { $in: [new RegExp(escapeRegex(String(amenity).trim()), "i")] };
+    }
+
+    if (verifiedOnly === "true") {
+      filters["verification.ownerVerified"] = true;
+      filters["verification.documentsVerified"] = true;
     }
 
     if (featured === "true") {
@@ -603,6 +674,39 @@ export const getPropertyById = async (req, res, next) => {
     return res.json({
       success: true,
       data: property
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getSimilarProperties = async (req, res, next) => {
+  try {
+    const property = await findProperty(req.params.id);
+
+    if (!property) {
+      throw new AppError(404, "Property not found.");
+    }
+
+    const filters = {
+      _id: { $ne: property._id },
+      approvalStatus: "approved",
+      $or: [
+        { category: property.category },
+        { listingType: property.listingType },
+        { "location.city": property.location?.city || "" }
+      ]
+    };
+
+    const properties = await populatePropertyQuery(
+      Property.find(filters)
+        .sort({ isFeatured: -1, views: -1, createdAt: -1 })
+        .limit(Math.min(8, Math.max(1, Number(req.query.limit) || 4)))
+    );
+
+    return res.json({
+      success: true,
+      data: properties
     });
   } catch (error) {
     return next(error);

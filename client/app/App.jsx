@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import WhatsAppFloat from "./components/WhatsAppFloat.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
+import { allEnterprisePages } from "./data/enterprisePages.js";
 
 const HomePage = lazy(() => import("./pages/HomePage.jsx"));
 const PropertiesPage = lazy(() => import("./pages/PropertiesPage.jsx"));
@@ -15,6 +16,12 @@ const AdminLoginPage = lazy(() => import("./pages/AdminLoginPage.jsx"));
 const AdminDashboardPage = lazy(() => import("./pages/AdminDashboardPage.jsx"));
 const LoginPage = lazy(() => import("./pages/LoginPage.jsx"));
 const RegisterPage = lazy(() => import("./pages/RegisterPage.jsx"));
+const BlogPage = lazy(() => import("./pages/BlogPage.jsx"));
+const BlogDetailPage = lazy(() => import("./pages/BlogDetailPage.jsx"));
+const CalculatorPage = lazy(() => import("./pages/CalculatorPage.jsx"));
+const EnterprisePage = lazy(() => import("./pages/EnterprisePage.jsx"));
+const RoleDashboardPage = lazy(() => import("./pages/RoleDashboardPage.jsx"));
+const UtilityPage = lazy(() => import("./pages/UtilityPage.jsx"));
 
 const ScrollManager = () => {
   const location = useLocation();
@@ -68,8 +75,20 @@ const App = () => {
         <Suspense fallback={<PageShellFallback />}>
           <Routes>
             <Route path="/" element={<HomePage />} />
+            {allEnterprisePages.map((page) => (
+              <Route key={page.slug} path={`/${page.slug}`} element={<EnterprisePage pageSlug={page.slug} />} />
+            ))}
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/:slug" element={<BlogDetailPage />} />
             <Route path="/properties" element={<PropertiesPage />} />
+            <Route path="/property-listing" element={<PropertiesPage />} />
             <Route path="/properties/:id" element={<PropertyDetailsPage />} />
+            <Route path="/emi-calculator" element={<CalculatorPage type="emi" />} />
+            <Route path="/mortgage-calculator" element={<CalculatorPage type="mortgage" />} />
+            <Route path="/stamp-duty-calculator" element={<CalculatorPage type="stamp-duty" />} />
+            <Route path="/compare-property" element={<UtilityPage type="compare-property" />} />
+            <Route path="/saved-property" element={<UtilityPage type="saved-property" />} />
+            <Route path="/recently-viewed" element={<UtilityPage type="recently-viewed" />} />
             <Route
               path="/favorites"
               element={
@@ -78,6 +97,10 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
+            <Route path="/user-dashboard" element={<RoleDashboardPage role="user" />} />
+            <Route path="/buyer-dashboard" element={<RoleDashboardPage role="buyer" />} />
+            <Route path="/owner-dashboard" element={<RoleDashboardPage role="owner" />} />
+            <Route path="/dealer-dashboard" element={<RoleDashboardPage role="dealer" />} />
             <Route path="/admin/login" element={isAdmin ? <Navigate to="/admin" replace /> : <AdminLoginPage />} />
             <Route
               path="/admin"
@@ -96,7 +119,8 @@ const App = () => {
               path="/register"
               element={isAuthenticated ? <Navigate to={authenticatedHome} replace /> : <RegisterPage />}
             />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="/forgot-password" element={<UtilityPage type="forgot-password" />} />
+            <Route path="*" element={<UtilityPage type="404" />} />
           </Routes>
         </Suspense>
       </main>

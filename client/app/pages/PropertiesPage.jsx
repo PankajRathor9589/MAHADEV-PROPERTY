@@ -38,6 +38,14 @@ const initialFilters = {
   listingType: "",
   minPrice: "",
   maxPrice: "",
+  minArea: "",
+  maxArea: "",
+  furnishing: "",
+  propertyAge: "",
+  possession: "",
+  postedByType: "",
+  amenity: "",
+  verifiedOnly: "",
   sort: "latest"
 };
 
@@ -344,7 +352,7 @@ const PropertiesPage = () => {
             <div className="grid gap-8 xl:grid-cols-[1.04fr_0.96fr]">
               <div>
                 <p className="luxury-kicker text-white/72">Luxury Marketplace OS</p>
-                <h1 className="mt-4 font-display text-[clamp(3rem,5.6vw,5.3rem)] font-semibold leading-[0.92] tracking-[-0.06em] text-white">
+                <h1 className="mt-4 font-display text-[clamp(2.65rem,5.6vw,5.3rem)] font-semibold leading-[0.94] tracking-normal text-white">
                   Direct-owner trust meets verified expert scale.
                 </h1>
                 <p className="mt-5 max-w-3xl text-sm leading-8 text-white/72 sm:text-base">
@@ -420,7 +428,7 @@ const PropertiesPage = () => {
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                   <p className="section-kicker">Search Workbench</p>
-                  <h2 className="mt-2 text-3xl font-semibold text-ink-900">Search, filter, and compare without losing the premium feel</h2>
+                  <h2 className="mt-2 text-[clamp(1.65rem,3vw,1.875rem)] font-semibold leading-tight text-ink-900">Search, filter, and compare without losing the premium feel</h2>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {marketplaceModes.map((mode) => (
@@ -507,6 +515,54 @@ const PropertiesPage = () => {
                 </label>
 
                 <label className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.24em] text-ink-500">Min Area</span>
+                  <input
+                    className="input-field"
+                    type="number"
+                    min="0"
+                    name="minArea"
+                    value={filters.minArea}
+                    onChange={handleChange}
+                    placeholder="Minimum sq.ft"
+                  />
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.24em] text-ink-500">Max Area</span>
+                  <input
+                    className="input-field"
+                    type="number"
+                    min="0"
+                    name="maxArea"
+                    value={filters.maxArea}
+                    onChange={handleChange}
+                    placeholder="Maximum sq.ft"
+                  />
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.24em] text-ink-500">Furnishing</span>
+                  <select className="input-field" name="furnishing" value={filters.furnishing} onChange={handleChange}>
+                    <option value="">Any furnishing</option>
+                    <option value="unfurnished">Unfurnished</option>
+                    <option value="semi-furnished">Semi-furnished</option>
+                    <option value="fully-furnished">Fully furnished</option>
+                  </select>
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.24em] text-ink-500">Possession</span>
+                  <select className="input-field" name="possession" value={filters.possession} onChange={handleChange}>
+                    <option value="">Any possession</option>
+                    <option value="ready-to-move">Ready to move</option>
+                    <option value="under-construction">Under construction</option>
+                    <option value="within-3-months">Within 3 months</option>
+                    <option value="within-6-months">Within 6 months</option>
+                    <option value="within-1-year">Within 1 year</option>
+                  </select>
+                </label>
+
+                <label className="space-y-2">
                   <span className="text-xs font-semibold uppercase tracking-[0.24em] text-ink-500">Sort</span>
                   <select className="input-field" name="sort" value={filters.sort} onChange={handleChange}>
                     <option value="latest">Newest</option>
@@ -514,6 +570,55 @@ const PropertiesPage = () => {
                     <option value="priceDesc">Price high to low</option>
                     <option value="popular">Most viewed</option>
                   </select>
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.24em] text-ink-500">Property Age</span>
+                  <select className="input-field" name="propertyAge" value={filters.propertyAge} onChange={handleChange}>
+                    <option value="">Any age</option>
+                    <option value="new">New</option>
+                    <option value="0-1">0 - 1 year</option>
+                    <option value="1-5">1 - 5 years</option>
+                    <option value="5-10">5 - 10 years</option>
+                    <option value="10+">10+ years</option>
+                  </select>
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.24em] text-ink-500">Posted By</span>
+                  <select className="input-field" name="postedByType" value={filters.postedByType} onChange={handleChange}>
+                    <option value="">Owner / Broker / Builder</option>
+                    <option value="owner">Owner</option>
+                    <option value="broker">Broker</option>
+                    <option value="builder">Builder</option>
+                  </select>
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.24em] text-ink-500">Amenity</span>
+                  <input
+                    className="input-field"
+                    name="amenity"
+                    value={filters.amenity}
+                    onChange={handleChange}
+                    placeholder="Parking, garden, security"
+                  />
+                </label>
+
+                <label className="flex min-h-[54px] items-center gap-3 rounded-[20px] border border-white/10 bg-white/[0.04] px-4 py-3.5">
+                  <input
+                    type="checkbox"
+                    name="verifiedOnly"
+                    checked={filters.verifiedOnly === "true"}
+                    onChange={(event) =>
+                      setFilters((current) => ({ ...current, verifiedOnly: event.target.checked ? "true" : "" }))
+                    }
+                    className="h-5 w-5 rounded border-[#ded4c7] accent-[#d4af37]"
+                  />
+                  <span>
+                    <span className="block text-sm font-semibold text-ink-700">Verified only</span>
+                    <span className="block text-xs text-ink-500">Owner and document verified</span>
+                  </span>
                 </label>
 
                 <div className="flex flex-col justify-end gap-3 xl:flex-row xl:items-end">
@@ -603,7 +708,7 @@ const PropertiesPage = () => {
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <p className="section-kicker">Family Shortlist</p>
-                <h2 className="mt-2 text-3xl font-semibold text-ink-900">Compare up to three high-intent opportunities</h2>
+                <h2 className="mt-2 text-[clamp(1.65rem,3vw,1.875rem)] font-semibold leading-tight text-ink-900">Compare up to three high-intent opportunities</h2>
               </div>
               <a
                 href={toWhatsAppHref(
@@ -666,7 +771,7 @@ const PropertiesPage = () => {
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="rounded-[32px] border border-[#eadfcf] bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.07)] lg:col-span-2">
             <p className="section-kicker">Marketplace Feed</p>
-            <h2 className="mt-2 text-4xl font-semibold text-ink-900">
+            <h2 className="mt-2 text-[clamp(2rem,4vw,2.5rem)] font-semibold leading-tight text-ink-900">
               {marketplaceModes.find((mode) => mode.id === marketplaceMode)?.label || "All inventory"}
             </h2>
             <p className="mt-3 text-sm leading-8 text-ink-500">
@@ -701,7 +806,7 @@ const PropertiesPage = () => {
 
         {!loading ? (
           <>
-            <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(min(100%,21rem),1fr))] gap-5">
               {displayedProperties.length > 0 ? (
                 displayedProperties.map((property, index) => (
                   <Reveal key={property._id || property.slug || property.title} delay={index * 0.04}>
@@ -777,7 +882,7 @@ const PropertiesPage = () => {
         <div className="mt-6 grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
           <div className="glass-panel p-6 sm:p-8">
             <p className="section-kicker">Smart Marketplace Modules</p>
-            <h2 className="mt-3 text-5xl font-semibold leading-none text-ink-900">Built for buyers, families, and serious closing teams</h2>
+            <h2 className="mt-3 text-[clamp(2.15rem,4.8vw,3rem)] font-semibold leading-none text-ink-900">Built for buyers, families, and serious closing teams</h2>
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <div className="rounded-[26px] border border-[#e8decf] bg-[#fbf8f2] p-5">
                 <p className="inline-flex items-center gap-2 text-lg font-semibold text-ink-900">
@@ -820,7 +925,7 @@ const PropertiesPage = () => {
 
           <div className="rounded-[32px] border border-[#eadfcf] bg-white p-6 shadow-[0_20px_58px_rgba(15,23,42,0.08)] sm:p-8">
             <p className="section-kicker">Premium Assistance</p>
-            <h2 className="mt-3 text-4xl font-semibold text-ink-900">Need an owner listing boost or a curated investor shortlist?</h2>
+            <h2 className="mt-3 text-[clamp(2rem,4vw,2.5rem)] font-semibold leading-tight text-ink-900">Need an owner listing boost or a curated investor shortlist?</h2>
             <p className="mt-4 text-sm leading-8 text-ink-500">
               Sagar Infra can help with site visits, listing upgrades, buyer-pass introductions, or a luxury-ready sell-side strategy.
             </p>
@@ -851,7 +956,7 @@ const PropertiesPage = () => {
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
           <div className="glass-panel p-7 sm:p-8">
             <p className="section-kicker">Sell or Scale</p>
-            <h2 className="mt-3 text-5xl font-semibold leading-none text-ink-900">
+            <h2 className="mt-3 text-[clamp(2.15rem,4.8vw,3rem)] font-semibold leading-none text-ink-900">
               Launch as an owner, grow as an expert, and monetize like a platform.
             </h2>
             <p className="mt-5 text-sm leading-8 text-ink-500 sm:text-base">

@@ -65,6 +65,32 @@ const propertySchema = new mongoose.Schema(
     bedrooms: { type: Number, min: 0, default: 0 },
     bathrooms: { type: Number, min: 0, default: 0 },
     area: { type: Number, min: 0, default: 0 },
+    furnishing: {
+      type: String,
+      enum: ["", "unfurnished", "semi-furnished", "fully-furnished"],
+      default: ""
+    },
+    propertyAge: {
+      type: String,
+      enum: ["", "new", "0-1", "1-5", "5-10", "10+"],
+      default: ""
+    },
+    possession: {
+      type: String,
+      enum: ["", "ready-to-move", "under-construction", "within-3-months", "within-6-months", "within-1-year"],
+      default: ""
+    },
+    postedByType: {
+      type: String,
+      enum: ["", "owner", "broker", "builder"],
+      default: ""
+    },
+    verification: {
+      ownerVerified: { type: Boolean, default: false },
+      documentsVerified: { type: Boolean, default: false },
+      locationVerified: { type: Boolean, default: false },
+      marketVerified: { type: Boolean, default: false }
+    },
     amenities: { type: [String], default: [] },
     location: locationSchema,
     images: { type: [imageSchema], default: [] },
@@ -126,6 +152,9 @@ propertySchema.index({
   approvalStatus: 1,
   listingType: 1,
   category: 1,
+  postedByType: 1,
+  furnishing: 1,
+  possession: 1,
   "location.city": 1,
   price: 1,
   createdAt: -1

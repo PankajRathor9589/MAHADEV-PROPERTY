@@ -6,8 +6,8 @@
 
 :root {
   color-scheme: light;
-  --app-bg: #f4efe5;
-  --app-ink: #102033;
+  --app-bg: #857c69;
+  --app-ink: #131f2d;
 }
 
 * {
@@ -24,9 +24,9 @@ body {
   font-family: "Sora", "Segoe UI", sans-serif;
   color: var(--app-ink);
   background:
-    radial-gradient(circle at top left, rgba(15, 122, 103, 0.16), transparent 28%),
+    radial-gradient(circle at top left, rgba(30, 171, 145, 0.16), transparent 28%),
     radial-gradient(circle at top right, rgba(217, 119, 6, 0.12), transparent 26%),
-    linear-gradient(180deg, #f7f1e7 0%, #fbf9f4 45%, #f2efe9 100%);
+    linear-gradient(180deg, #9c968a 0%, #aeaaa0 45%, #9a9790 100%);
 }
 
 a {
@@ -40,9 +40,9 @@ a {
 
 .bg-app {
   background:
-    radial-gradient(circle at top left, rgba(15, 122, 103, 0.15), transparent 26%),
-    radial-gradient(circle at 90% 0%, rgba(217, 119, 6, 0.12), transparent 24%),
-    linear-gradient(180deg, #f5efe6 0%, #fcfbf8 42%, #f4efe5 100%);
+    radial-gradient(circle at top left, rgba(188, 179, 170, 0.15), transparent 26%),
+    radial-gradient(circle at 90% 0%, rgba(216, 212, 207, 0.12), transparent 24%),
+    linear-gradient(180deg, #9c9993 0%, #bdb8aa 42%, #cfcbc1 100%);
 }
 
 .hero-heading,

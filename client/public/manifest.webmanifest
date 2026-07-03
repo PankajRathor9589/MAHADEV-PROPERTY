@@ -4,8 +4,8 @@
   "description": "India's intelligent luxury real estate ecosystem for direct-owner discovery, verified experts, and premium property journeys.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#07111E",
-  "theme_color": "#07111E",
+  "background_color": "#FFFFFF",
+  "theme_color": "#C89B3C",
   "orientation": "portrait-primary",
   "icons": [
     {

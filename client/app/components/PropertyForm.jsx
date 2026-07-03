@@ -22,6 +22,14 @@ const baseForm = {
   area: "",
   bedrooms: "",
   bathrooms: "",
+  furnishing: "",
+  propertyAge: "",
+  possession: "",
+  postedByType: "",
+  ownerVerified: false,
+  documentsVerified: false,
+  locationVerified: false,
+  marketVerified: false,
   contactName: "",
   contactEmail: "",
   contactPhone: "",
@@ -50,6 +58,14 @@ const mapPropertyToForm = (property) => {
     area: property.area || "",
     bedrooms: property.bedrooms || "",
     bathrooms: property.bathrooms || "",
+    furnishing: property.furnishing || "",
+    propertyAge: property.propertyAge || "",
+    possession: property.possession || "",
+    postedByType: property.postedByType || "",
+    ownerVerified: Boolean(property.verification?.ownerVerified),
+    documentsVerified: Boolean(property.verification?.documentsVerified),
+    locationVerified: Boolean(property.verification?.locationVerified),
+    marketVerified: Boolean(property.verification?.marketVerified),
     contactName: property.contactName || property.postedBy?.name || "",
     contactEmail: property.contactEmail || property.postedBy?.email || "",
     contactPhone: property.contactPhone || "",
@@ -291,6 +307,70 @@ const PropertyForm = ({ initialProperty, onSubmit, isSubmitting, onCancel }) => 
                 <span className="text-sm font-semibold text-ink-700">Bathrooms</span>
                 <input className="input-field" type="number" min="0" name="bathrooms" value={form.bathrooms} onChange={handleChange} />
               </label>
+
+              <label className="space-y-2">
+                <span className="text-sm font-semibold text-ink-700">Furnishing</span>
+                <select className="input-field" name="furnishing" value={form.furnishing} onChange={handleChange}>
+                  <option value="">Not specified</option>
+                  <option value="unfurnished">Unfurnished</option>
+                  <option value="semi-furnished">Semi-furnished</option>
+                  <option value="fully-furnished">Fully furnished</option>
+                </select>
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-sm font-semibold text-ink-700">Property Age</span>
+                <select className="input-field" name="propertyAge" value={form.propertyAge} onChange={handleChange}>
+                  <option value="">Not specified</option>
+                  <option value="new">New</option>
+                  <option value="0-1">0 - 1 year</option>
+                  <option value="1-5">1 - 5 years</option>
+                  <option value="5-10">5 - 10 years</option>
+                  <option value="10+">10+ years</option>
+                </select>
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-sm font-semibold text-ink-700">Possession</span>
+                <select className="input-field" name="possession" value={form.possession} onChange={handleChange}>
+                  <option value="">Not specified</option>
+                  <option value="ready-to-move">Ready to move</option>
+                  <option value="under-construction">Under construction</option>
+                  <option value="within-3-months">Within 3 months</option>
+                  <option value="within-6-months">Within 6 months</option>
+                  <option value="within-1-year">Within 1 year</option>
+                </select>
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-sm font-semibold text-ink-700">Posted By</span>
+                <select className="input-field" name="postedByType" value={form.postedByType} onChange={handleChange}>
+                  <option value="">Not specified</option>
+                  <option value="owner">Owner</option>
+                  <option value="broker">Broker</option>
+                  <option value="builder">Builder</option>
+                </select>
+              </label>
+
+              <div className="grid gap-3 md:col-span-2 sm:grid-cols-2">
+                {[
+                  ["ownerVerified", "Owner Verified"],
+                  ["documentsVerified", "Documents Verified"],
+                  ["locationVerified", "Location Verified"],
+                  ["marketVerified", "Market Verified"]
+                ].map(([name, label]) => (
+                  <label key={name} className="flex min-h-[54px] items-center gap-3 rounded-[20px] border border-[#ded4c7] bg-white px-4 py-3.5">
+                    <input
+                      type="checkbox"
+                      name={name}
+                      checked={Boolean(form[name])}
+                      onChange={handleChange}
+                      className="h-5 w-5 rounded border-[#ded4c7] accent-[#d4af37]"
+                    />
+                    <span className="text-sm font-semibold text-ink-700">{label}</span>
+                  </label>
+                ))}
+              </div>
 
               <label className="space-y-2 md:col-span-2">
                 <span className="text-sm font-semibold text-ink-700">Description</span>
